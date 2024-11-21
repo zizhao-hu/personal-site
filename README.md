@@ -1,6 +1,6 @@
 # Chatbot UI
 
-A lightweight and modern chat interface for LLM interactions with Markdown support! Built with React and TypeScript.
+A lightweight and modern chat interface for LLM interactions with Markdown support!
 
 ## Overview
 

@@ -6,6 +6,8 @@ A lightweight and modern chat interface for LLM interactions, built with React a
 
 A minimalist chat interface built with React and TypeScript, designed to be easily integrated with any LLM backend. Features a clean and modern design.
 
+![Demo](demo/demo.png)
+
 ## Getting Started
 
 1. Clone the repository

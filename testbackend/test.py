@@ -3,22 +3,15 @@
 import asyncio
 import websockets
 import os
-import json
 
 async def echo(websocket):  # Removed 'path' parameter as it's no longer needed in newer websockets versions
     try:
         async for message in websocket:
             print("Received message:", message, flush=True)
             
-            # Add CORS headers in the response
-            response_headers = {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
-            }
-            
             # Echo the message back
             await websocket.send(message)
+            await websocket.send("[END]")
     except websockets.exceptions.ConnectionClosed:
         print("Client disconnected", flush=True)
     except Exception as e:

@@ -2,6 +2,9 @@
 
 A lightweight and modern chat interface for LLM interactions with Markdown support!
 
+👉 Looking for a version with web search integration?   
+Check out the [`websearch_template`](https://github.com/ChristophHandschuh/your-repo-name/tree/websearch_template) branch, which includes contributions from [CameliaK](https://github.com/CameliaK)
+
 ## Overview
 
 A minimalist chat interface built with React and TypeScript, designed to be easily integrated with any LLM backend. Features a clean and modern design.

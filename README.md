@@ -54,6 +54,9 @@ This project was built by:
 - [Leon Binder](https://github.com/LeonBinder)
 - [Christoph Handschuh](https://github.com/ChristophHandschuh)
 
+Additional contribution by:
+- [CameliaK](https://github.com/CameliaK) – Implemented web search and integrated it into the LLM prompt
+
 Some code components were inspired by and adapted from [Vercel's AI Chatbot](https://github.com/vercel/ai-chatbot).
 
 ## License

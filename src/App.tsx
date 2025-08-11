@@ -8,6 +8,7 @@ function App() {
     <ThemeProvider>
       <Router>
         <div className="w-full h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+          {/* Personal Site - Live Updates Working! */}
           <Routes>
             <Route path="/" element={<Chat />} />
           </Routes>

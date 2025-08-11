@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebLLM Model Test</title>
+</head>
+<body>
+    <h1>WebLLM Model Test</h1>
+    <div id="output"></div>
+    
+    <script type="module">
+        const output = document.getElementById('output');
+        
+        async function testModels() {
+            try {
+                output.innerHTML = '<p>Loading WebLLM...</p>';
+                
+                // Import WebLLM
+                const webllm = await import('https://esm.sh/@mlc-ai/web-llm@0.2.79');
+                
+                output.innerHTML += '<p>✓ WebLLM imported successfully</p>';
+                output.innerHTML += `<p>Available exports: ${Object.keys(webllm).join(', ')}</p>`;
+                
+                if (webllm.prebuiltAppConfig) {
+                    const availableModels = Object.keys(webllm.prebuiltAppConfig.model_list || {});
+                    output.innerHTML += `<p>✓ Available models: ${availableModels.join(', ')}</p>`;
+                    
+                    // Show details of each model
+                    availableModels.forEach(modelId => {
+                        const modelConfig = webllm.prebuiltAppConfig.model_list[modelId];
+                        output.innerHTML += `
+                            <div style="margin: 10px; padding: 10px; border: 1px solid #ccc;">
+                                <strong>${modelId}</strong><br>
+                                Model URL: ${modelConfig.model_url}<br>
+                                Local ID: ${modelConfig.local_id}<br>
+                                Model Lib URL: ${modelConfig.model_lib_url}
+                            </div>
+                        `;
+                    });
+                } else {
+                    output.innerHTML += '<p>✗ prebuiltAppConfig not found</p>';
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<p style="color: red;">✗ Error: ${error.message}</p>`;
+                console.error('Test error:', error);
+            }
+        }
+        
+        testModels();
+    </script>
+</body>
+</html> 

@@ -94,9 +94,22 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     // Check if we're in production and WebLLM might have issues
     if (import.meta.env.PROD) {
       console.log("Running in production mode - WebLLM may have limited functionality");
+      
+      // In production, we'll try WebLLM but be more cautious
+      try {
+        await this.attemptWebLLMInitialization();
+      } catch (error) {
+        console.warn("WebLLM failed in production, this is expected:", error);
+        throw new Error("WebLLM not available in production - using demo mode");
+      }
+    } else {
+      // In development, try normal initialization
+      await this.attemptWebLLMInitialization();
     }
-    
-        try {
+  }
+
+  private async attemptWebLLMInitialization(): Promise<void> {
+    try {
       this.updateProgress("Checking WebLLM version...");
       console.log("Initializing WebLLM engine...");
       console.log("WebLLM version: unknown");
@@ -139,147 +152,147 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
         console.log(`${index + 1}. ${model.model_id} - ${(model as any).model_url}`);
       });
       
-             // Find the requested model or fall back to Qwen 0.5B
-       let selectedModel = prebuiltAppConfig.model_list[0]?.model_id; // Default fallback
-       
-       if (!selectedModel) {
-         throw new Error("No valid model found in prebuiltAppConfig.model_list");
-       }
-       
-       // Improved model selection logic
-       if (this.currentModel === "qwen-0.5b") {
-         const qwenModel = prebuiltAppConfig.model_list.find(model => 
-           model.model_id.toLowerCase().includes('qwen') && 
-           model.model_id.toLowerCase().includes('0.5')
-         );
-         if (qwenModel) {
-           selectedModel = qwenModel.model_id;
-           console.log(`Found Qwen 0.5B model: ${selectedModel}`);
-           this.updateProgress(`Loading Qwen 0.5B model...`);
-         } else {
-           console.log("Qwen 0.5B not found, using first available model");
-           this.updateProgress(`Loading ${selectedModel}...`);
-         }
-       } else if (this.currentModel === "gemma-2b-it") {
-         const gemma2bModel = prebuiltAppConfig.model_list.find(model => 
-           model.model_id.toLowerCase().includes('gemma') && 
-           (model.model_id.toLowerCase().includes('2b') || model.model_id.toLowerCase().includes('2b'))
-         );
-         if (gemma2bModel) {
-           selectedModel = gemma2bModel.model_id;
-           console.log(`Found Gemma 2B model: ${selectedModel}`);
-           this.updateProgress(`Loading Gemma 2B Instruct model...`);
-         } else {
-           console.log("Gemma 2B not found, trying to find any Gemma model");
-           const anyGemmaModel = prebuiltAppConfig.model_list.find(model => 
-             model.model_id.toLowerCase().includes('gemma')
-           );
-           if (anyGemmaModel) {
-             selectedModel = anyGemmaModel.model_id;
-             console.log(`Found Gemma model: ${selectedModel}`);
-             this.updateProgress(`Loading Gemma model...`);
-           } else {
-             console.log("No Gemma models found, using first available model");
-             this.updateProgress(`Loading ${selectedModel}...`);
-           }
-         }
-       } else if (this.currentModel === "gemma-7b-it") {
-         const gemma7bModel = prebuiltAppConfig.model_list.find(model => 
-           model.model_id.toLowerCase().includes('gemma') && 
-           (model.model_id.toLowerCase().includes('7b') || model.model_id.toLowerCase().includes('7b'))
-         );
-         if (gemma7bModel) {
-           selectedModel = gemma7bModel.model_id;
-           console.log(`Found Gemma 7B model: ${selectedModel}`);
-           this.updateProgress(`Loading Gemma 7B Instruct model...`);
-         } else {
-           console.log("Gemma 7B not found, trying to find any Gemma model");
-           const anyGemmaModel = prebuiltAppConfig.model_list.find(model => 
-             model.model_id.toLowerCase().includes('gemma')
-           );
-           if (anyGemmaModel) {
-             selectedModel = anyGemmaModel.model_id;
-             console.log(`Found Gemma model: ${selectedModel}`);
-             this.updateProgress(`Loading Gemma model...`);
-           } else {
-             console.log("No Gemma models found, using first available model");
-             this.updateProgress(`Loading ${selectedModel}...`);
-           }
-         }
-       } else {
-         // Try to find the requested model by name
-         const requestedModel = prebuiltAppConfig.model_list.find(model => 
-           model.model_id.toLowerCase().includes(this.currentModel.toLowerCase())
-         );
-         if (requestedModel) {
-           selectedModel = requestedModel.model_id;
-           console.log(`Found requested model: ${selectedModel}`);
-           this.updateProgress(`Loading ${this.currentModel}...`);
-         } else {
-           console.log(`Requested model ${this.currentModel} not found, using first available model`);
-           this.updateProgress(`Loading ${selectedModel}...`);
-         }
-       }
+      // Find the requested model or fall back to Qwen 0.5B
+      let selectedModel = prebuiltAppConfig.model_list[0]?.model_id; // Default fallback
       
-              // Create engine following the WebLLM documentation pattern
-        try {
-          console.log(`Creating engine with model: ${selectedModel}`);
-          console.log("Model config:", { selectedModel, currentModel: this.currentModel });
-          
-          // Try the simplest possible engine creation first
-          try {
-            this.engine = await CreateMLCEngine(selectedModel);
-            console.log("Engine created with minimal config");
-          } catch (simpleError) {
-            console.log("Simple engine creation failed, trying with config:", simpleError);
-            
-            // Fallback to more complex config
-            this.engine = await CreateMLCEngine(
-              selectedModel,
-              undefined, // Use default config (prebuiltAppConfig is already the default)
-              {
-                temperature: 0.7,
-                top_p: 0.9,
-                repetition_penalty: 1.1,
-              }
-            );
-            console.log("Engine created with full config");
-          }
-
-          this.updateProgress(`Model loaded successfully! Ready to chat.`);
-          console.log(`WebLLM engine initialized successfully with ${selectedModel}`);
-          this.isInitialized = true;
-          return;
-        } catch (error) {
-          console.error(`Failed to initialize with model ${selectedModel}:`, error);
-          console.error("Engine creation error details:", {
-            name: (error as Error).name,
-            message: (error as Error).message,
-            stack: (error as Error).stack
-          });
-          throw error;
+      if (!selectedModel) {
+        throw new Error("No valid model found in prebuiltAppConfig.model_list");
+      }
+      
+      // Improved model selection logic
+      if (this.currentModel === "qwen-0.5b") {
+        const qwenModel = prebuiltAppConfig.model_list.find(model => 
+          model.model_id.toLowerCase().includes('qwen') && 
+          model.model_id.toLowerCase().includes('0.5')
+        );
+        if (qwenModel) {
+          selectedModel = qwenModel.model_id;
+          console.log(`Found Qwen 0.5B model: ${selectedModel}`);
+          this.updateProgress(`Loading Qwen 0.5B model...`);
+        } else {
+          console.log("Qwen 0.5B not found, using first available model");
+          this.updateProgress(`Loading ${selectedModel}...`);
         }
+      } else if (this.currentModel === "gemma-2b-it") {
+        const gemma2bModel = prebuiltAppConfig.model_list.find(model => 
+          model.model_id.toLowerCase().includes('gemma') && 
+          (model.model_id.toLowerCase().includes('2b') || model.model_id.toLowerCase().includes('2b'))
+        );
+        if (gemma2bModel) {
+          selectedModel = gemma2bModel.model_id;
+          console.log(`Found Gemma 2B model: ${selectedModel}`);
+          this.updateProgress(`Loading Gemma 2B Instruct model...`);
+        } else {
+          console.log("Gemma 2B not found, trying to find any Gemma model");
+          const anyGemmaModel = prebuiltAppConfig.model_list.find(model => 
+            model.model_id.toLowerCase().includes('gemma')
+          );
+          if (anyGemmaModel) {
+            selectedModel = anyGemmaModel.model_id;
+            console.log(`Found Gemma model: ${selectedModel}`);
+            this.updateProgress(`Loading Gemma model...`);
+          } else {
+            console.log("No Gemma models found, using first available model");
+            this.updateProgress(`Loading ${selectedModel}...`);
+          }
+        }
+      } else if (this.currentModel === "gemma-7b-it") {
+        const gemma7bModel = prebuiltAppConfig.model_list.find(model => 
+          model.model_id.toLowerCase().includes('gemma') && 
+          (model.model_id.toLowerCase().includes('7b') || model.model_id.toLowerCase().includes('7b'))
+        );
+        if (gemma7bModel) {
+          selectedModel = gemma7bModel.model_id;
+          console.log(`Found Gemma 7B model: ${selectedModel}`);
+          this.updateProgress(`Loading Gemma 7B Instruct model...`);
+        } else {
+          console.log("Gemma 7B not found, trying to find any Gemma model");
+          const anyGemmaModel = prebuiltAppConfig.model_list.find(model => 
+            model.model_id.toLowerCase().includes('gemma')
+          );
+          if (anyGemmaModel) {
+            selectedModel = anyGemmaModel.model_id;
+            console.log(`Found Gemma model: ${selectedModel}`);
+            this.updateProgress(`Loading Gemma model...`);
+          } else {
+            console.log("No Gemma models found, using first available model");
+            this.updateProgress(`Loading ${selectedModel}...`);
+          }
+        }
+      } else {
+        // Try to find the requested model by name
+        const requestedModel = prebuiltAppConfig.model_list.find(model => 
+          model.model_id.toLowerCase().includes(this.currentModel.toLowerCase())
+        );
+        if (requestedModel) {
+          selectedModel = requestedModel.model_id;
+          console.log(`Found requested model: ${selectedModel}`);
+          this.updateProgress(`Loading ${this.currentModel}...`);
+        } else {
+          console.log(`Requested model ${this.currentModel} not found, using first available model`);
+          this.updateProgress(`Loading ${selectedModel}...`);
+        }
+      }
       
-          } catch (error) {
-        console.error("Failed to initialize WebLLM:", error);
-        console.error("Full error details:", {
+      // Create engine following the WebLLM documentation pattern
+      try {
+        console.log(`Creating engine with model: ${selectedModel}`);
+        console.log("Model config:", { selectedModel, currentModel: this.currentModel });
+        
+        // Try the simplest possible engine creation first
+        try {
+          this.engine = await CreateMLCEngine(selectedModel);
+          console.log("Engine created with minimal config");
+        } catch (simpleError) {
+          console.log("Simple engine creation failed, trying with config:", simpleError);
+          
+          // Fallback to more complex config
+          this.engine = await CreateMLCEngine(
+            selectedModel,
+            undefined, // Use default config (prebuiltAppConfig is already the default)
+            {
+              temperature: 0.7,
+              top_p: 0.9,
+              repetition_penalty: 1.1,
+            }
+          );
+          console.log("Engine created with full config");
+        }
+
+        this.updateProgress(`Model loaded successfully! Ready to chat.`);
+        console.log(`WebLLM engine initialized successfully with ${selectedModel}`);
+        this.isInitialized = true;
+        return;
+      } catch (error) {
+        console.error(`Failed to initialize with model ${selectedModel}:`, error);
+        console.error("Engine creation error details:", {
           name: (error as Error).name,
           message: (error as Error).message,
           stack: (error as Error).stack
         });
-        
-        // In production, if WebLLM fails, we should fall back to mock service
-        if (import.meta.env.PROD) {
-          console.warn("WebLLM failed in production, falling back to mock service");
-          this.isInitializing = false;
-          throw new Error("WebLLM not available in production - using demo mode");
-        } else {
-          this.isInitializing = false;
-          throw error;
-        }
-      } finally {
-        this.isInitializing = false;
+        throw error;
       }
+      
+    } catch (error) {
+      console.error("Failed to initialize WebLLM:", error);
+      console.error("Full error details:", {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
+      });
+      
+      // In production, if WebLLM fails, we should fall back to mock service
+      if (import.meta.env.PROD) {
+        console.warn("WebLLM failed in production, falling back to mock service");
+        this.isInitializing = false;
+        throw new Error("WebLLM not available in production - using demo mode");
+      } else {
+        this.isInitializing = false;
+        throw error;
+      }
+    } finally {
+      this.isInitializing = false;
+    }
   }
 
   async generateResponse(messages: ChatMessage[]): Promise<string> {

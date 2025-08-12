@@ -91,7 +91,12 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     this.progressCallback = progressCallback || null;
     this.loadingProgress = 0; // Reset progress
     
-    try {
+    // Check if we're in production and WebLLM might have issues
+    if (import.meta.env.PROD) {
+      console.log("Running in production mode - WebLLM may have limited functionality");
+    }
+    
+        try {
       this.updateProgress("Checking WebLLM version...");
       console.log("Initializing WebLLM engine...");
       console.log("WebLLM version: unknown");
@@ -108,7 +113,16 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       
       this.updateProgress("Loading model configurations...");
       // Get available models from prebuilt config
-      const { prebuiltAppConfig } = await import("@mlc-ai/web-llm");
+      let prebuiltAppConfig;
+      try {
+        const webllmModule = await import("@mlc-ai/web-llm");
+        prebuiltAppConfig = webllmModule.prebuiltAppConfig;
+        console.log("WebLLM module loaded successfully");
+        console.log("Available exports:", Object.keys(webllmModule));
+      } catch (importError) {
+        console.error("Failed to import WebLLM module:", importError);
+        throw new Error("Failed to load WebLLM library");
+      }
       
       if (!prebuiltAppConfig || !prebuiltAppConfig.model_list) {
         throw new Error("prebuiltAppConfig or model_list is not available");
@@ -212,16 +226,25 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
           console.log(`Creating engine with model: ${selectedModel}`);
           console.log("Model config:", { selectedModel, currentModel: this.currentModel });
           
-          // Use the exact pattern from the documentation with progress tracking
-          this.engine = await CreateMLCEngine(
-            selectedModel,
-            undefined, // Use default config (prebuiltAppConfig is already the default)
-            {
-              temperature: 0.7,
-              top_p: 0.9,
-              repetition_penalty: 1.1,
-            }
-          );
+          // Try the simplest possible engine creation first
+          try {
+            this.engine = await CreateMLCEngine(selectedModel);
+            console.log("Engine created with minimal config");
+          } catch (simpleError) {
+            console.log("Simple engine creation failed, trying with config:", simpleError);
+            
+            // Fallback to more complex config
+            this.engine = await CreateMLCEngine(
+              selectedModel,
+              undefined, // Use default config (prebuiltAppConfig is already the default)
+              {
+                temperature: 0.7,
+                top_p: 0.9,
+                repetition_penalty: 1.1,
+              }
+            );
+            console.log("Engine created with full config");
+          }
 
           this.updateProgress(`Model loaded successfully! Ready to chat.`);
           console.log(`WebLLM engine initialized successfully with ${selectedModel}`);
@@ -237,18 +260,26 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
           throw error;
         }
       
-    } catch (error) {
-      console.error("Failed to initialize WebLLM:", error);
-      console.error("Full error details:", {
-        name: (error as Error).name,
-        message: (error as Error).message,
-        stack: (error as Error).stack
-      });
-      this.isInitializing = false;
-      throw error;
-    } finally {
-      this.isInitializing = false;
-    }
+          } catch (error) {
+        console.error("Failed to initialize WebLLM:", error);
+        console.error("Full error details:", {
+          name: (error as Error).name,
+          message: (error as Error).message,
+          stack: (error as Error).stack
+        });
+        
+        // In production, if WebLLM fails, we should fall back to mock service
+        if (import.meta.env.PROD) {
+          console.warn("WebLLM failed in production, falling back to mock service");
+          this.isInitializing = false;
+          throw new Error("WebLLM not available in production - using demo mode");
+        } else {
+          this.isInitializing = false;
+          throw error;
+        }
+      } finally {
+        this.isInitializing = false;
+      }
   }
 
   async generateResponse(messages: ChatMessage[]): Promise<string> {

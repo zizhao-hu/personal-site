@@ -57,24 +57,29 @@ export function Chat() {
         }
         
         // Try WebLLM first
-        await webLLMService.initialize((progress) => {
-          setProgressMessage(progress);
-          // Extract percentage from progress message if it contains one
-          const percentageMatch = progress.match(/(\d+)%/);
-          if (percentageMatch) {
-            setProgressPercentage(parseInt(percentageMatch[1]));
-          } else {
-            // Fallback: try to get progress directly from service
-            const directProgress = webLLMService.getLoadingProgress();
-            if (directProgress > 0) {
-              setProgressPercentage(Math.round(directProgress * 100));
+        try {
+          await webLLMService.initialize((progress) => {
+            setProgressMessage(progress);
+            // Extract percentage from progress message if it contains one
+            const percentageMatch = progress.match(/(\d+)%/);
+            if (percentageMatch) {
+              setProgressPercentage(parseInt(percentageMatch[1]));
             } else {
-              setProgressPercentage(undefined);
+              // Fallback: try to get progress directly from service
+              const directProgress = webLLMService.getLoadingProgress();
+              if (directProgress > 0) {
+                setProgressPercentage(Math.round(directProgress * 100));
+              } else {
+                setProgressPercentage(undefined);
+              }
             }
-          }
-        }, selectedModel);
-        console.log("WebLLM initialized successfully");
-        setUseMockService(false);
+          }, selectedModel);
+          console.log("WebLLM initialized successfully");
+          setUseMockService(false);
+        } catch (webllmError) {
+          console.warn("WebLLM initialization failed, falling back to mock service:", webllmError);
+          throw webllmError; // Re-throw to trigger the catch block below
+        }
       } catch (error) {
         console.error("Failed to initialize WebLLM, falling back to mock service:", error);
         

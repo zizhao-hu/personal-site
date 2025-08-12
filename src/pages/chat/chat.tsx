@@ -111,20 +111,6 @@ export function Chat() {
     initializeServices();
   }, [selectedModel]);
 
-
-
-  // Scroll to top when no messages (show homepage)
-  useEffect(() => {
-    if (messages.length === 0) {
-      window.scrollTo(0, 0);
-    }
-  }, [messages.length]);
-
-  // Ensure page starts at top when component mounts
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   // Handle model selection
   const handleModelSelect = async (modelId: string) => {
     if (modelId === selectedModel) return;
@@ -203,63 +189,86 @@ async function handleSubmit(text?: string) {
 }
 
   return (
-    <div className="flex flex-col min-w-0 h-dvh bg-background">
+    <div className="flex flex-col h-dvh bg-background">
+      {/* Fixed Header */}
       <Header />
-      <div className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 scroll-smooth" ref={messagesContainerRef}>
-        {messages.length == 0 && <Overview />}
-        {messages.length == 0 && (
-          <div className="px-4 md:px-6">
-            <ConversationStarters onStarterClick={handleSubmit} />
-          </div>
-        )}
-        {messages.map((message, index) => (
-          <PreviewMessage key={index} message={message} />
-        ))}
-        {isLoading && <ThinkingMessage />}
-                 {isInitializing && (
-           <Loading 
-             message={progressMessage || "Initializing AI model..."} 
-             subMessage="This may take a few moments on first load"
-             progress={progressPercentage}
-           />
-         )}
-        {initializationError && (
-          <div className="flex items-center justify-center p-8">
-            <div className="text-center">
-              <p className={`mb-2 ${useMockService ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
-                {useMockService ? 'Demo Mode' : 'Initialization Error'}
-              </p>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">{initializationError}</p>
-              {useMockService && (
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                  The chatbot is working in demo mode with predefined responses.
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} className="shrink-0 min-w-[24px] min-h-[24px]"/>
+      
+      {/* Fixed Info Card - Overview */}
+      <div className="flex-shrink-0">
+        <Overview />
       </div>
       
-      {/* Always available conversation starters */}
-      {messages.length > 0 && (
-        <div className="px-4 md:px-6 pb-4">
-          <ConversationStarters onStarterClick={handleSubmit} showTitle={false} compact={true} />
+      {/* Scrollable Chat Area */}
+      <div className="flex flex-col flex-1 min-h-0">
+        {/* Chat Messages Area */}
+        <div className="flex flex-col flex-1 overflow-y-auto" ref={messagesContainerRef}>
+          {/* Show conversation starters only when no messages */}
+          {messages.length === 0 && (
+            <div className="px-4 md:px-6 py-4">
+              <ConversationStarters onStarterClick={handleSubmit} />
+            </div>
+          )}
+          
+          {/* Chat Messages */}
+          {messages.map((message, index) => (
+            <PreviewMessage key={index} message={message} />
+          ))}
+          
+          {/* Loading State - Only in chat area */}
+          {isLoading && <ThinkingMessage />}
+          
+          {/* Initialization Loading - Only in chat area */}
+          {isInitializing && (
+            <div className="flex items-center justify-center p-8">
+              <Loading 
+                message={progressMessage || "Initializing AI model..."} 
+                subMessage="This may take a few moments on first load"
+                progress={progressPercentage}
+              />
+            </div>
+          )}
+          
+          {/* Error State - Only in chat area */}
+          {initializationError && (
+            <div className="flex items-center justify-center p-8">
+              <div className="text-center">
+                <p className={`mb-2 ${useMockService ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {useMockService ? 'Demo Mode' : 'Initialization Error'}
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">{initializationError}</p>
+                {useMockService && (
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                    The chatbot is working in demo mode with predefined responses.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} className="shrink-0 min-w-[24px] min-h-[24px]"/>
         </div>
-      )}
-      
-      <div className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-        <ChatInput  
-          question={question}
-          setQuestion={setQuestion}
-          onSubmit={handleSubmit}
-          isLoading={isLoading || isInitializing}
-          disabled={!(useMockService ? mockLLMService.isReady() : webLLMService.isReady()) || isInitializing}
-          selectedModel={selectedModel}
-          onModelSelect={handleModelSelect}
-          isModelLoading={isInitializing}
-          modelProgressPercentage={progressPercentage}
-        />
+        
+        {/* Always available conversation starters */}
+        {messages.length > 0 && (
+          <div className="px-4 md:px-6 pb-4">
+            <ConversationStarters onStarterClick={handleSubmit} showTitle={false} compact={true} />
+          </div>
+        )}
+        
+        {/* Chat Input */}
+        <div className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+          <ChatInput  
+            question={question}
+            setQuestion={setQuestion}
+            onSubmit={handleSubmit}
+            isLoading={isLoading || isInitializing}
+            disabled={!(useMockService ? mockLLMService.isReady() : webLLMService.isReady()) || isInitializing}
+            selectedModel={selectedModel}
+            onModelSelect={handleModelSelect}
+            isModelLoading={isInitializing}
+            modelProgressPercentage={progressPercentage}
+          />
+        </div>
       </div>
     </div>
   );

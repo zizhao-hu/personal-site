@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ExternalLink, Linkedin, Github, Mail, BookOpen, GraduationCap } from 'lucide-react';
+import { Linkedin, Github, Mail, BookOpen, GraduationCap } from 'lucide-react';
 
 export const Overview = () => {
 

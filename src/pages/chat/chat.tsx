@@ -2,7 +2,7 @@ import { ChatInput } from "@/components/custom/chatinput";
 import { PreviewMessage, ThinkingMessage } from "../../components/custom/message";
 import { Loading } from "@/components/custom/loading";
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { message } from "../../interfaces/interfaces"
 import { Overview } from "@/components/custom/overview";
 import { ConversationStarters } from "@/components/custom/conversation-starters";
@@ -53,7 +53,7 @@ export function Chat() {
         
         if (!importResult.success) {
           console.error("WebLLM import failed:", importResult.error);
-          throw new Error(`WebLLM import failed: ${importResult.error.message}`);
+          throw new Error(`WebLLM import failed: ${(importResult.error as Error).message}`);
         }
         
         // Try WebLLM first

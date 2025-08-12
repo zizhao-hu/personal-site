@@ -1,4 +1,4 @@
-import { CreateMLCEngine, ChatWorker, MLCEngineInterface } from "@mlc-ai/web-llm";
+import { CreateMLCEngine, MLCEngineInterface } from "@mlc-ai/web-llm";
 import { getAnswerByQuestion } from '@/data/predefined-qa';
 
 export interface ChatMessage {
@@ -94,7 +94,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     try {
       this.updateProgress("Checking WebLLM version...");
       console.log("Initializing WebLLM engine...");
-      console.log("WebLLM version:", await import("@mlc-ai/web-llm").then(m => m.version || "unknown"));
+      console.log("WebLLM version: unknown");
       
       this.updateProgress("Checking browser compatibility...");
       // Check browser compatibility
@@ -116,7 +116,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       
       console.log("Available models:");
       prebuiltAppConfig.model_list.forEach((model, index) => {
-        console.log(`${index + 1}. ${model.model_id} - ${model.model_url}`);
+        console.log(`${index + 1}. ${model.model_id} - ${(model as any).model_url}`);
       });
       
              // Find the requested model or fall back to Qwen 0.5B
@@ -209,18 +209,6 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
                temperature: 0.7,
                top_p: 0.9,
                repetition_penalty: 1.1,
-             },
-             {
-               progressCallback: (progress) => {
-                 console.log("WebLLM progress callback called:", progress);
-                 this.loadingProgress = progress;
-                 const percentage = Math.round(progress * 100);
-                 this.updateProgress(`Loading model... ${percentage}%`);
-                 // Force immediate progress update
-                 if (this.progressCallback) {
-                   this.progressCallback(`Loading model... ${percentage}%`);
-                 }
-               }
              }
            );
 
@@ -236,10 +224,9 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     } catch (error) {
       console.error("Failed to initialize WebLLM:", error);
       console.error("Full error details:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-        cause: error.cause
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
       });
       this.isInitializing = false;
       throw error;
@@ -293,9 +280,9 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
 
   private formatMessages(messages: ChatMessage[]) {
     // Add system prompt at the beginning
-    const formattedMessages = [
+    const formattedMessages: Array<{role: "system" | "user" | "assistant", content: string}> = [
       {
-        role: "system" as const,
+        role: "system",
         content: this.systemPrompt
       }
     ];

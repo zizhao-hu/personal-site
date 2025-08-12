@@ -27,9 +27,9 @@ export async function simpleWebLLMTest() {
     
   } catch (error) {
     console.error("✗ WebLLM test failed:", error);
-    console.error("Error type:", error.constructor.name);
-    console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
+    console.error("Error type:", (error as Error).constructor.name);
+    console.error("Error message:", (error as Error).message);
+    console.error("Error stack:", (error as Error).stack);
     
     return { success: false, error };
   }

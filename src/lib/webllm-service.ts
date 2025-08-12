@@ -110,17 +110,27 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       // Get available models from prebuilt config
       const { prebuiltAppConfig } = await import("@mlc-ai/web-llm");
       
+      if (!prebuiltAppConfig || !prebuiltAppConfig.model_list) {
+        throw new Error("prebuiltAppConfig or model_list is not available");
+      }
+      
       if (!Array.isArray(prebuiltAppConfig.model_list) || prebuiltAppConfig.model_list.length === 0) {
         throw new Error("No models available in prebuiltAppConfig");
       }
       
       console.log("Available models:");
+      console.log("Model list type:", typeof prebuiltAppConfig.model_list);
+      console.log("Model list length:", prebuiltAppConfig.model_list.length);
       prebuiltAppConfig.model_list.forEach((model, index) => {
         console.log(`${index + 1}. ${model.model_id} - ${(model as any).model_url}`);
       });
       
              // Find the requested model or fall back to Qwen 0.5B
-       let selectedModel = prebuiltAppConfig.model_list[0].model_id; // Default fallback
+       let selectedModel = prebuiltAppConfig.model_list[0]?.model_id; // Default fallback
+       
+       if (!selectedModel) {
+         throw new Error("No valid model found in prebuiltAppConfig.model_list");
+       }
        
        // Improved model selection logic
        if (this.currentModel === "qwen-0.5b") {
@@ -200,17 +210,18 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
               // Create engine following the WebLLM documentation pattern
         try {
           console.log(`Creating engine with model: ${selectedModel}`);
+          console.log("Model config:", { selectedModel, currentModel: this.currentModel });
           
-                     // Use the exact pattern from the documentation with progress tracking
-           this.engine = await CreateMLCEngine(
-             selectedModel,
-             undefined, // Use default config (prebuiltAppConfig is already the default)
-             {
-               temperature: 0.7,
-               top_p: 0.9,
-               repetition_penalty: 1.1,
-             }
-           );
+          // Use the exact pattern from the documentation with progress tracking
+          this.engine = await CreateMLCEngine(
+            selectedModel,
+            undefined, // Use default config (prebuiltAppConfig is already the default)
+            {
+              temperature: 0.7,
+              top_p: 0.9,
+              repetition_penalty: 1.1,
+            }
+          );
 
           this.updateProgress(`Model loaded successfully! Ready to chat.`);
           console.log(`WebLLM engine initialized successfully with ${selectedModel}`);
@@ -218,6 +229,11 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
           return;
         } catch (error) {
           console.error(`Failed to initialize with model ${selectedModel}:`, error);
+          console.error("Engine creation error details:", {
+            name: (error as Error).name,
+            message: (error as Error).message,
+            stack: (error as Error).stack
+          });
           throw error;
         }
       

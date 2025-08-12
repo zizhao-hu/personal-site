@@ -8,7 +8,11 @@ export async function debugWebLLM() {
     console.log("WebLLM import successful");
     
     // Check available models in prebuilt config
-    console.log("Available models in prebuilt config:", Object.keys(prebuiltAppConfig.model_list));
+    if (prebuiltAppConfig && prebuiltAppConfig.model_list) {
+      console.log("Available models in prebuilt config:", Object.keys(prebuiltAppConfig.model_list));
+    } else {
+      console.log("prebuiltAppConfig or model_list is not available");
+    }
     
     // Check browser capabilities
     console.log("WebAssembly available:", typeof WebAssembly !== 'undefined');

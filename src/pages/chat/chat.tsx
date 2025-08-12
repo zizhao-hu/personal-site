@@ -58,6 +58,7 @@ export function Chat() {
         
         // Try WebLLM first
         try {
+          setProgressMessage("Initializing AI model...");
           await webLLMService.initialize((progress) => {
             setProgressMessage(progress);
             // Extract percentage from progress message if it contains one
@@ -78,14 +79,23 @@ export function Chat() {
           setUseMockService(false);
         } catch (webllmError) {
           console.warn("WebLLM initialization failed, falling back to mock service:", webllmError);
-          throw webllmError; // Re-throw to trigger the catch block below
+          // Don't re-throw, just continue to mock service
+          setProgressMessage("Switching to demo mode...");
         }
       } catch (error) {
         console.error("Failed to initialize WebLLM, falling back to mock service:", error);
         
         try {
-          // Fallback to mock service
-          await mockLLMService.initialize();
+          // Fallback to mock service with timeout
+          const mockTimeout = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error("Mock service timeout")), 5000);
+          });
+          
+          await Promise.race([
+            mockLLMService.initialize(),
+            mockTimeout
+          ]);
+          
           console.log("Mock LLM service initialized successfully");
           setUseMockService(true);
           setInitializationError("Using demo mode - WebLLM failed to load. Some features may be limited.");

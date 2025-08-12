@@ -35,10 +35,19 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'es2020',
     // Increase chunk size warning limit for WebLLM
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1000,
+    // Preserve function names for WebLLM
+    esbuild: {
+      keepNames: true,
+      minifyIdentifiers: false
+    }
   },
   optimizeDeps: {
     // Exclude WebLLM from dependency optimization
     exclude: ['@mlc-ai/web-llm']
+  },
+  // Ensure WebLLM can access browser APIs
+  define: {
+    global: 'globalThis'
   }
 })

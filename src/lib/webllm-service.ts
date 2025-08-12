@@ -91,20 +91,21 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     this.progressCallback = progressCallback || null;
     this.loadingProgress = 0; // Reset progress
     
-    // Check if we're in production and WebLLM might have issues
-    if (import.meta.env.PROD) {
-      console.log("Running in production mode - WebLLM may have limited functionality");
-      
-      // In production, we'll try WebLLM but be more cautious
-      try {
-        await this.attemptWebLLMInitialization();
-      } catch (error) {
-        console.warn("WebLLM failed in production, this is expected:", error);
-        throw new Error("WebLLM not available in production - using demo mode");
-      }
-    } else {
-      // In development, try normal initialization
-      await this.attemptWebLLMInitialization();
+    // Try WebLLM initialization with timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error("WebLLM initialization timeout"));
+      }, import.meta.env.PROD ? 15000 : 30000); // 15s for production, 30s for dev
+    });
+
+    try {
+      await Promise.race([
+        this.attemptWebLLMInitialization(),
+        timeoutPromise
+      ]);
+    } catch (error) {
+      console.error("WebLLM failed:", error);
+      throw error;
     }
   }
 
@@ -132,6 +133,10 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
         prebuiltAppConfig = webllmModule.prebuiltAppConfig;
         console.log("WebLLM module loaded successfully");
         console.log("Available exports:", Object.keys(webllmModule));
+        
+        // Wait a bit for browser APIs to be ready
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
       } catch (importError) {
         console.error("Failed to import WebLLM module:", importError);
         throw new Error("Failed to load WebLLM library");
@@ -238,6 +243,9 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       try {
         console.log(`Creating engine with model: ${selectedModel}`);
         console.log("Model config:", { selectedModel, currentModel: this.currentModel });
+        
+        // Wait for browser APIs to be fully ready
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Try the simplest possible engine creation first
         try {

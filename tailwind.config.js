@@ -69,6 +69,19 @@ export default {
           ring: 'hsl(var(--sidebar-ring))',
         },
       },
+      keyframes: {
+        wave: {
+          '0%, 40%, 100%': {
+            transform: 'scaleY(0.4)',
+          },
+          '20%': {
+            transform: 'scaleY(1)',
+          },
+        },
+      },
+      animation: {
+        wave: 'wave 1.5s ease-in-out infinite',
+      },
     },
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],

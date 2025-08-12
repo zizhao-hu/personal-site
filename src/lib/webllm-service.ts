@@ -13,6 +13,8 @@ export class WebLLMService {
   private progressCallback: ((progress: string) => void) | null = null;
   private loadingProgress: number = 0;
   private currentModel: string = "qwen-0.5b";
+  private initializationStartTime: number = 0;
+  private estimatedTotalTime: number = 30000; // 30 seconds default estimate
 
   // Personal context for Zizhao Hu - Professional Delegate
   private systemPrompt = `You are Zizhao Hu, a CS Ph.D. student at USC affiliated with the GLAMOUR Lab, advised by Professor Jesse Thomason and Professor Mohammad Rostami. You are acting as Zizhao's personal delegate for professional communications with potential clients, interviewers, and collaborators.
@@ -90,6 +92,16 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     this.isInitializing = true;
     this.progressCallback = progressCallback || null;
     this.loadingProgress = 0; // Reset progress
+    this.initializationStartTime = Date.now();
+    
+    // Set estimated time based on model
+    if (modelId?.includes('7b') || modelId?.includes('7B')) {
+      this.estimatedTotalTime = 45000; // 45 seconds for 7B models
+    } else if (modelId?.includes('2b') || modelId?.includes('2B')) {
+      this.estimatedTotalTime = 25000; // 25 seconds for 2B models
+    } else {
+      this.estimatedTotalTime = 30000; // 30 seconds for other models
+    }
     
     // Try WebLLM initialization with timeout
     const timeoutPromise = new Promise((_, reject) => {
@@ -389,9 +401,18 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
   }
 
   private updateProgress(message: string): void {
-    console.log(`[Progress] ${message}`);
+    const elapsedTime = Date.now() - this.initializationStartTime;
+    const estimatedTimeRemaining = Math.max(0, this.estimatedTotalTime - elapsedTime);
+    const timeRemainingSeconds = Math.ceil(estimatedTimeRemaining / 1000);
+    
+    let progressMessage = message;
+    if (timeRemainingSeconds > 0) {
+      progressMessage += ` (est. ${timeRemainingSeconds}s remaining)`;
+    }
+    
+    console.log(`[Progress] ${progressMessage}`);
     if (this.progressCallback) {
-      this.progressCallback(message);
+      this.progressCallback(progressMessage);
     }
   }
 }

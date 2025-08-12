@@ -1,6 +1,6 @@
 import { ChatInput } from "@/components/custom/chatinput";
 import { PreviewMessage, ThinkingMessage } from "../../components/custom/message";
-import { Loading } from "@/components/custom/loading";
+import { WaveLoading } from "@/components/custom/wave-loading";
 import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
 import { useState, useEffect } from "react";
 import { message } from "../../interfaces/interfaces"
@@ -111,6 +111,13 @@ export function Chat() {
     initializeServices();
   }, [selectedModel]);
 
+  // Scroll to top of chat area when component mounts
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = 0;
+    }
+  }, []);
+
   // Handle model selection
   const handleModelSelect = async (modelId: string) => {
     if (modelId === selectedModel) return;
@@ -202,8 +209,8 @@ async function handleSubmit(text?: string) {
       <div className="flex flex-col flex-1 min-h-0">
         {/* Chat Messages Area */}
         <div className="flex flex-col flex-1 overflow-y-auto" ref={messagesContainerRef}>
-          {/* Show conversation starters only when no messages */}
-          {messages.length === 0 && (
+          {/* Show conversation starters only when no messages and not initializing */}
+          {messages.length === 0 && !isInitializing && (
             <div className="px-4 md:px-6 py-4">
               <ConversationStarters onStarterClick={handleSubmit} />
             </div>
@@ -219,17 +226,15 @@ async function handleSubmit(text?: string) {
           
           {/* Initialization Loading - Only in chat area */}
           {isInitializing && (
-            <div className="flex items-center justify-center p-8">
-              <Loading 
-                message={progressMessage || "Initializing AI model..."} 
-                subMessage="This may take a few moments on first load"
-                progress={progressPercentage}
-              />
-            </div>
+            <WaveLoading 
+              message={progressMessage || "Initializing AI model..."} 
+              progress={progressPercentage}
+              estimatedTime={progressMessage?.includes('remaining') ? progressMessage.split('(')[1]?.split(')')[0] : undefined}
+            />
           )}
           
           {/* Error State - Only in chat area */}
-          {initializationError && (
+          {initializationError && !isInitializing && (
             <div className="flex items-center justify-center p-8">
               <div className="text-center">
                 <p className={`mb-2 ${useMockService ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
@@ -261,7 +266,7 @@ async function handleSubmit(text?: string) {
             question={question}
             setQuestion={setQuestion}
             onSubmit={handleSubmit}
-            isLoading={isLoading || isInitializing}
+            isLoading={isLoading}
             disabled={!(useMockService ? mockLLMService.isReady() : webLLMService.isReady()) || isInitializing}
             selectedModel={selectedModel}
             onModelSelect={handleModelSelect}

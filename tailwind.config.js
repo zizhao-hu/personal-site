@@ -78,10 +78,24 @@ export default {
             transform: 'scaleY(1)',
           },
         },
+        'gradient-wave': {
+          '0%, 100%': { 
+            backgroundPosition: '0% 50%',
+            backgroundSize: '200% 200%'
+          },
+          '50%': { 
+            backgroundPosition: '100% 50%',
+            backgroundSize: '200% 200%'
+          }
+        }
       },
       animation: {
         wave: 'wave 1.5s ease-in-out infinite',
+        'gradient-wave': 'gradient-wave 3s ease infinite'
       },
+      backgroundImage: {
+        'gradient-wave': 'linear-gradient(-45deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6)'
+      }
     },
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],

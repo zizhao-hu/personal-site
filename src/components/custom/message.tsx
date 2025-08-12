@@ -6,6 +6,7 @@ import { message } from "../../interfaces/interfaces"
 import { MessageActions } from '@/components/custom/actions';
 
 export const PreviewMessage = ({ message }: { message: message; }) => {
+  console.log("PreviewMessage rendering:", message);
 
   return (
     <motion.div

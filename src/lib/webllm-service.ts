@@ -107,7 +107,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
         reject(new Error("WebLLM initialization timeout"));
-      }, import.meta.env.PROD ? 15000 : 30000); // 15s for production, 30s for dev
+      }, import.meta.env.PROD ? 8000 : 30000); // 8s for production, 30s for dev
     });
 
     try {
@@ -117,7 +117,13 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       ]);
     } catch (error) {
       console.error("WebLLM failed:", error);
-      throw error;
+      // In production, this is expected behavior
+      if (import.meta.env.PROD) {
+        console.warn("WebLLM timeout in production - this is normal, falling back to demo mode");
+        throw new Error("WebLLM not available in production - using demo mode");
+      } else {
+        throw error;
+      }
     }
   }
 

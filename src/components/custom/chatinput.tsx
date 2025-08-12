@@ -96,9 +96,13 @@ export const ChatInput = ({ question, setQuestion, onSubmit, isLoading, disabled
             <Textarea
             placeholder={disabled ? "Initializing AI model..." : "Send a message..."}
             className={cx(
-                'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl text-base bg-muted pr-16 pb-12',
-                isModelLoading && 'opacity-50'
+                'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl text-base pr-16 pb-12 relative'
             )}
+            style={isModelLoading ? {
+                background: 'linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6, #8b5cf6, #06b6d4, #3b82f6)',
+                backgroundSize: '400% 100%',
+                animation: 'gradientMove 3s linear infinite'
+            } : {}}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(event) => {

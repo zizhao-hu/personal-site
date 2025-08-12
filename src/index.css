@@ -68,3 +68,35 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .gradient-wave-bg {
+    background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6);
+    background-size: 200% 200%;
+    animation: gradient-wave 3s ease infinite;
+    position: relative;
+  }
+  
+  .gradient-wave-bg::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: hsl(var(--muted));
+    border-radius: 0.75rem;
+    z-index: -1;
+  }
+  
+  .dark .gradient-wave-bg {
+    background: linear-gradient(-45deg, #1e40af, #7c3aed, #0891b2, #1e40af);
+    background-size: 200% 200%;
+  }
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

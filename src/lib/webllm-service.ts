@@ -103,11 +103,14 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       this.estimatedTotalTime = 30000; // 30 seconds for other models
     }
     
+    // Check for mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
     // Try WebLLM initialization with timeout
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
         reject(new Error("WebLLM initialization timeout"));
-      }, import.meta.env.PROD ? 8000 : 30000); // 8s for production, 30s for dev
+      }, import.meta.env.PROD ? (isMobile ? 15000 : 8000) : (isMobile ? 60000 : 30000)); // Longer timeout for mobile
     });
 
     try {
@@ -117,10 +120,12 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       ]);
     } catch (error) {
       console.error("WebLLM failed:", error);
-      // In production, this is expected behavior
-      if (import.meta.env.PROD) {
-        console.warn("WebLLM timeout in production - this is normal, falling back to demo mode");
-        throw new Error("WebLLM not available in production - using demo mode");
+      // Check if it's a mobile device or production environment
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (import.meta.env.PROD || isMobile) {
+        console.warn("WebLLM failed - falling back to demo mode", { isMobile, isProd: import.meta.env.PROD });
+        throw new Error("WebLLM not available - using demo mode");
       } else {
         throw error;
       }
@@ -139,8 +144,20 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
         throw new Error("WebAssembly is not supported in this browser");
       }
       
+      // Check for mobile/Android Chrome
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isAndroidChrome = /Android.*Chrome/i.test(navigator.userAgent);
+      
+      if (isAndroidChrome) {
+        console.warn("Android Chrome detected - WebLLM may have limited compatibility");
+        this.updateProgress("Android Chrome detected - checking compatibility...");
+      }
+      
       if (typeof WebGPU === 'undefined') {
         console.warn("WebGPU is not available, WebLLM may fall back to CPU");
+        if (isMobile) {
+          console.warn("Mobile device detected - WebGPU fallback may be slower");
+        }
       }
       
       this.updateProgress("Loading model configurations...");

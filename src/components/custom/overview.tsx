@@ -7,7 +7,7 @@ export const Overview = () => {
       {/* Personal Introduction */}
       <div className="rounded-xl p-6 flex flex-row items-stretch gap-6 leading-relaxed text-left max-w-4xl mx-auto mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
         {/* Profile Picture */}
-        <div className="w-32 rounded-2xl overflow-hidden border-4 border-blue-200 dark:border-blue-700 shadow-lg flex-shrink-0 flex items-center justify-center">
+        <div className="w-32 h-32 rounded-2xl overflow-hidden border-4 border-blue-200 dark:border-blue-700 shadow-lg flex-shrink-0 flex items-center justify-center">
           <img 
             src="https://zizhao-hu.github.io/assets/img/prof_pic.jpg" 
             alt="Zizhao Hu" 

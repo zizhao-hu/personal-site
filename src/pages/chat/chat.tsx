@@ -113,30 +113,36 @@ export function Chat() {
     setInitializationError("");
     
     try {
-      // Try WebLLM first
-      try {
-
-        await webLLMService.initialize((progress) => {
-          // Extract percentage from progress message if it contains one
-          const percentageMatch = progress.match(/(\d+)%/);
-          if (percentageMatch) {
-            setProgressPercentage(parseInt(percentageMatch[1]));
-          } else {
-            // Fallback: try to get progress directly from service
-            const directProgress = webLLMService.getLoadingProgress();
-            if (directProgress > 0) {
-              setProgressPercentage(Math.round(directProgress * 100));
+      // Check if it's a mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Try WebLLM first (skip on mobile for now)
+      if (!isMobile) {
+        try {
+          await webLLMService.initialize((progress) => {
+            // Extract percentage from progress message if it contains one
+            const percentageMatch = progress.match(/(\d+)%/);
+            if (percentageMatch) {
+              setProgressPercentage(parseInt(percentageMatch[1]));
             } else {
-              setProgressPercentage(undefined);
+              // Fallback: try to get progress directly from service
+              const directProgress = webLLMService.getLoadingProgress();
+              if (directProgress > 0) {
+                setProgressPercentage(Math.round(directProgress * 100));
+              } else {
+                setProgressPercentage(undefined);
+              }
             }
-          }
-        }, selectedModel);
-        console.log("WebLLM initialized successfully in Chat component");
-        setUseMockService(false);
-        // Don't set isInitializing to false here - let the monitoring effect handle it
-      } catch (webllmError) {
-        console.warn("WebLLM initialization failed in Chat component, falling back to mock service:", webllmError);
-
+          }, selectedModel);
+          console.log("WebLLM initialized successfully in Chat component");
+          setUseMockService(false);
+          // Don't set isInitializing to false here - let the monitoring effect handle it
+        } catch (webllmError) {
+          console.warn("WebLLM initialization failed in Chat component, falling back to mock service:", webllmError);
+        }
+      } else {
+        console.log("Mobile device detected - using mock service");
+        setUseMockService(true);
       }
     } catch (error) {
       console.error("Failed to initialize WebLLM in Chat component, falling back to mock service:", error);

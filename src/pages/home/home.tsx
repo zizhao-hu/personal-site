@@ -18,7 +18,7 @@ export const Home = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [useMockService, setUseMockService] = useState(false);
   const [initializationError, setInitializationError] = useState("");
-  const [progressMessage, setProgressMessage] = useState("");
+
   const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
   const [selectedModel, setSelectedModel] = useState<string>("gemma-2b-it");
 
@@ -40,9 +40,7 @@ export const Home = () => {
         
         // Try WebLLM first
         try {
-          setProgressMessage("Initializing AI model...");
           await webLLMService.initialize((progress) => {
-            setProgressMessage(progress);
             // Extract percentage from progress message if it contains one
             const percentageMatch = progress.match(/(\d+)%/);
             if (percentageMatch) {
@@ -61,12 +59,6 @@ export const Home = () => {
           setUseMockService(false);
         } catch (webllmError) {
           console.warn("WebLLM initialization failed, falling back to mock service:", webllmError);
-          // Show appropriate message based on environment
-          if (import.meta.env.PROD) {
-            setProgressMessage("Switching to demo mode (WebLLM not available in production)...");
-          } else {
-            setProgressMessage("Switching to demo mode...");
-          }
         }
       } catch (error) {
         console.error("Failed to initialize WebLLM, falling back to mock service:", error);
@@ -114,9 +106,7 @@ export const Home = () => {
           console.log("Home progress updated:", percentage + "%");
         }
         
-        // Update progress message from service
-        const progressMessage = webLLMService.getProgressMessage();
-        setProgressMessage(progressMessage);
+
       }
     };
 
@@ -132,12 +122,10 @@ export const Home = () => {
     setSelectedModel(modelId);
     setIsInitializing(true);
     setInitializationError("");
-    setProgressMessage("");
     setProgressPercentage(undefined);
     
     try {
       await webLLMService.initialize((progress) => {
-        setProgressMessage(progress);
         const percentageMatch = progress.match(/(\d+)%/);
         if (percentageMatch) {
           setProgressPercentage(parseInt(percentageMatch[1]));

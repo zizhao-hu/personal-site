@@ -19,7 +19,7 @@ export function Chat() {
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
   const [initializationError, setInitializationError] = useState<string>("");
   const [useMockService, setUseMockService] = useState<boolean>(false);
-  const [progressMessage, setProgressMessage] = useState<string>("");
+
   const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
   const [selectedModel, setSelectedModel] = useState<string>("gemma-2b-it");
   
@@ -89,9 +89,7 @@ export function Chat() {
           console.log("Progress updated:", percentage + "%");
         }
         
-        // Update progress message from service
-        const progressMessage = webLLMService.getProgressMessage();
-        setProgressMessage(progressMessage);
+
       }
       
       if (currentService.isReady() && isInitializing) {
@@ -117,9 +115,8 @@ export function Chat() {
     try {
       // Try WebLLM first
       try {
-        setProgressMessage("Initializing AI model...");
+
         await webLLMService.initialize((progress) => {
-          setProgressMessage(progress);
           // Extract percentage from progress message if it contains one
           const percentageMatch = progress.match(/(\d+)%/);
           if (percentageMatch) {
@@ -139,12 +136,7 @@ export function Chat() {
         // Don't set isInitializing to false here - let the monitoring effect handle it
       } catch (webllmError) {
         console.warn("WebLLM initialization failed in Chat component, falling back to mock service:", webllmError);
-        // Show appropriate message based on environment
-        if (import.meta.env.PROD) {
-          setProgressMessage("Switching to demo mode (WebLLM not available in production)...");
-        } else {
-          setProgressMessage("Switching to demo mode...");
-        }
+
       }
     } catch (error) {
       console.error("Failed to initialize WebLLM in Chat component, falling back to mock service:", error);
@@ -186,12 +178,10 @@ export function Chat() {
     setSelectedModel(modelId);
     setIsInitializing(true);
     setInitializationError("");
-    setProgressMessage("");
     setProgressPercentage(undefined);
     
     try {
       await webLLMService.initialize((progress) => {
-        setProgressMessage(progress);
         const percentageMatch = progress.match(/(\d+)%/);
         if (percentageMatch) {
           setProgressPercentage(parseInt(percentageMatch[1]));

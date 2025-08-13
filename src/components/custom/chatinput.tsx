@@ -31,8 +31,8 @@ export const ChatInput = ({ question, setQuestion, onSubmit, isLoading, disabled
         />
 
         <div className="relative">
-            {/* Loading Overlay */}
-            {isModelLoading && (
+            {/* Loading Overlay - Show when model is not ready */}
+            {disabled && (
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -44,57 +44,27 @@ export const ChatInput = ({ question, setQuestion, onSubmit, isLoading, disabled
                         <motion.div 
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="flex items-center gap-3 mb-3"
+                            transition={{ delay: 0.2 }}
+                            className="w-48 mx-auto"
                         >
-                            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                                Initializing AI Model...
-                            </span>
+                            <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2 mb-2">
+                                <motion.div 
+                                    className="bg-blue-600 h-2 rounded-full"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${modelProgressPercentage || 0}%` }}
+                                    transition={{ duration: 0.3 }}
+                                />
+                            </div>
+                            <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                                {modelProgressPercentage || 0}% Complete
+                            </p>
                         </motion.div>
-                                                 {modelProgressPercentage !== undefined ? (
-                             <motion.div 
-                                 initial={{ opacity: 0, y: 10 }}
-                                 animate={{ opacity: 1, y: 0 }}
-                                 transition={{ delay: 0.2 }}
-                                 className="w-48 mx-auto"
-                             >
-                                 <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2 mb-2">
-                                     <motion.div 
-                                         className="bg-blue-600 h-2 rounded-full"
-                                         initial={{ width: 0 }}
-                                         animate={{ width: `${modelProgressPercentage}%` }}
-                                         transition={{ duration: 0.3 }}
-                                     />
-                                 </div>
-                                 <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                                     {modelProgressPercentage}% Complete
-                                 </p>
-                             </motion.div>
-                         ) : (
-                             <motion.div 
-                                 initial={{ opacity: 0, y: 10 }}
-                                 animate={{ opacity: 1, y: 0 }}
-                                 transition={{ delay: 0.2 }}
-                                 className="w-48 mx-auto"
-                             >
-                                 <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2 mb-2">
-                                     <motion.div 
-                                         className="bg-blue-600 h-2 rounded-full animate-pulse"
-                                         style={{ width: '60%' }}
-                                     />
-                                 </div>
-                                 <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                                     Loading...
-                                 </p>
-                             </motion.div>
-                         )}
                     </div>
                 </motion.div>
             )}
 
             <Textarea
-            placeholder={disabled ? "Initializing AI model..." : "Send a message..."}
+            placeholder="Send a message..."
             className={cx(
                 'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl text-base pr-16 pb-12 relative'
             )}

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Header } from "@/components/custom/header";
 import { PreviewMessage, ThinkingMessage } from "@/components/custom/message";
 import { ChatInput } from "@/components/custom/chatinput";
-import { WaveLoading } from "@/components/custom/wave-loading";
+
 import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
 import { webLLMService } from "@/lib/webllm-service";
 import { mockLLMService } from "@/lib/mock-llm-service";
@@ -21,7 +21,7 @@ export function Chat() {
   const [useMockService, setUseMockService] = useState<boolean>(false);
   const [progressMessage, setProgressMessage] = useState<string>("");
   const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
-  const [selectedModel, setSelectedModel] = useState<string>("qwen-0.5b");
+  const [selectedModel, setSelectedModel] = useState<string>("gemma-2b-it");
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,6 +75,40 @@ export function Chat() {
     return () => clearTimeout(timeoutId);
   }, []);
 
+  // Monitor service readiness and transition from loading to chat
+  useEffect(() => {
+    const checkServiceReady = () => {
+      const currentService = useMockService ? mockLLMService : webLLMService;
+      
+      // Continue updating progress even while checking readiness
+      if (isInitializing) {
+        const directProgress = webLLMService.getLoadingProgress();
+        if (directProgress > 0) {
+          const percentage = Math.round(directProgress * 100);
+          setProgressPercentage(percentage);
+          console.log("Progress updated:", percentage + "%");
+        }
+        
+        // Update progress message from service
+        const progressMessage = webLLMService.getProgressMessage();
+        setProgressMessage(progressMessage);
+      }
+      
+      if (currentService.isReady() && isInitializing) {
+        console.log("Service is now ready, transitioning to chat interface");
+        // Add a small delay to ensure progress is complete
+        setTimeout(() => {
+          setIsInitializing(false);
+          setInitializationError("");
+        }, 1000);
+      }
+    };
+
+    // Check every 500ms if service becomes ready
+    const intervalId = setInterval(checkServiceReady, 500);
+    return () => clearInterval(intervalId);
+  }, [useMockService, isInitializing]);
+
   // Initialize WebLLM only if not already initialized
   const initializeServices = async () => {
     setIsInitializing(true);
@@ -102,6 +136,7 @@ export function Chat() {
         }, selectedModel);
         console.log("WebLLM initialized successfully in Chat component");
         setUseMockService(false);
+        // Don't set isInitializing to false here - let the monitoring effect handle it
       } catch (webllmError) {
         console.warn("WebLLM initialization failed in Chat component, falling back to mock service:", webllmError);
         // Show appropriate message based on environment
@@ -128,6 +163,7 @@ export function Chat() {
         console.log("Mock LLM service initialized successfully in Chat component");
         console.log("Mock service ready:", mockLLMService.isReady());
         setUseMockService(true);
+        // Don't set isInitializing to false here - let the monitoring effect handle it
         if (import.meta.env.PROD) {
           setInitializationError("Demo Mode - WebLLM is not available in production environments. Using predefined responses.");
         } else {
@@ -138,7 +174,7 @@ export function Chat() {
         setInitializationError("Failed to initialize AI model. Please refresh the page and try again.");
       }
     } finally {
-      setIsInitializing(false);
+      // Don't set isInitializing to false here - let the monitoring effect handle it
       console.log("Initialization complete in Chat component. Mock service ready:", mockLLMService.isReady(), "WebLLM service ready:", webLLMService.isReady());
     }
   };
@@ -282,16 +318,7 @@ export function Chat() {
           className="flex flex-col flex-1 overflow-y-auto" 
           ref={messagesContainerRef}
         >
-          {/* Initialization Loading */}
-          {isInitializing && (
-            <div className="px-4 md:px-6 py-8">
-              <WaveLoading 
-                message={progressMessage || "Initializing AI model..."} 
-                progress={progressPercentage}
-                estimatedTime={progressMessage?.includes('remaining') ? progressMessage.split('(')[1]?.split(')')[0] : undefined}
-              />
-            </div>
-          )}
+
           
           {/* Error State */}
           {initializationError && !isInitializing && (
@@ -328,7 +355,7 @@ export function Chat() {
             setQuestion={setQuestion}
             onSubmit={handleSubmit}
             isLoading={isLoading}
-            disabled={!(useMockService ? mockLLMService.isReady() : webLLMService.isReady()) || isInitializing}
+            disabled={!(useMockService ? mockLLMService.isReady() : webLLMService.isReady())}
             selectedModel={selectedModel}
             onModelSelect={handleModelSelect}
             isModelLoading={isInitializing}

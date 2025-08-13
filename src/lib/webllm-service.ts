@@ -12,7 +12,7 @@ export class WebLLMService {
   private isInitializing = false;
   private progressCallback: ((progress: string) => void) | null = null;
   private loadingProgress: number = 0;
-  private currentModel: string = "qwen-0.5b";
+  private currentModel: string = "gemma-2b-it";
   private initializationStartTime: number = 0;
   private estimatedTotalTime: number = 30000; // 30 seconds default estimate
 
@@ -265,24 +265,50 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
         // Wait for browser APIs to be fully ready
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Try the simplest possible engine creation first
+        // Create engine with proper progress tracking
         try {
-          this.engine = await CreateMLCEngine(selectedModel);
-          console.log("Engine created with minimal config");
-        } catch (simpleError) {
-          console.log("Simple engine creation failed, trying with config:", simpleError);
-          
-          // Fallback to more complex config
           this.engine = await CreateMLCEngine(
             selectedModel,
-            undefined, // Use default config (prebuiltAppConfig is already the default)
             {
-              temperature: 0.7,
-              top_p: 0.9,
-              repetition_penalty: 1.1,
+              initProgressCallback: (progress: any) => {
+                console.log("WebLLM progress callback called with:", progress);
+                console.log("Progress type:", typeof progress);
+                console.log("Progress keys:", progress ? Object.keys(progress) : 'null/undefined');
+                
+                if (progress && typeof progress === 'object') {
+                  // Handle WebLLM progress format: {progress: 0.9459459459459459, timeElapsed: 3, text: '...'}
+                  if (progress.progress !== undefined) {
+                    const progressPercentage = Math.round(progress.progress * 100);
+                    this.loadingProgress = progressPercentage;
+                    this.updateProgress(progress.text || `Loading model... ${progressPercentage}%`);
+                    console.log("Progress updated:", progressPercentage + "%");
+                  }
+                  // Track download progress (legacy format)
+                  else if (progress.downloaded && progress.total) {
+                    const downloadProgress = (progress.downloaded / progress.total) * 100;
+                    this.loadingProgress = downloadProgress;
+                    this.updateProgress(`Downloading model... ${Math.round(downloadProgress)}%`);
+                    console.log("Download progress updated:", downloadProgress);
+                  }
+                  // Track initialization progress (legacy format)
+                  else if (progress.initialized && progress.total) {
+                    const initProgress = (progress.initialized / progress.total) * 100;
+                    this.loadingProgress = initProgress;
+                    this.updateProgress(`Initializing model... ${Math.round(initProgress)}%`);
+                    console.log("Init progress updated:", initProgress);
+                  }
+                } else if (typeof progress === 'string') {
+                  this.updateProgress(progress);
+                  console.log("String progress message:", progress);
+                }
+              }
             }
           );
-          console.log("Engine created with full config");
+          
+          console.log("Engine created with progress tracking");
+        } catch (simpleError) {
+          console.log("Engine creation failed:", simpleError);
+          throw simpleError;
         }
 
         this.updateProgress(`Model loaded successfully! Ready to chat.`);
@@ -421,6 +447,17 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       this.progressCallback(progressMessage);
     }
   }
+
+  // Method to get current progress message
+  getProgressMessage(): string {
+    const elapsedTime = Date.now() - this.initializationStartTime;
+    const estimatedTimeRemaining = Math.max(0, this.estimatedTotalTime - elapsedTime);
+    const timeRemainingSeconds = Math.ceil(estimatedTimeRemaining / 1000);
+    
+    return `Loading model... (est. ${timeRemainingSeconds}s remaining)`;
+  }
+
+
 }
 
 // Export a singleton instance

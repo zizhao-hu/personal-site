@@ -4,7 +4,7 @@ import { Header } from '@/components/custom/header';
 import { Overview } from '@/components/custom/overview';
 import { ConversationStarters } from '@/components/custom/conversation-starters';
 import { ChatInput } from '@/components/custom/chatinput';
-import { WaveLoading } from '@/components/custom/wave-loading';
+
 import { webLLMService } from '@/lib/webllm-service';
 import { mockLLMService } from '@/lib/mock-llm-service';
 import { testWebLLMImport } from '@/lib/webllm-import-test';
@@ -20,7 +20,7 @@ export const Home = () => {
   const [initializationError, setInitializationError] = useState("");
   const [progressMessage, setProgressMessage] = useState("");
   const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
-  const [selectedModel, setSelectedModel] = useState<string>("qwen-0.5b");
+  const [selectedModel, setSelectedModel] = useState<string>("gemma-2b-it");
 
   // Initialize services on component mount
   useEffect(() => {
@@ -102,6 +102,28 @@ export const Home = () => {
 
     initializeServices();
   }, [selectedModel]);
+
+  // Monitor progress during initialization
+  useEffect(() => {
+    const updateProgress = () => {
+      if (isInitializing) {
+        const directProgress = webLLMService.getLoadingProgress();
+        if (directProgress > 0) {
+          const percentage = Math.round(directProgress * 100);
+          setProgressPercentage(percentage);
+          console.log("Home progress updated:", percentage + "%");
+        }
+        
+        // Update progress message from service
+        const progressMessage = webLLMService.getProgressMessage();
+        setProgressMessage(progressMessage);
+      }
+    };
+
+    // Update progress every 500ms during initialization
+    const intervalId = setInterval(updateProgress, 500);
+    return () => clearInterval(intervalId);
+  }, [isInitializing]);
 
   // Handle model selection
   const handleModelSelect = async (modelId: string) => {
@@ -198,23 +220,7 @@ export const Home = () => {
             </div>
           )}
           
-          {/* Initialization Loading */}
-          {isInitializing && (
-            <div className="px-4 md:px-6 py-8">
-              <div className="text-center">
-                <div className="mb-4">
-                  <WaveLoading 
-                    message={progressMessage || "Initializing AI model..."} 
-                    progress={progressPercentage}
-                    estimatedTime={progressMessage?.includes('remaining') ? progressMessage.split('(')[1]?.split(')')[0] : undefined}
-                  />
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Please wait while the model is loading...
-                </p>
-              </div>
-            </div>
-          )}
+
           
           {/* Error State */}
           {initializationError && !isInitializing && (
@@ -244,7 +250,7 @@ export const Home = () => {
             setQuestion={setQuestion}
             onSubmit={handleSubmit}
             isLoading={isLoading}
-            disabled={!(useMockService ? mockLLMService.isReady() : webLLMService.isReady()) || isInitializing}
+            disabled={!(useMockService ? mockLLMService.isReady() : webLLMService.isReady())}
             selectedModel={selectedModel}
             onModelSelect={handleModelSelect}
             isModelLoading={isInitializing}

@@ -19,18 +19,18 @@ interface ModelSelectorProps {
 
 const AVAILABLE_MODELS: ModelInfo[] = [
   {
-    id: "qwen-0.5b",
-    name: "Qwen 0.5B",
-    size: "0.5B parameters",
-    estimatedLoadTime: "30-60 seconds",
-    description: "Fastest model, good for quick responses"
-  },
-  {
     id: "gemma-2b-it",
     name: "Gemma 2B Instruct",
     size: "2B parameters",
     estimatedLoadTime: "45-90 seconds",
     description: "Google's efficient instruction-tuned model"
+  },
+  {
+    id: "qwen-0.5b",
+    name: "Qwen 0.5B",
+    size: "0.5B parameters",
+    estimatedLoadTime: "30-60 seconds",
+    description: "Fastest model, good for quick responses"
   },
   {
     id: "gemma-7b-it",

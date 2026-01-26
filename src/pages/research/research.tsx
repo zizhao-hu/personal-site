@@ -50,7 +50,7 @@ export const Research = () => {
     <div className="flex flex-col min-h-dvh bg-background">
       <Header />
       
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-24">
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Hero Section */}
           <div className="mb-12">

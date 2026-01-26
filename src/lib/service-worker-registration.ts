@@ -41,7 +41,8 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
  * Clear the model cache
  */
 export async function clearModelCache(): Promise<boolean> {
-  if (!navigator.serviceWorker.controller) {
+  const controller = navigator.serviceWorker?.controller;
+  if (!controller) {
     console.warn('[SW] No active Service Worker');
     return false;
   }
@@ -53,7 +54,7 @@ export async function clearModelCache(): Promise<boolean> {
       resolve(event.data.success);
     };
 
-    navigator.serviceWorker.controller.postMessage(
+    controller.postMessage(
       { type: 'CLEAR_MODEL_CACHE' },
       [messageChannel.port2]
     );
@@ -67,7 +68,8 @@ export async function clearModelCache(): Promise<boolean> {
  * Get the current cache size
  */
 export async function getCacheSize(): Promise<{ size: number; count: number } | null> {
-  if (!navigator.serviceWorker.controller) {
+  const controller = navigator.serviceWorker?.controller;
+  if (!controller) {
     return null;
   }
 
@@ -82,7 +84,7 @@ export async function getCacheSize(): Promise<{ size: number; count: number } | 
       }
     };
 
-    navigator.serviceWorker.controller.postMessage(
+    controller.postMessage(
       { type: 'GET_CACHE_SIZE' },
       [messageChannel.port2]
     );

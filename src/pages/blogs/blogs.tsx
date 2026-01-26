@@ -1,80 +1,8 @@
 import { Header } from "../../components/custom/header";
 import { useState } from "react";
-import { Clock, Calendar, Tag } from "lucide-react";
-
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  readingTime: string;
-  category: "ai" | "science" | "economy";
-  tags: string[];
-  slug: string;
-}
-
-const blogPosts: BlogPost[] = [
-  {
-    id: "1",
-    title: "The Future of Large Language Models in Scientific Research",
-    excerpt: "Exploring how LLMs are transforming the way we approach scientific discovery and research methodology.",
-    date: "2024-01-15",
-    readingTime: "8 min",
-    category: "ai",
-    tags: ["LLM", "Research", "Machine Learning"],
-    slug: "llm-scientific-research",
-  },
-  {
-    id: "2",
-    title: "Understanding Continual Learning in Neural Networks",
-    excerpt: "A deep dive into catastrophic forgetting and modern approaches to lifelong learning in AI systems.",
-    date: "2024-01-10",
-    readingTime: "12 min",
-    category: "ai",
-    tags: ["Continual Learning", "Neural Networks", "Deep Learning"],
-    slug: "continual-learning-networks",
-  },
-  {
-    id: "3",
-    title: "Quantum Computing: From Theory to Practice",
-    excerpt: "The current state of quantum computing and its potential impact on computational science.",
-    date: "2024-01-05",
-    readingTime: "10 min",
-    category: "science",
-    tags: ["Quantum Computing", "Physics", "Technology"],
-    slug: "quantum-computing-practice",
-  },
-  {
-    id: "4",
-    title: "The Economics of AI: Market Disruption and Opportunity",
-    excerpt: "Analyzing the economic implications of AI adoption across industries and its effect on labor markets.",
-    date: "2023-12-28",
-    readingTime: "7 min",
-    category: "economy",
-    tags: ["Economics", "AI Impact", "Labor Market"],
-    slug: "economics-of-ai",
-  },
-  {
-    id: "5",
-    title: "Multi-Modal Learning: Bridging Vision and Language",
-    excerpt: "How modern AI systems learn to understand and connect visual and textual information.",
-    date: "2023-12-20",
-    readingTime: "9 min",
-    category: "ai",
-    tags: ["Vision", "NLP", "Multi-Modal"],
-    slug: "multimodal-learning",
-  },
-  {
-    id: "6",
-    title: "Climate Science and Machine Learning: A Partnership",
-    excerpt: "Using ML techniques to improve climate modeling and environmental predictions.",
-    date: "2023-12-15",
-    readingTime: "11 min",
-    category: "science",
-    tags: ["Climate", "Machine Learning", "Environment"],
-    slug: "climate-ml-partnership",
-  },
-];
+import { useNavigate } from "react-router-dom";
+import { Clock, Calendar, Tag, ArrowRight } from "lucide-react";
+import { blogPosts } from "../../data/blog-posts";
 
 const categories = [
   { id: "all", label: "All" },
@@ -84,6 +12,7 @@ const categories = [
 ];
 
 export const Blogs = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
@@ -114,6 +43,16 @@ export const Blogs = () => {
       <Header />
       <main className="flex-1 overflow-auto">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Blog
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Thoughts on AI research, machine learning, and technology
+            </p>
+          </div>
+
           {/* Category Tabs */}
           <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
             <nav className="flex gap-0">
@@ -170,6 +109,7 @@ export const Blogs = () => {
             {filteredPosts.map((post) => (
               <article
                 key={post.id}
+                onClick={() => navigate(`/blogs/${post.slug}`)}
                 className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-elevation-3 dark:hover:shadow-elevation-3-dark transition-micro cursor-pointer"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -180,7 +120,7 @@ export const Blogs = () => {
                     <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
                       {post.excerpt}
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 mb-4">
                       {post.tags.map((tag) => (
                         <span
                           key={tag}
@@ -189,6 +129,10 @@ export const Blogs = () => {
                           {tag}
                         </span>
                       ))}
+                    </div>
+                    <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400 text-sm font-medium">
+                      Read article
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                   <div className="flex sm:flex-col items-center sm:items-end gap-4 sm:gap-2 text-sm text-gray-500 dark:text-gray-400">

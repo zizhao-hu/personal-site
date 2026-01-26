@@ -73,7 +73,7 @@ export const Research = () => {
       <Header />
       
       <main className="flex-1 overflow-y-auto pb-24">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
           {/* Hero Section */}
           <div className="mb-12">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">

@@ -1,77 +1,8 @@
 import { Header } from "../../components/custom/header";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Clock, BookOpen, Code, ChevronRight } from "lucide-react";
-
-interface Tutorial {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: "beginner" | "intermediate" | "advanced";
-  estimatedTime: string;
-  topics: string[];
-  slug: string;
-  series?: string;
-}
-
-const tutorials: Tutorial[] = [
-  {
-    id: "1",
-    title: "Getting Started with WebLLM",
-    description: "Learn how to run large language models directly in the browser using WebGPU. No server required!",
-    difficulty: "beginner",
-    estimatedTime: "15 min",
-    topics: ["WebLLM", "WebGPU", "JavaScript"],
-    slug: "getting-started-webllm",
-    series: "WebLLM Fundamentals",
-  },
-  {
-    id: "2",
-    title: "Building a Chat Interface with React",
-    description: "Create a modern chat UI component with message streaming, typing indicators, and markdown support.",
-    difficulty: "intermediate",
-    estimatedTime: "30 min",
-    topics: ["React", "TypeScript", "Tailwind CSS"],
-    slug: "react-chat-interface",
-  },
-  {
-    id: "3",
-    title: "Understanding Transformer Architecture",
-    description: "A visual guide to the transformer architecture that powers modern LLMs like GPT and LLaMA.",
-    difficulty: "intermediate",
-    estimatedTime: "25 min",
-    topics: ["Deep Learning", "NLP", "Attention"],
-    slug: "transformer-architecture",
-    series: "ML Fundamentals",
-  },
-  {
-    id: "4",
-    title: "Implementing Continual Learning with DREAM",
-    description: "Build a neural network that can learn new tasks without forgetting old ones using the DREAM algorithm.",
-    difficulty: "advanced",
-    estimatedTime: "45 min",
-    topics: ["PyTorch", "Continual Learning", "Research"],
-    slug: "dream-continual-learning",
-  },
-  {
-    id: "5",
-    title: "Web Workers for ML Inference",
-    description: "Offload heavy ML computations to Web Workers for a smooth user experience in browser-based AI apps.",
-    difficulty: "intermediate",
-    estimatedTime: "20 min",
-    topics: ["Web Workers", "JavaScript", "Performance"],
-    slug: "web-workers-ml",
-    series: "WebLLM Fundamentals",
-  },
-  {
-    id: "6",
-    title: "Fine-tuning LLMs with LoRA",
-    description: "Learn low-rank adaptation techniques for efficiently fine-tuning large language models on custom data.",
-    difficulty: "advanced",
-    estimatedTime: "60 min",
-    topics: ["LoRA", "Fine-tuning", "PyTorch"],
-    slug: "lora-finetuning",
-  },
-];
+import { tutorials } from "../../data/tutorials";
 
 const difficultyConfig = {
   beginner: {
@@ -99,6 +30,7 @@ const difficultyFilters = [
 ];
 
 export const Tutorials = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<string>("all");
 
   const filteredTutorials = tutorials.filter(
@@ -156,11 +88,11 @@ export const Tutorials = () => {
                   return (
                     <div
                       key={seriesName}
-                      className="group bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer"
+                      className="group bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-all duration-200"
                     >
                       <div className="flex items-center gap-3 mb-2">
                         <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
                           {seriesName}
                         </h3>
                       </div>
@@ -181,7 +113,8 @@ export const Tutorials = () => {
               return (
                 <article
                   key={tutorial.id}
-                  className={`group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 ${config.borderColor} rounded-lg p-5 hover:shadow-elevation-3 dark:hover:shadow-elevation-3-dark transition-micro cursor-pointer`}
+                  onClick={() => navigate(`/tutorials/${tutorial.slug}`)}
+                  className={`group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 ${config.borderColor} rounded-lg p-6 hover:shadow-elevation-3 dark:hover:shadow-elevation-3-dark transition-micro cursor-pointer`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     <div className="flex-1">

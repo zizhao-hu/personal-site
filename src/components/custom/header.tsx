@@ -9,8 +9,8 @@ interface HeaderProps {
 
 const navItems = [
   { path: "/", label: "About" },
+  { path: "/research", label: "Research" },
   { path: "/projects", label: "Projects" },
-  { path: "/webapps", label: "Webapps" },
   { path: "/blogs", label: "Blogs" },
   { path: "/tutorials", label: "Tutorials" },
   { path: "/chat", label: "AI Chat" },

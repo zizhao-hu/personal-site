@@ -2,13 +2,13 @@ import { Linkedin, Github, Mail, BookOpen, Sparkles, Brain } from 'lucide-react'
 
 export const Overview = () => {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 bg-background">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 bg-background">
       {/* Hero Section */}
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
         {/* Profile Picture */}
         <div className="w-36 h-36 rounded-2xl overflow-hidden border-4 border-blue-200 dark:border-blue-700 shadow-xl flex-shrink-0">
           <img 
-            src="https://zizhao-hu.github.io/assets/img/prof_pic.jpg" 
+            src="/images/profile.jpg" 
             alt="Zizhao Hu" 
             className="w-full h-full object-cover"
             onError={(e) => {

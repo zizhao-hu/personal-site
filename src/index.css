@@ -76,7 +76,7 @@
     animation: gradient-wave 3s ease infinite;
     position: relative;
   }
-  
+
   .gradient-wave-bg::before {
     content: '';
     position: absolute;
@@ -85,10 +85,87 @@
     border-radius: 0.75rem;
     z-index: -1;
   }
-  
+
   .dark .gradient-wave-bg {
     background: linear-gradient(-45deg, #1e40af, #7c3aed, #0891b2, #1e40af);
     background-size: 200% 200%;
+  }
+
+  /* Material Design Typography Hierarchy */
+  .text-display-large {
+    @apply text-4xl font-bold tracking-tight;
+  }
+  .text-display-medium {
+    @apply text-3xl font-bold tracking-tight;
+  }
+  .text-display-small {
+    @apply text-2xl font-semibold;
+  }
+  .text-headline-large {
+    @apply text-xl font-semibold;
+  }
+  .text-headline-medium {
+    @apply text-lg font-semibold;
+  }
+  .text-headline-small {
+    @apply text-base font-semibold;
+  }
+  .text-body-large {
+    @apply text-base;
+  }
+  .text-body-medium {
+    @apply text-sm;
+  }
+  .text-body-small {
+    @apply text-xs;
+  }
+  .text-label-large {
+    @apply text-sm font-medium;
+  }
+  .text-label-medium {
+    @apply text-xs font-medium uppercase tracking-wider;
+  }
+
+  /* Material Design Micro-interactions */
+  .transition-micro {
+    @apply transition-all duration-200 ease-out;
+  }
+  .transition-standard {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Material Design Card Elevations */
+  .card-elevated {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-elevation-2 dark:shadow-elevation-2-dark;
+  }
+  .card-elevated:hover {
+    @apply shadow-elevation-3 dark:shadow-elevation-3-dark;
+  }
+  .card-outlined {
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg;
+  }
+  .card-filled {
+    @apply bg-gray-100 dark:bg-gray-800 rounded-lg;
+  }
+
+  /* Material Design Interactive States */
+  .interactive-surface {
+    @apply relative overflow-hidden transition-micro;
+  }
+  .interactive-surface::after {
+    content: '';
+    @apply absolute inset-0 bg-current opacity-0 transition-opacity duration-200;
+  }
+  .interactive-surface:hover::after {
+    @apply opacity-5;
+  }
+  .interactive-surface:active::after {
+    @apply opacity-10;
+  }
+
+  /* Consistent Focus States */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900;
   }
 }
 

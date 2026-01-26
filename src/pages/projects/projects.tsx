@@ -212,7 +212,7 @@ export const Projects = () => {
                 return (
                   <div
                     key={project.title}
-                    className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:shadow-lg transition-all group"
+                    className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:shadow-elevation-3 dark:hover:shadow-elevation-3-dark transition-micro group"
                   >
                     <div className="flex items-start gap-4">
                       <div className={`w-12 h-12 rounded-xl bg-${project.color}-100 dark:bg-${project.color}-900/30 flex items-center justify-center flex-shrink-0`}>

@@ -181,7 +181,7 @@ export const Tutorials = () => {
               return (
                 <article
                   key={tutorial.id}
-                  className={`group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 ${config.borderColor} rounded-lg p-5 hover:shadow-md dark:hover:shadow-gray-900/50 transition-all duration-200 cursor-pointer`}
+                  className={`group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 ${config.borderColor} rounded-lg p-5 hover:shadow-elevation-3 dark:hover:shadow-elevation-3-dark transition-micro cursor-pointer`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     <div className="flex-1">

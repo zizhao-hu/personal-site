@@ -100,7 +100,7 @@ export const Webapps = () => {
               </h2>
               <a
                 href={featuredApp.demoUrl}
-                className="group block bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+                className="group block bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 hover:shadow-elevation-4 dark:hover:shadow-elevation-4-dark transition-micro"
               >
                 <div className="flex flex-col md:flex-row md:items-center gap-6">
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center flex-shrink-0">
@@ -153,9 +153,9 @@ export const Webapps = () => {
                 return (
                   <div
                     key={app.id}
-                    className={`group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-200 ${
+                    className={`group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-micro ${
                       isClickable
-                        ? "hover:shadow-md dark:hover:shadow-gray-900/50 cursor-pointer"
+                        ? "hover:shadow-elevation-3 dark:hover:shadow-elevation-3-dark cursor-pointer"
                         : "opacity-75"
                     }`}
                   >

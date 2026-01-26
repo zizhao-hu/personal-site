@@ -35,13 +35,13 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
             navigate('/');
             if (onHomeClick) onHomeClick();
           }}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity py-3"
+          className="flex items-center gap-1.5 hover:opacity-80 transition-opacity py-2"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">ZH</span>
+          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
+            <span className="text-white font-bold text-xs">ZH</span>
           </div>
           <div className="hidden sm:block">
-            <span className="font-semibold text-gray-800 dark:text-gray-200">Zizhao Hu</span>
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Zizhao Hu</span>
           </div>
         </button>
 
@@ -53,7 +53,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`relative px-4 py-3 text-sm font-medium transition-colors duration-200 ${
+                className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 ${
                   active
                     ? "text-blue-600 dark:text-blue-400"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
@@ -76,16 +76,16 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="md:hidden p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
       </header>
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-background border-b border-gray-200 dark:border-gray-700 px-2 py-2">
+        <div className="md:hidden bg-background border-b border-gray-200 dark:border-gray-700 px-2 py-1">
           {navItems.map((item) => {
             const active = isActive(item.path);
             return (
@@ -95,7 +95,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
                   navigate(item.path);
                   setMobileMenuOpen(false);
                 }}
-                className={`relative w-full text-left px-4 py-3 text-sm font-medium transition-colors duration-200 ${
+                className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 ${
                   active
                     ? "text-blue-600 dark:text-blue-400 border-l-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"

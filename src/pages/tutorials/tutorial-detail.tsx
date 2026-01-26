@@ -51,44 +51,44 @@ export const TutorialDetail = () => {
     <div className="h-full flex flex-col">
       <Header />
       <main className="flex-1 overflow-auto">
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+        <article className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
           {/* Back Button */}
           <button
             onClick={() => navigate("/tutorials")}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3 h-3" />
             Back to Tutorials
           </button>
 
           {/* Tutorial Header */}
-          <header className="mb-8">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <span className={`px-3 py-1 text-sm font-medium rounded-full ${config.color}`}>
+          <header className="mb-6">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className={`px-2 py-0.5 text-xs font-medium rounded ${config.color}`}>
                 {config.label}
               </span>
               {tutorial.series && (
-                <span className="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
+                <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
                   {tutorial.series}
                 </span>
               )}
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">
               {tutorial.title}
             </h1>
 
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
               {tutorial.description}
             </p>
 
-            <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
+            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
                 <span>{tutorial.estimatedTime}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Code className="w-4 h-4" />
+              <div className="flex items-center gap-1">
+                <Code className="w-3 h-3" />
                 <span>{tutorial.topics.join(", ")}</span>
               </div>
             </div>
@@ -96,15 +96,15 @@ export const TutorialDetail = () => {
 
           {/* Prerequisites */}
           {tutorial.prerequisites && tutorial.prerequisites.length > 0 && (
-            <div className="mb-8 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <h2 className="flex items-center gap-2 font-semibold text-amber-800 dark:text-amber-300 mb-2">
-                <BookOpen className="w-4 h-4" />
+            <div className="mb-6 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
+              <h2 className="flex items-center gap-1.5 text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1.5">
+                <BookOpen className="w-3.5 h-3.5" />
                 Prerequisites
               </h2>
-              <ul className="space-y-1">
+              <ul className="space-y-0.5">
                 {tutorial.prerequisites.map((prereq, index) => (
-                  <li key={index} className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-400">
-                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <li key={index} className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+                    <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
                     {prereq}
                   </li>
                 ))}
@@ -113,7 +113,7 @@ export const TutorialDetail = () => {
           )}
 
           {/* Tutorial Content */}
-          <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-600 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950 prose-pre:text-gray-100 prose-strong:text-gray-900 dark:prose-strong:text-white prose-blockquote:border-blue-500 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400 prose-li:text-gray-600 dark:prose-li:text-gray-300 prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-50 dark:prose-th:bg-gray-800 prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:border-gray-200 dark:prose-td:border-gray-700">
+          <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-600 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950 prose-pre:text-gray-100 prose-strong:text-gray-900 dark:prose-strong:text-white prose-blockquote:border-blue-500 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400 prose-li:text-gray-600 dark:prose-li:text-gray-300 prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-50 dark:prose-th:bg-gray-800 prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:border-gray-200 dark:prose-td:border-gray-700">
             <ReactMarkdown
               components={{
                 code({ node, className, children, ...props }) {
@@ -168,18 +168,18 @@ export const TutorialDetail = () => {
           </div>
 
           {/* Footer */}
-          <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => navigate("/tutorials")}
-                className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3 h-3" />
                 Back to all tutorials
               </button>
               {tutorial.series && (
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Part of the <span className="font-medium text-blue-600 dark:text-blue-400">{tutorial.series}</span> series
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Part of <span className="font-medium text-blue-600 dark:text-blue-400">{tutorial.series}</span>
                 </span>
               )}
             </div>

@@ -13,7 +13,6 @@ const navItems = [
   { path: "/projects", label: "Projects" },
   { path: "/blogs", label: "Blogs" },
   { path: "/tutorials", label: "Tutorials" },
-  { path: "/chat", label: "AI Chat" },
 ];
 
 export const Header = ({ onHomeClick }: HeaderProps) => {

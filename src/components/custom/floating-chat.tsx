@@ -11,7 +11,7 @@ import { testWebLLMImport } from "@/lib/webllm-import-test";
 import { message } from "@/interfaces/interfaces";
 import { ChatMessage } from "@/lib/webllm-service";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MessageSquare, ChevronDown } from "lucide-react";
+import { X, MessageSquare, ChevronDown, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 export const FloatingChat = () => {
@@ -22,7 +22,7 @@ export const FloatingChat = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [useMockService, setUseMockService] = useState(false);
   const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
-  const [selectedModel, setSelectedModel] = useState("SmolLM2-360M-Instruct-q4f16_1-MLC");
+  const [selectedModel, setSelectedModel] = useState("Qwen2.5-0.5B-Instruct-q4f16_1-MLC");
   const [showOverlay, setShowOverlay] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -271,22 +271,22 @@ export const FloatingChat = () => {
       {/* Floating Input Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-2 md:px-4 md:pb-4 bg-gradient-to-t from-white dark:from-gray-900 via-white/80 dark:via-gray-900/80 to-transparent pt-6">
         <div className="max-w-2xl mx-auto">
-          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
             {/* Loading Overlay */}
             {isDisabled && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="absolute inset-0 bg-blue-50/90 dark:bg-blue-900/30 backdrop-blur-sm rounded-2xl z-20 flex items-center justify-center"
+                className="absolute inset-0 bg-blue-50/90 dark:bg-blue-900/30 backdrop-blur-sm rounded-xl z-20 flex items-center justify-center"
               >
                 <div className="flex flex-col items-center gap-2">
-                  <span className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                    Chatbot loading...
+                  <span className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                    Loading model...
                   </span>
-                  <div className="flex items-center gap-3">
-                    <div className="w-32 bg-blue-200 dark:bg-blue-800 rounded-full h-1.5">
-                      <motion.div 
-                        className="bg-blue-600 h-1.5 rounded-full"
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 bg-blue-200 dark:bg-blue-800 rounded-full h-1">
+                      <motion.div
+                        className="bg-blue-600 h-1 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPercentage || 0}%` }}
                       />
@@ -299,23 +299,32 @@ export const FloatingChat = () => {
               </motion.div>
             )}
 
-            <div className="flex items-end gap-2 p-2">
-              {/* Model Selector - Compact */}
-              <div className="flex-shrink-0">
-                <ModelSelector 
-                  selectedModel={selectedModel}
-                  onModelSelect={handleModelSelect}
-                  isLoading={isInitializing}
-                  progressPercentage={progressPercentage}
-                />
+            {/* Top Bar - Model Selector & Disclaimer */}
+            <div className="flex items-center justify-between px-2 py-1.5 border-b border-gray-100 dark:border-gray-700">
+              <ModelSelector
+                selectedModel={selectedModel}
+                onModelSelect={handleModelSelect}
+                isLoading={isInitializing}
+                progressPercentage={progressPercentage}
+              />
+              <div className="relative group">
+                <button className="p-1 text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                </button>
+                <div className="absolute right-0 bottom-full mb-1 w-48 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  Small models may produce inaccurate or false information. Please verify important facts.
+                  <div className="absolute right-2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                </div>
               </div>
+            </div>
 
-              {/* Input */}
+            {/* Input Row */}
+            <div className="flex items-end gap-1.5 p-1.5">
               <div className="flex-1 relative">
                 <Textarea
                   ref={textareaRef}
                   placeholder="Ask me anything..."
-                  className="min-h-[40px] max-h-[120px] py-2.5 px-3 resize-none rounded-xl text-sm border-0 bg-gray-100 dark:bg-gray-700 focus:ring-1 focus:ring-blue-500"
+                  className="min-h-[32px] max-h-[100px] py-2 px-3 resize-none rounded-lg text-xs border-0 bg-gray-100 dark:bg-gray-700 focus:ring-1 focus:ring-blue-500"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={(event) => {
@@ -329,13 +338,13 @@ export const FloatingChat = () => {
                 />
               </div>
 
-              {/* Send Button */}
-              <Button 
-                className="rounded-xl p-2.5 h-10 w-10 flex-shrink-0"
+              {/* Send Button - Smaller */}
+              <Button
+                className="rounded-lg p-1.5 h-8 w-8 flex-shrink-0"
                 onClick={handleSubmit}
                 disabled={!question.trim() || isDisabled || isLoading || isStreaming}
               >
-                <ArrowUpIcon size={16} />
+                <ArrowUpIcon size={12} />
               </Button>
             </div>
           </div>

@@ -1,11 +1,12 @@
 import { Header } from "@/components/custom/header";
-import { Rocket, Bot, Brain, Globe, Cpu, Shield, Sparkles, ExternalLink, Github } from "lucide-react";
+import { Rocket, Bot, Brain, Globe, Cpu, Shield, Sparkles, ExternalLink, Github, Eye, Zap, Network, Database } from "lucide-react";
 
 interface Project {
   title: string;
   description: string;
+  details: string[];
   tags: string[];
-  status: "active" | "research" | "concept";
+  status: "active" | "research" | "prototype" | "concept";
   icon: React.ElementType;
   color: string;
   link?: string;
@@ -14,29 +15,118 @@ interface Project {
 
 const projects: Project[] = [
   {
-    title: "DREAM-C2L",
-    description: "Reproducible development environments for curriculum learning research. Building robust dataloaders and training pipelines for progressive AI model training.",
-    tags: ["Python", "PyTorch", "Curriculum Learning", "Open Source"],
+    title: "AgentForge: Multi-Agent Orchestration Framework",
+    description: "A framework for building autonomous multi-agent systems where specialized AI agents collaborate on complex tasks. One agent plans, another executes, and a third verifies—creating self-correcting workflows.",
+    details: [
+      "Agent specialization with role-based task delegation",
+      "Inter-agent communication protocol for knowledge sharing",
+      "Consensus mechanisms for conflict resolution",
+      "Built-in safety guardrails and human-in-the-loop checkpoints"
+    ],
+    tags: ["Multi-Agent", "LLM Orchestration", "Python", "Autonomous Systems"],
     status: "active",
-    icon: Brain,
+    icon: Network,
     color: "blue",
     github: "https://github.com/zizhao-hu",
   },
   {
     title: "Project Orion",
-    description: "Industry research project at Handshake AI focusing on multi-agent orchestration for enterprise workflows and autonomous task completion.",
-    tags: ["Multi-Agent", "LLM", "Enterprise AI", "Handshake AI"],
+    description: "Industry research project at Handshake AI developing enterprise-grade autonomous agents. Focus on agents that can browse, plan, and execute complex business workflows without constant supervision.",
+    details: [
+      "Autonomous web navigation and data extraction",
+      "Calendar coordination and scheduling automation",
+      "Multi-step task completion with error recovery",
+      "Enterprise security and compliance integration"
+    ],
+    tags: ["Agentic AI", "Enterprise", "Handshake AI", "Production"],
     status: "active",
     icon: Bot,
     color: "purple",
   },
   {
-    title: "Project Canary",
-    description: "Safety-focused research on synthetic data generation and model collapse prevention. Ensuring AI systems remain stable through iterative training.",
-    tags: ["Synthetic Data", "Model Safety", "Research"],
+    title: "DREAM-C2L: Curriculum Learning Framework",
+    description: "Open-source framework for curriculum learning research. Intelligent training curricula that optimize how models learn by dynamically ordering and weighting training samples.",
+    details: [
+      "Difficulty-aware sample ordering algorithms",
+      "Self-paced learning with automatic curriculum generation",
+      "Reproducible experiment pipelines for HPC clusters",
+      "Integration with PyTorch Lightning and Weights & Biases"
+    ],
+    tags: ["Curriculum Learning", "PyTorch", "Open Source", "Research"],
+    status: "active",
+    icon: Brain,
+    color: "green",
+    github: "https://github.com/zizhao-hu",
+  },
+  {
+    title: "ReasonChain: Test-Time Compute Scaling",
+    description: "Research prototype exploring how to make LLMs 'think longer' before responding. Implementing chain-of-thought verification where models check their own reasoning before committing to an answer.",
+    details: [
+      "Multi-step reasoning with self-verification loops",
+      "Confidence calibration and uncertainty quantification",
+      "Dynamic compute allocation based on problem complexity",
+      "Hallucination detection through reasoning trace analysis"
+    ],
+    tags: ["Test-Time Compute", "Reasoning", "LLM Safety", "Research"],
+    status: "research",
+    icon: Zap,
+    color: "yellow",
+  },
+  {
+    title: "VisionGround: World Models for Physical AI",
+    description: "Building AI that understands cause-and-effect in the physical world. Training models on video data to predict outcomes—if a glass falls, it breaks. Critical foundation for robotics applications.",
+    details: [
+      "Video prediction models for physical dynamics",
+      "Cause-effect reasoning from visual observations",
+      "Sim-to-real transfer for robotic manipulation",
+      "Multimodal fusion of vision, language, and proprioception"
+    ],
+    tags: ["World Models", "Robotics", "Video Understanding", "Embodied AI"],
+    status: "research",
+    icon: Globe,
+    color: "cyan",
+  },
+  {
+    title: "Project Canary: Synthetic Data Safety",
+    description: "Research on preventing model collapse when training on AI-generated data. Developing methods to detect and filter low-quality synthetic samples that could degrade model performance.",
+    details: [
+      "Model collapse detection and early warning systems",
+      "Synthetic data quality scoring and filtering",
+      "Diversity preservation in iterative training",
+      "Safe data mixing strategies for foundation models"
+    ],
+    tags: ["Synthetic Data", "Model Safety", "Data Quality", "Research"],
     status: "research",
     icon: Shield,
-    color: "green",
+    color: "red",
+  },
+  {
+    title: "EdgeLLM: Sovereign AI on Device",
+    description: "Exploring efficient small language models that run entirely on-device. Privacy-preserving AI that never sends data to the cloud—your AI assistant that respects your data sovereignty.",
+    details: [
+      "Model quantization and pruning for edge deployment",
+      "On-device fine-tuning with federated learning",
+      "Specialized domain adapters for legal, medical, code",
+      "Offline-first architecture with optional cloud sync"
+    ],
+    tags: ["Edge AI", "Privacy", "Small Models", "Mobile"],
+    status: "prototype",
+    icon: Cpu,
+    color: "indigo",
+  },
+  {
+    title: "SynthVision: Multimodal Data Generation",
+    description: "Pipeline for generating high-quality synthetic vision-language training data. Creating diverse, balanced datasets without the privacy concerns of web-scraped data.",
+    details: [
+      "Controllable image-text pair generation",
+      "Automatic quality assessment and filtering",
+      "Bias detection and mitigation in generated data",
+      "Scalable generation with GPU-efficient diffusion models"
+    ],
+    tags: ["Synthetic Data", "Vision-Language", "Data Generation", "Diffusion"],
+    status: "prototype",
+    icon: Eye,
+    color: "pink",
   },
 ];
 
@@ -71,12 +161,20 @@ const StatusBadge = ({ status }: { status: Project["status"] }) => {
   const styles = {
     active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     research: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    prototype: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
     concept: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+  };
+  
+  const labels = {
+    active: "Active",
+    research: "Research",
+    prototype: "Prototype",
+    concept: "Concept",
   };
   
   return (
     <span className={`px-2 py-1 text-xs font-medium rounded ${styles[status]}`}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {labels[status]}
     </span>
   );
 };
@@ -94,8 +192,9 @@ export const Projects = () => {
               Projects
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-              Building the next generation of AI systems—from multi-agent orchestration to 
-              safe synthetic data pipelines. Here's what I'm working on and where AI is headed.
+              Building the infrastructure for autonomous, self-improving AI—from multi-agent 
+              orchestration to safe synthetic data pipelines. Here's what I'm working on 
+              and where the field is heading.
             </p>
           </div>
 
@@ -103,9 +202,9 @@ export const Projects = () => {
           <section className="mb-16">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <Rocket className="w-5 h-5 text-orange-500" />
-              Current Projects
+              Projects
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {projects.map((project) => {
                 const Icon = project.icon;
                 return (
@@ -118,7 +217,7 @@ export const Projects = () => {
                         <Icon className={`w-6 h-6 text-${project.color}-600 dark:text-${project.color}-400`} />
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
                           <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
                             {project.title}
                           </h3>
@@ -127,6 +226,17 @@ export const Projects = () => {
                         <p className="text-gray-600 dark:text-gray-400 mb-3">
                           {project.description}
                         </p>
+                        
+                        {/* Details */}
+                        <ul className="mb-4 space-y-1">
+                          {project.details.map((detail, idx) => (
+                            <li key={idx} className="text-sm text-gray-500 dark:text-gray-500 flex items-start gap-2">
+                              <span className="text-blue-500 mt-1">•</span>
+                              {detail}
+                            </li>
+                          ))}
+                        </ul>
+                        
                         <div className="flex flex-wrap gap-2 mb-3">
                           {project.tags.map((tag) => (
                             <span
@@ -178,7 +288,7 @@ export const Projects = () => {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               The era of "just add more data and parameters" is hitting diminishing returns. 
               The industry is pivoting from building <strong>oracles</strong> (models that talk) 
-              to building <strong>partners</strong> (systems that act).
+              to building <strong>partners</strong> (systems that act). My research directly addresses these trends.
             </p>
             
             <div className="grid md:grid-cols-2 gap-4">

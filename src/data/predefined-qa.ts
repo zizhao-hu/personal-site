@@ -10,7 +10,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'elevator-pitch',
     question: "Give me your 30-second pitch — what makes you unique?",
-    answer: "I'm a PhD researcher at USC building the infrastructure for autonomous AI. My work sits at the intersection of three critical areas: multi-agent systems (how AI agents collaborate), synthetic data generation (how we train AI without compromising privacy), and model safety (preventing AI systems from degrading over time). What sets me apart is my dual focus on academic rigor and industry impact—I'm currently a Fellow at Handshake AI working on real-world deployment while publishing at top venues like ACM ICMI. I bridge the gap between 'this works in a paper' and 'this works in production.'",
+    answer: "I'm a PhD researcher at USC building **self-improving AI systems**. My core focus is multi-agent systems—autonomous agents that collaborate, generate their own training data, and evolve without constant human supervision. I also work on vision-language architectures and curriculum learning. What sets me apart is my dual focus on academic rigor and industry impact—I'm a Fellow at Handshake AI working on real-world deployment while publishing at top venues and reviewing for ICLR, ICML, and NeurIPS. I bridge the gap between 'this works in a paper' and 'this works in production.'",
     category: 'background',
     icon: 'Rocket'
   },
@@ -31,14 +31,14 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'publications',
     question: "What's your most impactful research contribution?",
-    answer: "My paper on 'Multimodal Synthetic Data Finetuning and Model Collapse' at ACM ICMI 2025 addresses one of the most critical problems in AI: when models are trained on synthetic data from other models, they can degrade over time—what we call 'model collapse.' I developed methods to detect and prevent this, which is essential as the industry increasingly relies on synthetic data for training. This work has implications for any company using AI-generated data, which is basically everyone. You can find all my publications on Google Scholar: https://scholar.google.com/citations?user=A8J42tQAAAAJ",
+    answer: "My recent work spans three areas: (1) **'Multimodal Synthetic Data Finetuning and Model Collapse'** at ACM ICMI 2025—addressing how models degrade when trained on AI-generated data. (2) **'Static Key Attention in Vision'**—novel attention mechanisms for vision models. (3) **'Lateralization MLP'**—brain-inspired architectures for diffusion models. My work on model collapse is particularly impactful as the industry increasingly relies on synthetic data for training. I also serve as a reviewer for NeurIPS, ICLR, and ICML. Find all publications on Google Scholar: https://scholar.google.com/citations?user=A8J42tQAAAAJ",
     category: 'research',
     icon: 'BookOpen'
   },
   {
     id: 'current-project',
     question: "What are you building right now?",
-    answer: "I'm working on three active projects: (1) **DREAM-C2L** — An open-source framework for curriculum learning that's already being used by other researchers for reproducible ML experiments. (2) **Project Orion at Handshake AI** — Multi-agent orchestration for enterprise workflows, where specialized AI agents collaborate to complete complex tasks autonomously. (3) **Project Canary** — Safety research on synthetic data generation, ensuring AI training pipelines don't inadvertently degrade model quality. All of these tie back to my core thesis: autonomous AI needs robust coordination and safe data pipelines.",
+    answer: "I'm working on several interconnected projects: (1) **AgentForge** — A multi-agent orchestration framework where specialized agents collaborate on complex tasks with self-correction. (2) **Project Orion at Handshake AI** — Enterprise autonomous agents that browse, plan, and execute business workflows. (3) **DREAM-C2L** — Open-source curriculum learning framework for intelligent training curricula. (4) **ReasonChain** — Test-time compute scaling research, making LLMs 'think longer' and verify their own reasoning. (5) **Project Canary** — Synthetic data safety research preventing model collapse. All tied to my core thesis: building AI systems that improve themselves while remaining safe and reliable.",
     category: 'research',
     icon: 'Code'
   },

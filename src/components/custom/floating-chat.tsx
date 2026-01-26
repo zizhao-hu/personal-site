@@ -23,7 +23,6 @@ export const FloatingChat = () => {
   const [useMockService, setUseMockService] = useState(false);
   const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
   const [selectedModel, setSelectedModel] = useState("SmolLM2-360M-Instruct-q4f16_1-MLC");
-  const [isExpanded, setIsExpanded] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -320,7 +319,6 @@ export const FloatingChat = () => {
                       handleSubmit();
                     }
                   }}
-                  onFocus={() => setIsExpanded(true)}
                   rows={1}
                   disabled={isDisabled}
                 />

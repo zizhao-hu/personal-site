@@ -1,4 +1,4 @@
-import { Linkedin, Github, Mail, BookOpen, Sparkles } from 'lucide-react';
+import { Linkedin, Github, Mail, BookOpen, Sparkles, Brain } from 'lucide-react';
 
 export const Overview = () => {
   return (
@@ -32,14 +32,14 @@ export const Overview = () => {
             Zizhao Hu
           </h1>
           <p className="text-lg text-blue-600 dark:text-blue-400 font-medium mb-3">
-            AI Researcher · PhD Student · K-pop Dancer
+            AI Researcher · PhD Student at USC
           </p>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4 max-w-2xl">
-            Building the next generation of AI systems at USC. My research bridges 
+            Building self-improving AI systems at USC. My research focuses on 
             <span className="text-purple-600 dark:text-purple-400 font-medium"> multi-agent collaboration</span>, 
-            <span className="text-green-600 dark:text-green-400 font-medium"> synthetic data safety</span>, and 
-            <span className="text-orange-600 dark:text-orange-400 font-medium"> scalable ML infrastructure</span>.
-            Fellow at Handshake AI, with a mission to make AI systems that are autonomous, reliable, and safe.
+            <span className="text-green-600 dark:text-green-400 font-medium"> vision-language architectures</span>, and 
+            <span className="text-orange-600 dark:text-orange-400 font-medium"> curriculum learning</span>.
+            Fellow at Handshake AI, developing autonomous agents that learn, adapt, and improve themselves.
           </p>
           
           {/* Quick Stats */}
@@ -61,11 +61,11 @@ export const Overview = () => {
       <div className="grid md:grid-cols-3 gap-4 mb-8">
         <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800">
           <h3 className="font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-600" />
+            <Brain className="w-4 h-4 text-blue-600" />
             Research Focus
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Multi-agent AI, synthetic data generation, LLM safety & model collapse prevention
+            Multi-agent systems, self-improving AI, vision-language models, curriculum learning
           </p>
         </div>
         <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-100 dark:border-purple-800">
@@ -74,12 +74,13 @@ export const Overview = () => {
             Featured Work
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            "Multimodal Synthetic Data Finetuning" — ACM ICMI 2025
+            Published at ICMI, NeurIPS workshops. Reviewer for ICLR, ICML, NeurIPS.
           </p>
         </div>
         <div className="p-4 rounded-xl bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 border border-orange-100 dark:border-orange-800">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-            🕺 Beyond Research
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-orange-600" />
+            Beyond
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Spade A K-pop dancer at USC, fitness enthusiast, Asian food connoisseur

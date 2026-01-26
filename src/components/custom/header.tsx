@@ -1,5 +1,5 @@
 import { ThemeToggle } from "./theme-toggle";
-import { GraduationCap, FlaskConical, Rocket, MessageSquare, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 
@@ -8,10 +8,12 @@ interface HeaderProps {
 }
 
 const navItems = [
-  { path: "/", label: "About", icon: GraduationCap },
-  { path: "/research", label: "Research", icon: FlaskConical },
-  { path: "/projects", label: "Projects", icon: Rocket },
-  { path: "/chat", label: "AI Chat", icon: MessageSquare },
+  { path: "/", label: "About" },
+  { path: "/projects", label: "Projects" },
+  { path: "/webapps", label: "Webapps" },
+  { path: "/blogs", label: "Blogs" },
+  { path: "/tutorials", label: "Tutorials" },
+  { path: "/chat", label: "AI Chat" },
 ];
 
 export const Header = ({ onHomeClick }: HeaderProps) => {
@@ -26,41 +28,42 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
 
   return (
     <>
-      <header className="flex items-center justify-between px-4 sm:px-6 py-3 bg-background text-black dark:text-white w-full border-b border-gray-200 dark:border-gray-700">
+      <header className="flex items-center justify-between px-4 sm:px-6 py-0 bg-background text-black dark:text-white w-full border-b border-gray-200 dark:border-gray-700">
         {/* Logo */}
-        <button 
+        <button
           onClick={() => {
             navigate('/');
             if (onHomeClick) onHomeClick();
           }}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity py-3"
         >
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
             <span className="text-white font-bold text-sm">ZH</span>
           </div>
           <div className="hidden sm:block">
             <span className="font-semibold text-gray-800 dark:text-gray-200">Zizhao Hu</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">PhD @ USC</span>
           </div>
         </button>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Desktop Navigation - Google News Style Flat Tabs */}
+        <nav className="hidden md:flex items-center h-full">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const active = isActive(item.path);
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`relative px-4 py-3 text-sm font-medium transition-colors duration-200 ${
                   active
-                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                 }`}
               >
-                <Icon className="w-4 h-4" />
                 {item.label}
+                {/* Active underline indicator */}
+                {active && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
+                )}
               </button>
             );
           })}
@@ -69,7 +72,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
         {/* Right Side */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          
+
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -82,9 +85,8 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-background border-b border-gray-200 dark:border-gray-700 px-4 py-2">
+        <div className="md:hidden bg-background border-b border-gray-200 dark:border-gray-700 px-2 py-2">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const active = isActive(item.path);
             return (
               <button
@@ -93,13 +95,12 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
                   navigate(item.path);
                   setMobileMenuOpen(false);
                 }}
-                className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                className={`relative w-full text-left px-4 py-3 text-sm font-medium transition-colors duration-200 ${
                   active
-                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    ? "text-blue-600 dark:text-blue-400 border-l-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                 }`}
               >
-                <Icon className="w-4 h-4" />
                 {item.label}
               </button>
             );

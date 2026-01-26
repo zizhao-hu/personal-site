@@ -27,7 +27,7 @@ const projects: Project[] = [
     status: "active",
     icon: Network,
     color: "blue",
-    github: "https://github.com/zizhao-hu",
+    github: "https://github.com/zizhao-hu/agentforge",
   },
   {
     title: "Project Orion",
@@ -56,7 +56,7 @@ const projects: Project[] = [
     status: "active",
     icon: Brain,
     color: "green",
-    github: "https://github.com/zizhao-hu",
+    github: "https://github.com/zizhao-hu/dream-c2l",
   },
   {
     title: "ReasonChain: Test-Time Compute Scaling",

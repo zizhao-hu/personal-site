@@ -19,46 +19,53 @@ interface ModelSelectorProps {
 
 const AVAILABLE_MODELS: ModelInfo[] = [
   {
-    id: "gemma-2b-it",
-    name: "Gemma 2B Instruct",
-    size: "2B parameters",
+    id: "SmolLM2-360M-Instruct-q4f16_1-MLC",
+    name: "SmolLM2 360M",
+    size: "360M parameters (~200MB)",
+    estimatedLoadTime: "10-20 seconds",
+    description: "Fastest model, great for mobile & quick responses"
+  },
+  {
+    id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+    name: "Qwen 2.5 0.5B",
+    size: "0.5B parameters (~350MB)",
+    estimatedLoadTime: "15-30 seconds",
+    description: "Fast and capable, excellent default choice"
+  },
+  {
+    id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
+    name: "Qwen 2.5 1.5B",
+    size: "1.5B parameters (~900MB)",
+    estimatedLoadTime: "30-60 seconds",
+    description: "Better quality, still fast"
+  },
+  {
+    id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+    name: "Llama 3.2 1B",
+    size: "1B parameters (~700MB)",
+    estimatedLoadTime: "25-45 seconds",
+    description: "Meta's latest small model, great quality"
+  },
+  {
+    id: "Llama-3.2-3B-Instruct-q4f16_1-MLC",
+    name: "Llama 3.2 3B",
+    size: "3B parameters (~2GB)",
+    estimatedLoadTime: "60-120 seconds",
+    description: "Excellent quality, recommended for detailed responses"
+  },
+  {
+    id: "Phi-3.5-mini-instruct-q4f16_1-MLC",
+    name: "Phi 3.5 Mini",
+    size: "3.8B parameters (~2GB)",
+    estimatedLoadTime: "60-120 seconds",
+    description: "Microsoft's best small model, superior reasoning"
+  },
+  {
+    id: "gemma-2-2b-it-q4f16_1-MLC",
+    name: "Gemma 2 2B",
+    size: "2B parameters (~1.5GB)",
     estimatedLoadTime: "45-90 seconds",
     description: "Google's efficient instruction-tuned model"
-  },
-  {
-    id: "qwen-0.5b",
-    name: "Qwen 0.5B",
-    size: "0.5B parameters",
-    estimatedLoadTime: "30-60 seconds",
-    description: "Fastest model, good for quick responses"
-  },
-  {
-    id: "gemma-7b-it",
-    name: "Gemma 7B Instruct",
-    size: "7B parameters",
-    estimatedLoadTime: "2-3 minutes",
-    description: "Google's larger instruction-tuned model"
-  },
-  {
-    id: "llama-2-7b-chat",
-    name: "Llama 2 7B Chat",
-    size: "7B parameters", 
-    estimatedLoadTime: "2-4 minutes",
-    description: "Balanced performance and quality"
-  },
-  {
-    id: "llama-2-13b-chat",
-    name: "Llama 2 13B Chat",
-    size: "13B parameters",
-    estimatedLoadTime: "4-8 minutes", 
-    description: "Higher quality, slower loading"
-  },
-  {
-    id: "mistral-7b-instruct",
-    name: "Mistral 7B Instruct",
-    size: "7B parameters",
-    estimatedLoadTime: "2-4 minutes",
-    description: "Good instruction following"
   }
 ];
 

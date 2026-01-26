@@ -20,7 +20,7 @@ export const Home = () => {
   const [initializationError, setInitializationError] = useState("");
 
   const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
-  const [selectedModel, setSelectedModel] = useState<string>("gemma-2b-it");
+  const [selectedModel, setSelectedModel] = useState<string>("SmolLM2-360M-Instruct-q4f16_1-MLC");
 
   // Initialize services on component mount
   useEffect(() => {

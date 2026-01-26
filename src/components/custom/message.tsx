@@ -5,9 +5,12 @@ import { Markdown } from './markdown';
 import { message } from "../../interfaces/interfaces"
 import { MessageActions } from '@/components/custom/actions';
 
-export const PreviewMessage = ({ message }: { message: message; }) => {
-  console.log("PreviewMessage rendering:", message);
+interface PreviewMessageProps {
+  message: message;
+  isStreaming?: boolean;
+}
 
+export const PreviewMessage = ({ message, isStreaming = false }: PreviewMessageProps) => {
   return (
     <motion.div
       className="w-full mx-auto max-w-3xl px-4 group/message"
@@ -30,10 +33,13 @@ export const PreviewMessage = ({ message }: { message: message; }) => {
           {message.content && (
             <div className="flex flex-col gap-4 text-left">
               <Markdown>{message.content}</Markdown>
+              {isStreaming && (
+                <span className="inline-block w-2 h-4 bg-current animate-pulse ml-1" />
+              )}
             </div>
           )}
 
-          {message.role === 'assistant' && (
+          {message.role === 'assistant' && !isStreaming && (
             <MessageActions message={message} />
           )}
         </div>

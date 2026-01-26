@@ -16,12 +16,13 @@ export function Chat() {
   const [messages, setMessages] = useState<message[]>([]);
   const [question, setQuestion] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
   const [initializationError, setInitializationError] = useState<string>("");
   const [useMockService, setUseMockService] = useState<boolean>(false);
 
   const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
-  const [selectedModel, setSelectedModel] = useState<string>("gemma-2b-it");
+  const [selectedModel, setSelectedModel] = useState<string>("SmolLM2-360M-Instruct-q4f16_1-MLC");
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -213,7 +214,6 @@ export function Chat() {
     if (!currentService.isReady()) {
       console.log("LLM service not ready in Chat component");
       console.log("Service ready:", currentService.isReady(), "Loading:", isLoading);
-      // Add a message to the chat indicating the service is not ready
       const errorMessage: message = {
         id: uuidv4(),
         role: "assistant",
@@ -223,8 +223,8 @@ export function Chat() {
       return;
     }
     
-    if (isLoading) {
-      console.log("Already loading, ignoring click");
+    if (isLoading || isStreaming) {
+      console.log("Already loading/streaming, ignoring click");
       return;
     }
 
@@ -248,13 +248,13 @@ export function Chat() {
     try {
       console.log("Submitting message:", messageText);
       
-             // Prepare chat messages for the service (filter out system messages)
-       const chatMessages: ChatMessage[] = messages
-         .filter(msg => msg.role !== "system")
-         .map(msg => ({
-           role: msg.role as "user" | "assistant",
-           content: msg.content
-         }));
+      // Prepare chat messages for the service (filter out system messages)
+      const chatMessages: ChatMessage[] = messages
+        .filter(msg => msg.role !== "system")
+        .map(msg => ({
+          role: msg.role as "user" | "assistant",
+          content: msg.content
+        }));
       
       // Add the new user message
       chatMessages.push({
@@ -264,23 +264,49 @@ export function Chat() {
       
       console.log("Generating response for messages:", chatMessages.length);
       
-      // Generate response
-      const response = await currentService.generateResponse(chatMessages);
-      console.log("Received response:", response);
-      
-      // Add assistant response to chat
+      // Create assistant message placeholder for streaming
+      const assistantMessageId = uuidv4();
       const assistantMessage: message = {
-        id: uuidv4(),
+        id: assistantMessageId,
         role: "assistant",
-        content: response
+        content: ""
       };
       
       setMessages(prev => [...prev, assistantMessage]);
+      setIsLoading(false);
+      setIsStreaming(true);
+
+      // Use streaming if WebLLM service, otherwise use regular response
+      if (!useMockService && webLLMService.isReady()) {
+        // Stream the response
+        let fullContent = "";
+        for await (const chunk of webLLMService.generateStreamingResponse(chatMessages)) {
+          fullContent += chunk;
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === assistantMessageId 
+                ? { ...msg, content: fullContent }
+                : msg
+            )
+          );
+        }
+        console.log("Streaming complete, full response:", fullContent.substring(0, 100) + "...");
+      } else {
+        // Fall back to non-streaming for mock service
+        const response = await currentService.generateResponse(chatMessages);
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === assistantMessageId 
+              ? { ...msg, content: response }
+              : msg
+          )
+        );
+        console.log("Received response:", response.substring(0, 100) + "...");
+      }
       
     } catch (error) {
       console.error("Error generating response:", error);
       
-      // Add error message to chat
       const errorMessage: message = {
         id: uuidv4(),
         role: "assistant",
@@ -290,6 +316,7 @@ export function Chat() {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
     }
   }
 
@@ -335,11 +362,15 @@ export function Chat() {
           
           {/* Chat Messages */}
           {messages.map((message, index) => (
-            <PreviewMessage key={index} message={message} />
+            <PreviewMessage 
+              key={message.id || index} 
+              message={message} 
+              isStreaming={isStreaming && index === messages.length - 1 && message.role === 'assistant'}
+            />
           ))}
           
-          {/* Loading Message */}
-          {isLoading && (
+          {/* Loading Message (before streaming starts) */}
+          {isLoading && !isStreaming && (
             <ThinkingMessage />
           )}
         </div>
@@ -350,7 +381,7 @@ export function Chat() {
             question={question}
             setQuestion={setQuestion}
             onSubmit={handleSubmit}
-            isLoading={isLoading}
+            isLoading={isLoading || isStreaming}
             disabled={!(useMockService ? mockLLMService.isReady() : webLLMService.isReady())}
             selectedModel={selectedModel}
             onModelSelect={handleModelSelect}

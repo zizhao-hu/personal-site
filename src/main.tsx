@@ -2,6 +2,14 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { registerServiceWorker } from './lib/service-worker-registration'
+
+// Register Service Worker for model caching
+registerServiceWorker().then((registration) => {
+  if (registration) {
+    console.log('[App] Service Worker registered for model caching');
+  }
+});
 
 // Add global error handler for WebLLM issues in production
 if (import.meta.env.PROD) {

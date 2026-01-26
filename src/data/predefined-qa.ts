@@ -2,66 +2,73 @@ export interface PredefinedQA {
   id: string;
   question: string;
   answer: string;
-  category: 'research' | 'background' | 'collaboration' | 'career';
-  icon: string; // Icon name for the conversation starter
+  category: 'research' | 'background' | 'collaboration' | 'career' | 'vision';
+  icon: string;
 }
 
 export const predefinedQuestions: PredefinedQA[] = [
   {
+    id: 'elevator-pitch',
+    question: "Give me your 30-second pitch — what makes you unique?",
+    answer: "I'm a PhD researcher at USC building the infrastructure for autonomous AI. My work sits at the intersection of three critical areas: multi-agent systems (how AI agents collaborate), synthetic data generation (how we train AI without compromising privacy), and model safety (preventing AI systems from degrading over time). What sets me apart is my dual focus on academic rigor and industry impact—I'm currently a Fellow at Handshake AI working on real-world deployment while publishing at top venues like ACM ICMI. I bridge the gap between 'this works in a paper' and 'this works in production.'",
+    category: 'background',
+    icon: 'Rocket'
+  },
+  {
+    id: 'future-of-ai',
+    question: "Where do you see AI heading in the next 2-3 years?",
+    answer: "The era of 'just add more data and compute' is hitting diminishing returns. The next wave is about **agentic AI**—systems that don't just respond but actually act. Instead of chatbots, we're building partners. Three key shifts: (1) Multi-agent orchestration where specialized models collaborate on complex tasks, (2) Test-time compute scaling where models 'think longer' before responding, and (3) Small, sovereign models that run locally on devices for privacy. My research directly addresses these trends—I'm building the coordination frameworks and data pipelines these systems will need.",
+    category: 'vision',
+    icon: 'Sparkles'
+  },
+  {
+    id: 'investment-opportunity',
+    question: "Why should investors be interested in your work?",
+    answer: "Three reasons: (1) **Timing** — We're at an inflection point where AI is shifting from demos to deployment, and the infrastructure for autonomous agents is the critical bottleneck. (2) **Dual validation** — My work is published at top academic venues AND being deployed at Handshake AI, proving both scientific rigor and commercial viability. (3) **Defensible expertise** — Multi-agent coordination and synthetic data safety are specialized skills with high barriers to entry. The market for enterprise AI agents is projected to be $100B+ by 2028, and I'm building the foundational tech. I'm open to discussing advisory roles, research partnerships, or venture opportunities.",
+    category: 'collaboration',
+    icon: 'TrendingUp'
+  },
+  {
     id: 'publications',
-    question: "Where can I find your publications and research profile?",
-    answer: "For my complete and up-to-date publication list, I'd recommend checking my Google Scholar profile. You can find all my research papers, citations, and academic contributions there. Here's the link: https://scholar.google.com/citations?user=A8J42tQAAAAJ. My research spans synthetic data generation, multi-agent systems, and multi-modal fusion, with work published in top-tier AI conferences and journals. I'm particularly proud of my contributions to self-improving AI agents.",
+    question: "What's your most impactful research contribution?",
+    answer: "My paper on 'Multimodal Synthetic Data Finetuning and Model Collapse' at ACM ICMI 2025 addresses one of the most critical problems in AI: when models are trained on synthetic data from other models, they can degrade over time—what we call 'model collapse.' I developed methods to detect and prevent this, which is essential as the industry increasingly relies on synthetic data for training. This work has implications for any company using AI-generated data, which is basically everyone. You can find all my publications on Google Scholar: https://scholar.google.com/citations?user=A8J42tQAAAAJ",
     category: 'research',
-    icon: 'Brain'
+    icon: 'BookOpen'
   },
   {
     id: 'current-project',
-    question: "What's your current project?",
-    answer: "I'm currently working on synthetic data generation frameworks for self-improving AI agents. This project focuses on developing systems that can autonomously generate high-quality training data to improve their own performance over time. The framework combines multi-agent collaboration with advanced data synthesis techniques to create more robust and adaptive AI systems. This work builds on my expertise in synthetic data generation and multi-agent systems, and I'm excited about its potential applications in autonomous AI development.",
+    question: "What are you building right now?",
+    answer: "I'm working on three active projects: (1) **DREAM-C2L** — An open-source framework for curriculum learning that's already being used by other researchers for reproducible ML experiments. (2) **Project Orion at Handshake AI** — Multi-agent orchestration for enterprise workflows, where specialized AI agents collaborate to complete complex tasks autonomously. (3) **Project Canary** — Safety research on synthetic data generation, ensuring AI training pipelines don't inadvertently degrade model quality. All of these tie back to my core thesis: autonomous AI needs robust coordination and safe data pipelines.",
     category: 'research',
     icon: 'Code'
   },
   {
-    id: 'most-interesting-project',
-    question: "What's your most interesting project?",
-    answer: "My most interesting project has been developing a multi-agent system for autonomous synthetic data generation. This project was fascinating because it involved creating AI agents that could not only generate synthetic data but also evaluate and improve the quality of that data through collaborative learning. The agents would compete and cooperate to create increasingly better datasets, essentially creating a self-improving data generation system. What made it particularly interesting was watching how the agents developed different strategies for data synthesis and how they learned to coordinate their efforts to achieve better results than any single agent could produce alone.",
-    category: 'research',
-    icon: 'Rocket'
-  },
-  {
-    id: 'ai-project-help',
-    question: "How can your synthetic data expertise help with our AI project?",
-    answer: "My expertise in synthetic data generation can help your AI project in several ways. I can design frameworks for generating high-quality training data that's difficult or expensive to collect naturally. This includes creating synthetic datasets that maintain the statistical properties of real data while being more diverse and comprehensive. I can also help implement multi-agent systems that can collaboratively generate and validate synthetic data, ensuring quality and relevance. Additionally, my experience with multi-agent systems can help scale your AI training across multiple agents or environments.",
-    category: 'collaboration',
-    icon: 'Code'
-  },
-  {
-    id: 'multi-agent-experience',
-    question: "Tell me about your multi-agent systems experience and applications",
-    answer: "I have extensive experience in multi-agent systems, particularly in collaborative learning and problem-solving. My work includes developing agents that can coordinate to generate synthetic data, share knowledge across different domains, and improve their collective performance through collaboration. I've worked on applications ranging from autonomous data generation to collaborative decision-making systems. My research focuses on creating agents that can communicate effectively, share resources, and learn from each other's experiences while maintaining individual autonomy.",
-    category: 'research',
-    icon: 'Rocket'
-  },
-  {
-    id: 'collaboration-opportunities',
-    question: "What collaboration opportunities are you open to?",
-    answer: "I'm open to various collaboration opportunities including research partnerships, consulting on AI and synthetic data projects, and industry collaborations. I'm particularly interested in projects involving synthetic data generation and multi-agent systems. I can help with designing AI training pipelines, implementing multi-agent architectures, or developing synthetic data generation frameworks. I'm also available for academic collaborations, industry consulting, and research partnerships. Feel free to reach out to discuss potential opportunities that align with your needs and my expertise.",
-    category: 'collaboration',
-    icon: 'GraduationCap'
-  },
-  {
-    id: 'research-industry',
-    question: "How does your research apply to industry problems?",
-    answer: "My research has direct applications to several industry challenges. Synthetic data generation can help companies overcome data scarcity issues, reduce data collection costs, and improve AI model robustness. Multi-agent systems can be applied to collaborative decision-making and autonomous systems. My work on self-improving AI agents can help create systems that continuously learn and adapt to changing environments. These technologies are particularly relevant for industries dealing with limited data or autonomous systems that need to operate in dynamic environments.",
-    category: 'research',
-    icon: 'MessageCircle'
-  },
-  {
-    id: 'career-goals',
-    question: "What are your career goals and preferred work arrangements?",
-    answer: "My career goals focus on advancing AI technology through research and practical applications. I'm interested in roles that combine research with real-world impact, whether in academia, industry research labs, or technology companies. I'm particularly drawn to opportunities that involve synthetic data generation and multi-agent systems. I'm flexible with work arrangements and open to remote work, hybrid models, or on-site positions. I value environments that encourage innovation, collaboration, and continuous learning. I'm also interested in opportunities that allow me to contribute to both theoretical advances and practical implementations.",
+    id: 'hiring-fit',
+    question: "What kind of roles or teams are you looking for?",
+    answer: "I thrive at the intersection of research and deployment. Ideal fits include: (1) **Research Scientist** roles at labs like DeepMind, Anthropic, or OpenAI where I can push the frontier on multi-agent systems. (2) **Applied AI** teams at companies deploying autonomous agents (think Adept, Cognition, or enterprise AI startups). (3) **Founding/early engineer** at AI startups where my research background can shape product direction. I'm also open to hybrid arrangements that let me continue my PhD while contributing to industry. What matters most is working on problems that matter at scale.",
     category: 'career',
-    icon: 'BotIcon'
+    icon: 'Target'
+  },
+  {
+    id: 'technical-skills',
+    question: "What's your technical stack and expertise level?",
+    answer: "**Expert level**: Python, PyTorch, distributed training (SLURM/HPC clusters), LLM fine-tuning, multi-agent frameworks. **Proficient**: Next.js/React for research demos, MLOps (Weights & Biases, Docker), data engineering pipelines. **Research specialties**: Synthetic data generation, curriculum learning, multi-agent coordination, model safety/alignment. I've built systems that run on USC's CARC cluster (thousands of GPU hours) and deployed production AI at Handshake. I use 'uv' for modern Python dependency management and prioritize reproducible research. My code is available on GitHub: https://github.com/zizhao-hu",
+    category: 'background',
+    icon: 'Terminal'
+  },
+  {
+    id: 'collaboration',
+    question: "Are you available for consulting or collaboration?",
+    answer: "Yes! I'm open to: (1) **Research partnerships** — If you're working on multi-agent systems, synthetic data, or LLM safety and want academic collaboration. (2) **Technical consulting** — Advising companies on AI architecture, training pipelines, or multi-agent deployment. (3) **Advisory roles** — For AI startups where my research expertise can help shape technical direction. (4) **Investment discussions** — I'm building technology with commercial potential and am open to conversations with VCs and angels focused on AI infrastructure. Best way to reach me: zizhaoh@usc.edu",
+    category: 'collaboration',
+    icon: 'Handshake'
+  },
+  {
+    id: 'personal-side',
+    question: "Tell me something interesting about you outside of AI",
+    answer: "Here's something most researchers don't mention: I'm a K-pop cover dancer! I perform with Spade A, USC's K-pop dance group, and I've danced at KCON. I also maintain a strict 6 AM fitness routine focused on muscle building—discipline in the gym translates to discipline in research. I'm a huge foodie (hot pot and KBBQ are my weaknesses) and I've traveled extensively between the US and China. I think the best researchers have lives outside the lab—it keeps you creative and grounded. Plus, learning choreography is surprisingly similar to debugging code: break it down, iterate, and practice until it's perfect.",
+    category: 'background',
+    icon: 'Music'
   }
 ];
 

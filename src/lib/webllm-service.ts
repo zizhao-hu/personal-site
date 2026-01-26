@@ -1,4 +1,4 @@
-import { CreateMLCEngine, MLCEngineInterface } from "@mlc-ai/web-llm";
+import { CreateWebWorkerMLCEngine, WebWorkerMLCEngine, prebuiltAppConfig } from "@mlc-ai/web-llm";
 import { getAnswerByQuestion } from '@/data/predefined-qa';
 
 export interface ChatMessage {
@@ -7,14 +7,15 @@ export interface ChatMessage {
 }
 
 export class WebLLMService {
-  private engine: MLCEngineInterface | null = null;
+  private engine: WebWorkerMLCEngine | null = null;
+  private worker: Worker | null = null;
   private isInitialized = false;
   private isInitializing = false;
   private progressCallback: ((progress: string) => void) | null = null;
   private loadingProgress: number = 0;
-  private currentModel: string = "gemma-2b-it";
+  private currentModel: string = "SmolLM2-360M-Instruct-q4f16_1-MLC";
   private initializationStartTime: number = 0;
-  private estimatedTotalTime: number = 30000; // 30 seconds default estimate
+  private estimatedTotalTime: number = 30000;
 
   // Personal context for Zizhao Hu - Professional Delegate
   private systemPrompt = `You are Zizhao Hu, a CS Ph.D. student at USC affiliated with the GLAMOUR Lab, advised by Professor Jesse Thomason and Professor Mohammad Rostami. You are acting as Zizhao's personal delegate for professional communications with potential clients, interviewers, and collaborators.
@@ -83,7 +84,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     // If model is changing, reset the engine
     if (modelId && modelId !== this.currentModel) {
       this.isInitialized = false;
-      this.engine = null;
+      await this.cleanup();
       this.currentModel = modelId;
     } else if (this.isInitialized) {
       return;
@@ -91,26 +92,24 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
 
     this.isInitializing = true;
     this.progressCallback = progressCallback || null;
-    this.loadingProgress = 0; // Reset progress
+    this.loadingProgress = 0;
     this.initializationStartTime = Date.now();
     
-    // Set estimated time based on model
-    if (modelId?.includes('7b') || modelId?.includes('7B')) {
-      this.estimatedTotalTime = 45000; // 45 seconds for 7B models
-    } else if (modelId?.includes('2b') || modelId?.includes('2B')) {
-      this.estimatedTotalTime = 25000; // 25 seconds for 2B models
-    } else {
-      this.estimatedTotalTime = 30000; // 30 seconds for other models
-    }
+    // Set estimated time based on model size
+    this.estimatedTotalTime = this.getEstimatedLoadTime(modelId || this.currentModel);
     
     // Check for mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    // Try WebLLM initialization with timeout
-    const timeoutPromise = new Promise((_, reject) => {
+    // Set timeout based on environment and device
+    const timeout = import.meta.env.PROD 
+      ? (isMobile ? 120000 : 90000)  // 2 min mobile, 1.5 min desktop in prod
+      : (isMobile ? 180000 : 120000); // 3 min mobile, 2 min desktop in dev
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
         reject(new Error("WebLLM initialization timeout"));
-      }, import.meta.env.PROD ? (isMobile ? 15000 : 8000) : (isMobile ? 60000 : 30000)); // Longer timeout for mobile
+      }, timeout);
     });
 
     try {
@@ -120,8 +119,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       ]);
     } catch (error) {
       console.error("WebLLM failed:", error);
-      // Check if it's a mobile device or production environment
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      await this.cleanup();
       
       if (import.meta.env.PROD || isMobile) {
         console.warn("WebLLM failed - falling back to demo mode", { isMobile, isProd: import.meta.env.PROD });
@@ -132,26 +130,41 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     }
   }
 
+  private getEstimatedLoadTime(modelId: string): number {
+    // Estimated load times in milliseconds based on model size
+    if (modelId.includes('360M') || modelId.includes('135M')) return 20000;
+    if (modelId.includes('0.5B') || modelId.includes('0_5B')) return 30000;
+    if (modelId.includes('1B') || modelId.includes('1.5B') || modelId.includes('1_5B')) return 45000;
+    if (modelId.includes('2B') || modelId.includes('2b')) return 60000;
+    if (modelId.includes('3B') || modelId.includes('3b')) return 90000;
+    if (modelId.includes('7B') || modelId.includes('7b')) return 150000;
+    return 60000; // Default
+  }
+
+  private async cleanup(): Promise<void> {
+    if (this.engine) {
+      try {
+        await this.engine.unload();
+      } catch (e) {
+        console.warn("Error unloading engine:", e);
+      }
+      this.engine = null;
+    }
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
+  }
+
   private async attemptWebLLMInitialization(): Promise<void> {
     try {
-      this.updateProgress("Checking WebLLM version...");
-      console.log("Initializing WebLLM engine...");
-      console.log("WebLLM version: unknown");
-      
       this.updateProgress("Checking browser compatibility...");
-      // Check browser compatibility
+      
       if (typeof WebAssembly === 'undefined') {
         throw new Error("WebAssembly is not supported in this browser");
       }
       
-      // Check for mobile/Android Chrome
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const isAndroidChrome = /Android.*Chrome/i.test(navigator.userAgent);
-      
-      if (isAndroidChrome) {
-        console.warn("Android Chrome detected - WebLLM may have limited compatibility");
-        this.updateProgress("Android Chrome detected - checking compatibility...");
-      }
       
       if (typeof WebGPU === 'undefined') {
         console.warn("WebGPU is not available, WebLLM may fall back to CPU");
@@ -161,207 +174,88 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       }
       
       this.updateProgress("Loading model configurations...");
-      // Get available models from prebuilt config
-      let prebuiltAppConfig;
-      try {
-        const webllmModule = await import("@mlc-ai/web-llm");
-        prebuiltAppConfig = webllmModule.prebuiltAppConfig;
-        console.log("WebLLM module loaded successfully");
-        console.log("Available exports:", Object.keys(webllmModule));
-        
-        // Wait a bit for browser APIs to be ready
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-      } catch (importError) {
-        console.error("Failed to import WebLLM module:", importError);
-        throw new Error("Failed to load WebLLM library");
-      }
       
-      if (!prebuiltAppConfig || !prebuiltAppConfig.model_list) {
-        throw new Error("prebuiltAppConfig or model_list is not available");
-      }
+      // Verify model exists in prebuilt config
+      const modelList = prebuiltAppConfig?.model_list || [];
+      console.log("Available models:", modelList.length);
       
-      if (!Array.isArray(prebuiltAppConfig.model_list) || prebuiltAppConfig.model_list.length === 0) {
-        throw new Error("No models available in prebuiltAppConfig");
-      }
+      // Find the requested model
+      let selectedModel = this.currentModel;
+      const modelExists = modelList.some((m: { model_id: string }) => m.model_id === selectedModel);
       
-      console.log("Available models:");
-      console.log("Model list type:", typeof prebuiltAppConfig.model_list);
-      console.log("Model list length:", prebuiltAppConfig.model_list.length);
-      prebuiltAppConfig.model_list.forEach((model, index) => {
-        console.log(`${index + 1}. ${model.model_id} - ${(model as any).model_url}`);
-      });
-      
-      // Find the requested model or fall back to Qwen 0.5B
-      let selectedModel = prebuiltAppConfig.model_list[0]?.model_id; // Default fallback
-      
-      if (!selectedModel) {
-        throw new Error("No valid model found in prebuiltAppConfig.model_list");
-      }
-      
-      // Improved model selection logic
-      if (this.currentModel === "qwen-0.5b") {
-        const qwenModel = prebuiltAppConfig.model_list.find(model => 
-          model.model_id.toLowerCase().includes('qwen') && 
-          model.model_id.toLowerCase().includes('0.5')
-        );
-        if (qwenModel) {
-          selectedModel = qwenModel.model_id;
-          console.log(`Found Qwen 0.5B model: ${selectedModel}`);
-          this.updateProgress(`Loading Qwen 0.5B model...`);
+      if (!modelExists) {
+        console.log(`Model ${selectedModel} not found, searching for alternatives...`);
+        // Try to find a similar model
+        const fallbackModel = this.findFallbackModel(modelList);
+        if (fallbackModel) {
+          selectedModel = fallbackModel;
+          console.log(`Using fallback model: ${selectedModel}`);
         } else {
-          console.log("Qwen 0.5B not found, using first available model");
-          this.updateProgress(`Loading ${selectedModel}...`);
-        }
-      } else if (this.currentModel === "gemma-2b-it") {
-        const gemma2bModel = prebuiltAppConfig.model_list.find(model => 
-          model.model_id.toLowerCase().includes('gemma') && 
-          (model.model_id.toLowerCase().includes('2b') || model.model_id.toLowerCase().includes('2b'))
-        );
-        if (gemma2bModel) {
-          selectedModel = gemma2bModel.model_id;
-          console.log(`Found Gemma 2B model: ${selectedModel}`);
-          this.updateProgress(`Loading Gemma 2B Instruct model...`);
-        } else {
-          console.log("Gemma 2B not found, trying to find any Gemma model");
-          const anyGemmaModel = prebuiltAppConfig.model_list.find(model => 
-            model.model_id.toLowerCase().includes('gemma')
-          );
-          if (anyGemmaModel) {
-            selectedModel = anyGemmaModel.model_id;
-            console.log(`Found Gemma model: ${selectedModel}`);
-            this.updateProgress(`Loading Gemma model...`);
-          } else {
-            console.log("No Gemma models found, using first available model");
-            this.updateProgress(`Loading ${selectedModel}...`);
-          }
-        }
-      } else if (this.currentModel === "gemma-7b-it") {
-        const gemma7bModel = prebuiltAppConfig.model_list.find(model => 
-          model.model_id.toLowerCase().includes('gemma') && 
-          (model.model_id.toLowerCase().includes('7b') || model.model_id.toLowerCase().includes('7b'))
-        );
-        if (gemma7bModel) {
-          selectedModel = gemma7bModel.model_id;
-          console.log(`Found Gemma 7B model: ${selectedModel}`);
-          this.updateProgress(`Loading Gemma 7B Instruct model...`);
-        } else {
-          console.log("Gemma 7B not found, trying to find any Gemma model");
-          const anyGemmaModel = prebuiltAppConfig.model_list.find(model => 
-            model.model_id.toLowerCase().includes('gemma')
-          );
-          if (anyGemmaModel) {
-            selectedModel = anyGemmaModel.model_id;
-            console.log(`Found Gemma model: ${selectedModel}`);
-            this.updateProgress(`Loading Gemma model...`);
-          } else {
-            console.log("No Gemma models found, using first available model");
-            this.updateProgress(`Loading ${selectedModel}...`);
-          }
-        }
-      } else {
-        // Try to find the requested model by name
-        const requestedModel = prebuiltAppConfig.model_list.find(model => 
-          model.model_id.toLowerCase().includes(this.currentModel.toLowerCase())
-        );
-        if (requestedModel) {
-          selectedModel = requestedModel.model_id;
-          console.log(`Found requested model: ${selectedModel}`);
-          this.updateProgress(`Loading ${this.currentModel}...`);
-        } else {
-          console.log(`Requested model ${this.currentModel} not found, using first available model`);
-          this.updateProgress(`Loading ${selectedModel}...`);
+          throw new Error(`Model ${this.currentModel} not found and no fallback available`);
         }
       }
       
-      // Create engine following the WebLLM documentation pattern
-      try {
-        console.log(`Creating engine with model: ${selectedModel}`);
-        console.log("Model config:", { selectedModel, currentModel: this.currentModel });
-        
-        // Wait for browser APIs to be fully ready
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Create engine with proper progress tracking
-        try {
-          this.engine = await CreateMLCEngine(
-            selectedModel,
-            {
-              initProgressCallback: (progress: any) => {
-                console.log("WebLLM progress callback called with:", progress);
-                console.log("Progress type:", typeof progress);
-                console.log("Progress keys:", progress ? Object.keys(progress) : 'null/undefined');
-                
-                if (progress && typeof progress === 'object') {
-                  // Handle WebLLM progress format: {progress: 0.9459459459459459, timeElapsed: 3, text: '...'}
-                  if (progress.progress !== undefined) {
-                    const progressPercentage = Math.round(progress.progress * 100);
-                    this.loadingProgress = progressPercentage;
-                    this.updateProgress(progress.text || `Loading model... ${progressPercentage}%`);
-                    console.log("Progress updated:", progressPercentage + "%");
-                  }
-                  // Track download progress (legacy format)
-                  else if (progress.downloaded && progress.total) {
-                    const downloadProgress = (progress.downloaded / progress.total) * 100;
-                    this.loadingProgress = downloadProgress;
-                    this.updateProgress(`Downloading model... ${Math.round(downloadProgress)}%`);
-                    console.log("Download progress updated:", downloadProgress);
-                  }
-                  // Track initialization progress (legacy format)
-                  else if (progress.initialized && progress.total) {
-                    const initProgress = (progress.initialized / progress.total) * 100;
-                    this.loadingProgress = initProgress;
-                    this.updateProgress(`Initializing model... ${Math.round(initProgress)}%`);
-                    console.log("Init progress updated:", initProgress);
-                  }
-                } else if (typeof progress === 'string') {
-                  this.updateProgress(progress);
-                  console.log("String progress message:", progress);
-                }
+      this.updateProgress(`Initializing Web Worker...`);
+      
+      // Create Web Worker for non-blocking inference
+      this.worker = new Worker(
+        new URL("../workers/webllm-worker.ts", import.meta.url),
+        { type: "module" }
+      );
+      
+      this.updateProgress(`Loading ${selectedModel}...`);
+      
+      // Create engine using Web Worker
+      this.engine = await CreateWebWorkerMLCEngine(
+        this.worker,
+        selectedModel,
+        {
+          initProgressCallback: (progress) => {
+            console.log("WebLLM progress:", progress);
+            
+            if (progress && typeof progress === 'object') {
+              if (progress.progress !== undefined) {
+                const progressPercentage = Math.round(progress.progress * 100);
+                this.loadingProgress = progressPercentage;
+                this.updateProgress(progress.text || `Loading model... ${progressPercentage}%`);
               }
+            } else if (typeof progress === 'string') {
+              this.updateProgress(progress);
             }
-          );
-          
-          console.log("Engine created with progress tracking");
-        } catch (simpleError) {
-          console.log("Engine creation failed:", simpleError);
-          throw simpleError;
+          }
         }
+      );
 
-        this.updateProgress(`Model loaded successfully! Ready to chat.`);
-        console.log(`WebLLM engine initialized successfully with ${selectedModel}`);
-        this.isInitialized = true;
-        return;
-      } catch (error) {
-        console.error(`Failed to initialize with model ${selectedModel}:`, error);
-        console.error("Engine creation error details:", {
-          name: (error as Error).name,
-          message: (error as Error).message,
-          stack: (error as Error).stack
-        });
-        throw error;
-      }
+      this.updateProgress(`Model loaded successfully! Ready to chat.`);
+      console.log(`WebLLM engine initialized successfully with ${selectedModel}`);
+      this.isInitialized = true;
+      this.isInitializing = false;
       
     } catch (error) {
       console.error("Failed to initialize WebLLM:", error);
-      console.error("Full error details:", {
-        name: (error as Error).name,
-        message: (error as Error).message,
-        stack: (error as Error).stack
-      });
-      
-      // In production, if WebLLM fails, we should fall back to mock service
-      if (import.meta.env.PROD) {
-        console.warn("WebLLM failed in production, falling back to mock service");
-        this.isInitializing = false;
-        throw new Error("WebLLM not available in production - using demo mode");
-      } else {
-        this.isInitializing = false;
-        throw error;
-      }
-    } finally {
       this.isInitializing = false;
+      throw error;
     }
+  }
+
+  private findFallbackModel(modelList: Array<{ model_id: string }>): string | null {
+    // Priority list of fallback models (smallest/fastest first)
+    const fallbacks = [
+      "SmolLM2-360M-Instruct-q4f16_1-MLC",
+      "SmolLM2-135M-Instruct-q4f16_1-MLC",
+      "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+      "Qwen2-0.5B-Instruct-q4f16_1-MLC",
+      "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+    ];
+
+    for (const fallback of fallbacks) {
+      if (modelList.some(m => m.model_id === fallback)) {
+        return fallback;
+      }
+    }
+
+    // Return first available model if no fallback matches
+    return modelList[0]?.model_id || null;
   }
 
   async generateResponse(messages: ChatMessage[]): Promise<string> {
@@ -370,10 +264,8 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     }
 
     try {
-      // Get the last user message
       const lastUserMessage = messages.filter(msg => msg.role === "user").pop();
       if (lastUserMessage) {
-        // Check if there's a predefined answer for this question
         const predefinedAnswer = getAnswerByQuestion(lastUserMessage.content);
         if (predefinedAnswer) {
           console.log("Using predefined answer for:", lastUserMessage.content);
@@ -381,18 +273,18 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
         }
       }
 
-      // If no predefined answer, use the AI model
       const formattedMessages = this.formatMessages(messages);
       
       console.log("Generating response with WebLLM...");
       
-      // Generate response
       const response = await this.engine.chat.completions.create({
         messages: formattedMessages,
         stream: false,
         temperature: 0.7,
         top_p: 0.9,
-        max_tokens: 500,
+        max_tokens: 256,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
       });
 
       const content = response.choices[0]?.message?.content;
@@ -407,8 +299,59 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     }
   }
 
+  /**
+   * Generate a streaming response for real-time token display
+   */
+  async *generateStreamingResponse(messages: ChatMessage[]): AsyncGenerator<string, void, unknown> {
+    if (!this.engine) {
+      throw new Error("WebLLM engine not initialized. Call initialize() first.");
+    }
+
+    try {
+      // Check for predefined answers first
+      const lastUserMessage = messages.filter(msg => msg.role === "user").pop();
+      if (lastUserMessage) {
+        const predefinedAnswer = getAnswerByQuestion(lastUserMessage.content);
+        if (predefinedAnswer) {
+          console.log("Using predefined answer (streaming):", lastUserMessage.content);
+          // Simulate streaming for predefined answers
+          const words = predefinedAnswer.split(' ');
+          for (const word of words) {
+            yield word + ' ';
+            await new Promise(resolve => setTimeout(resolve, 30));
+          }
+          return;
+        }
+      }
+
+      const formattedMessages = this.formatMessages(messages);
+      
+      console.log("Generating streaming response with WebLLM...");
+      
+      const chunks = await this.engine.chat.completions.create({
+        messages: formattedMessages,
+        stream: true,
+        stream_options: { include_usage: true },
+        temperature: 0.7,
+        top_p: 0.9,
+        max_tokens: 256,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
+      });
+
+      for await (const chunk of chunks) {
+        const content = chunk.choices[0]?.delta?.content;
+        if (content) {
+          yield content;
+        }
+      }
+    } catch (error) {
+      console.error("Error generating streaming response:", error);
+      throw error;
+    }
+  }
+
   private formatMessages(messages: ChatMessage[]) {
-    // Add system prompt at the beginning
     const formattedMessages: Array<{role: "system" | "user" | "assistant", content: string}> = [
       {
         role: "system",
@@ -416,7 +359,6 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       }
     ];
 
-    // Add conversation messages
     messages.forEach(msg => {
       formattedMessages.push({
         role: msg.role,
@@ -455,7 +397,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     const timeRemainingSeconds = Math.ceil(estimatedTimeRemaining / 1000);
     
     let progressMessage = message;
-    if (timeRemainingSeconds > 0) {
+    if (timeRemainingSeconds > 0 && !message.includes('%')) {
       progressMessage += ` (est. ${timeRemainingSeconds}s remaining)`;
     }
     
@@ -465,7 +407,6 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     }
   }
 
-  // Method to get current progress message
   getProgressMessage(): string {
     const elapsedTime = Date.now() - this.initializationStartTime;
     const estimatedTimeRemaining = Math.max(0, this.estimatedTotalTime - elapsedTime);
@@ -473,9 +414,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     
     return `Loading model... (est. ${timeRemainingSeconds}s remaining)`;
   }
-
-
 }
 
 // Export a singleton instance
-export const webLLMService = new WebLLMService(); 
+export const webLLMService = new WebLLMService();

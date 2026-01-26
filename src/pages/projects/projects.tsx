@@ -6,7 +6,7 @@ interface Project {
   description: string;
   details: string[];
   tags: string[];
-  status: "active" | "research" | "prototype" | "concept";
+  status: "active" | "research" | "prototype" | "concept" | "completed";
   icon: React.ElementType;
   color: string;
   link?: string;
@@ -31,28 +31,28 @@ const projects: Project[] = [
   },
   {
     title: "Project Orion",
-    description: "Industry research project at Handshake AI developing enterprise-grade autonomous agents. Focus on agents that can browse, plan, and execute complex business workflows without constant supervision.",
+    description: "Current MOVE Fellowship project at Handshake AI focused on high-quality reasoning refinement, safety injections, and model corrections. Specialized work leveraging PhD-level expertise in AI safety and alignment.",
     details: [
-      "Autonomous web navigation and data extraction",
-      "Calendar coordination and scheduling automation",
-      "Multi-step task completion with error recovery",
-      "Enterprise security and compliance integration"
+      "High-quality reasoning annotations and corrections",
+      "Safety injections and 'rogue behavior' testing",
+      "Jailbreak detection and mitigation strategies",
+      "PhD-level expertise in targeted model refinement phases"
     ],
-    tags: ["Agentic AI", "Enterprise", "Handshake AI", "Production"],
+    tags: ["AI Safety", "Model Alignment", "Handshake AI", "MOVE Fellowship"],
     status: "active",
     icon: Bot,
     color: "purple",
   },
   {
-    title: "DREAM-C2L: Curriculum Learning Framework",
-    description: "Open-source framework for curriculum learning research. Intelligent training curricula that optimize how models learn by dynamically ordering and weighting training samples.",
+    title: "DREAM-C2L: Continual Learning Framework",
+    description: "Open-source framework for continual learning research. Enabling AI systems to learn continuously without catastrophic forgetting, adapting to new data while preserving prior knowledge.",
     details: [
       "Difficulty-aware sample ordering algorithms",
-      "Self-paced learning with automatic curriculum generation",
+      "Replay-based and regularization methods for knowledge retention",
       "Reproducible experiment pipelines for HPC clusters",
       "Integration with PyTorch Lightning and Weights & Biases"
     ],
-    tags: ["Curriculum Learning", "PyTorch", "Open Source", "Research"],
+    tags: ["Continual Learning", "PyTorch", "Open Source", "Research"],
     status: "active",
     icon: Brain,
     color: "green",
@@ -87,18 +87,18 @@ const projects: Project[] = [
     color: "cyan",
   },
   {
-    title: "Project Canary: Synthetic Data Safety",
-    description: "Research on preventing model collapse when training on AI-generated data. Developing methods to detect and filter low-quality synthetic samples that could degrade model performance.",
+    title: "Project Canary",
+    description: "Foundational MOVE Fellowship project (Sept-Oct 2025) — a community-driven effort to train and refine frontier AI models. Completed 15,000+ tasks across 15 domains, improving Review 1 approval rates from 10% to 40%.",
     details: [
-      "Model collapse detection and early warning systems",
-      "Synthetic data quality scoring and filtering",
-      "Diversity preservation in iterative training",
-      "Safe data mixing strategies for foundation models"
+      "High-volume task generation across CS, Math, Medicine, Physics domains",
+      "Core contributor in Computer Science domain",
+      "Quality improvement: raised approval rates from 10% to 40%",
+      "Precursor to Project Orion's specialized refinement phase"
     ],
-    tags: ["Synthetic Data", "Model Safety", "Data Quality", "Research"],
-    status: "research",
+    tags: ["AI Training", "Data Generation", "Handshake AI", "MOVE Fellowship"],
+    status: "completed",
     icon: Shield,
-    color: "red",
+    color: "green",
   },
   {
     title: "EdgeLLM: Sovereign AI on Device",
@@ -163,6 +163,7 @@ const StatusBadge = ({ status }: { status: Project["status"] }) => {
     research: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     prototype: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
     concept: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    completed: "bg-gray-100 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300",
   };
   
   const labels = {
@@ -170,6 +171,7 @@ const StatusBadge = ({ status }: { status: Project["status"] }) => {
     research: "Research",
     prototype: "Prototype",
     concept: "Concept",
+    completed: "Completed",
   };
   
   return (

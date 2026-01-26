@@ -279,17 +279,22 @@ export const FloatingChat = () => {
                 animate={{ opacity: 1 }}
                 className="absolute inset-0 bg-blue-50/90 dark:bg-blue-900/30 backdrop-blur-sm rounded-2xl z-20 flex items-center justify-center"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-32 bg-blue-200 dark:bg-blue-800 rounded-full h-1.5">
-                    <motion.div 
-                      className="bg-blue-600 h-1.5 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progressPercentage || 0}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                    {progressPercentage || 0}%
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                    Chatbot loading...
                   </span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-32 bg-blue-200 dark:bg-blue-800 rounded-full h-1.5">
+                      <motion.div 
+                        className="bg-blue-600 h-1.5 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progressPercentage || 0}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                      {progressPercentage || 0}%
+                    </span>
+                  </div>
                 </div>
               </motion.div>
             )}

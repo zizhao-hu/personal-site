@@ -35,11 +35,11 @@ export const Overview = () => {
             AI Researcher · PhD Student at USC
           </p>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4 max-w-2xl">
-            Building self-improving AI systems at USC. My research focuses on 
+            Building AI systems that improve themselves while remaining under control. My research focuses on 
             <span className="text-purple-600 dark:text-purple-400 font-medium"> multi-agent collaboration</span>, 
             <span className="text-green-600 dark:text-green-400 font-medium"> vision-language architectures</span>, and 
-            <span className="text-orange-600 dark:text-orange-400 font-medium"> curriculum learning</span>.
-            Fellow at Handshake AI, developing autonomous agents that learn, adapt, and improve themselves.
+            <span className="text-orange-600 dark:text-orange-400 font-medium"> continual learning</span>.
+            MOVE Fellow at Handshake AI, contributing to frontier model training and AI safety research.
           </p>
           
           {/* Quick Stats */}
@@ -51,7 +51,7 @@ export const Overview = () => {
               🤖 MINDS Lab / GLAMOUR Lab
             </div>
             <div className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm font-medium">
-              🤝 Handshake AI Fellow
+              🤝 MOVE Fellow @ Handshake AI
             </div>
           </div>
         </div>
@@ -65,7 +65,7 @@ export const Overview = () => {
             Research Focus
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Multi-agent systems, self-improving AI, vision-language models, curriculum learning
+            Multi-agent systems, self-improving AI, vision-language models, continual learning
           </p>
         </div>
         <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-100 dark:border-purple-800">

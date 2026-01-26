@@ -24,9 +24,9 @@ const publications: Publication[] = [
   {
     title: "Static Key Attention in Vision",
     authors: "Zizhao Hu, et al.",
-    venue: "NeurIPS Workshop",
+    venue: "Preprint",
     year: 2024,
-    type: "workshop",
+    type: "preprint",
     link: "https://scholar.google.com/citations?user=A8J42tQAAAAJ",
   },
   {
@@ -54,8 +54,8 @@ const researchAreas = [
     color: "purple",
   },
   {
-    title: "Curriculum Learning & Data Curation",
-    description: "Creating intelligent training curricula that optimize how models learn. Developing methods to order, filter, and synthesize training data for maximum learning efficiency and model robustness.",
+    title: "Continual Learning & Data Curation",
+    description: "Enabling AI systems to learn continuously without forgetting. Developing methods for lifelong learning, knowledge retention, and adaptive training that allow models to evolve with new data while preserving prior capabilities.",
     icon: Layers,
     color: "green",
   },
@@ -80,9 +80,9 @@ export const Research = () => {
               Research
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-              My research vision is building <strong>AI systems that improve themselves</strong>. 
+              My research vision is building <strong>AI systems that improve themselves while remaining under control</strong>. 
               I work at the intersection of multi-agent collaboration, vision-language models, 
-              and curriculum learning—creating agents that can generate their own training data, 
+              and continual learning—creating agents that can generate their own training data, 
               evaluate their outputs, and evolve autonomously while remaining safe and reliable.
             </p>
           </div>
@@ -214,9 +214,10 @@ export const Research = () => {
             </h2>
             <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
               <p><strong>PhD Student</strong> • University of Southern California (USC)</p>
-              <p><strong>Lab:</strong> MINDS Group / GLAMOUR Lab</p>
+              <p><strong>Lab:</strong> GLAMOUR Lab</p>
+              <p><strong>Fellowship:</strong> MOVE Fellow at Handshake AI</p>
               <p><strong>Advisors:</strong> Prof. Jesse Thomason, Prof. Mohammad Rostami</p>
-              <p><strong>Affiliation:</strong> Information Sciences Institute (ISI)</p>
+              <p><strong>Affiliation:</strong> GLAMOUR Lab, USC ISI</p>
               <p><strong>Expected Graduation:</strong> 2027</p>
             </div>
           </section>

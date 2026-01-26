@@ -10,7 +10,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'elevator-pitch',
     question: "Give me your 30-second pitch — what makes you unique?",
-    answer: "I'm a PhD researcher at USC building **self-improving AI systems**. My core focus is multi-agent systems—autonomous agents that collaborate, generate their own training data, and evolve without constant human supervision. I also work on vision-language architectures and curriculum learning. What sets me apart is my dual focus on academic rigor and industry impact—I'm a Fellow at Handshake AI working on real-world deployment while publishing at top venues and reviewing for ICLR, ICML, and NeurIPS. I bridge the gap between 'this works in a paper' and 'this works in production.'",
+    answer: "I'm a PhD researcher at USC building **AI systems that improve themselves while remaining under control**. My core focus is multi-agent systems—autonomous agents that collaborate, generate their own training data, and evolve without constant human supervision. I also work on vision-language architectures and continual learning. What sets me apart is my dual focus on academic rigor and industry impact—I'm a MOVE Fellow at Handshake AI working on frontier model training and AI safety research, while publishing at top venues and reviewing for ICLR, ICML, and NeurIPS. I bridge the gap between 'this works in a paper' and 'this works in production.'",
     category: 'background',
     icon: 'Rocket'
   },
@@ -38,7 +38,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'current-project',
     question: "What are you building right now?",
-    answer: "I'm working on several interconnected projects: (1) **AgentForge** — A multi-agent orchestration framework where specialized agents collaborate on complex tasks with self-correction. (2) **Project Orion at Handshake AI** — Enterprise autonomous agents that browse, plan, and execute business workflows. (3) **DREAM-C2L** — Open-source curriculum learning framework for intelligent training curricula. (4) **ReasonChain** — Test-time compute scaling research, making LLMs 'think longer' and verify their own reasoning. (5) **Project Canary** — Synthetic data safety research preventing model collapse. All tied to my core thesis: building AI systems that improve themselves while remaining safe and reliable.",
+    answer: "I'm working on several interconnected projects: (1) **AgentForge** — A multi-agent orchestration framework where specialized agents collaborate on complex tasks with self-correction. (2) **Project Orion** — My current MOVE Fellowship project at Handshake AI, focused on high-quality reasoning refinement, safety injections, and jailbreak testing. (3) **Project Canary** (completed) — The foundational MOVE Fellowship phase where I contributed to 15,000+ tasks across 15 domains, raising approval rates from 10% to 40%. (4) **DREAM-C2L** — Open-source continual learning framework. (5) **ReasonChain** — Test-time compute scaling research. All tied to my core thesis: building AI systems that improve themselves while remaining under control.",
     category: 'research',
     icon: 'Code'
   },
@@ -52,7 +52,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'technical-skills',
     question: "What's your technical stack and expertise level?",
-    answer: "**Expert level**: Python, PyTorch, distributed training (SLURM/HPC clusters), LLM fine-tuning, multi-agent frameworks. **Proficient**: Next.js/React for research demos, MLOps (Weights & Biases, Docker), data engineering pipelines. **Research specialties**: Synthetic data generation, curriculum learning, multi-agent coordination, model safety/alignment. I've built systems that run on USC's CARC cluster (thousands of GPU hours) and deployed production AI at Handshake. I use 'uv' for modern Python dependency management and prioritize reproducible research. My code is available on GitHub: https://github.com/zizhao-hu",
+    answer: "**Expert level**: Python, PyTorch, distributed training (SLURM/HPC clusters), LLM fine-tuning, multi-agent frameworks. **Proficient**: Next.js/React for research demos, MLOps (Weights & Biases, Docker), data engineering pipelines. **Research specialties**: Synthetic data generation, continual learning, multi-agent coordination, model safety/alignment. I've built systems that run on USC's CARC cluster (thousands of GPU hours) and deployed production AI at Handshake. I use 'uv' for modern Python dependency management and prioritize reproducible research. My code is available on GitHub: https://github.com/zizhao-hu",
     category: 'background',
     icon: 'Terminal'
   },

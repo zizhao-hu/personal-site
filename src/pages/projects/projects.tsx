@@ -1,5 +1,5 @@
 import { Header } from "@/components/custom/header";
-import { Rocket, Bot, Brain, Globe, Cpu, Shield, Sparkles, ExternalLink, Github, Eye, Zap, Network, Database } from "lucide-react";
+import { Rocket, Bot, Brain, Globe, Cpu, Shield, Sparkles, ExternalLink, Github, Eye, Zap, Network } from "lucide-react";
 
 interface Project {
   title: string;

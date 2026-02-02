@@ -1,37 +1,41 @@
 export interface BlogPost {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  readingTime: string;
-  category: "ai" | "science" | "economy";
-  tags: string[];
-  content: string;
-  author: {
-    name: string;
-    avatar: string;
-  };
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string;
+    date: string;
+    readingTime: string;
+    category: "ai" | "science" | "economy";
+    tags: string[];
+    content: string;
+    coverImage?: string;
+    author: {
+        name: string;
+        avatar: string;
+    };
 }
 
 export const blogPosts: BlogPost[] = [
-  {
-    id: "1",
-    slug: "continual-learning-neural-networks",
-    title: "Understanding Continual Learning in Neural Networks",
-    excerpt: "A deep dive into catastrophic forgetting and modern approaches to lifelong learning in AI systems.",
-    date: "2024-01-10",
-    readingTime: "12 min",
-    category: "ai",
-    tags: ["Continual Learning", "Neural Networks", "Deep Learning"],
-    author: {
-      name: "Zizhao Hu",
-      avatar: "/profile.jpg"
-    },
-    content: `
+    {
+        id: "1",
+        slug: "continual-learning-neural-networks",
+        title: "Understanding Continual Learning in Neural Networks",
+        excerpt: "A deep dive into catastrophic forgetting and modern approaches to lifelong learning in AI systems.",
+        date: "2024-01-10",
+        readingTime: "12 min",
+        category: "ai",
+        tags: ["Continual Learning", "Neural Networks", "Deep Learning"],
+        coverImage: "/images/blogs/continual.png",
+        author: {
+            name: "Zizhao Hu",
+            avatar: "/profile.jpg"
+        },
+        content: `
 # Understanding Continual Learning in Neural Networks
 
 One of the most significant challenges in modern AI is building systems that can learn continuously without forgetting previously acquired knowledge. This problem, known as **catastrophic forgetting**, has been a fundamental limitation of neural networks since their inception.
+
+![Continual Learning Visualization](/images/blogs/continual.png)
 
 ## The Problem: Catastrophic Forgetting
 
@@ -186,24 +190,27 @@ The most promising approaches combine multiple strategies: replay for memory con
 
 *This post is based on my ongoing research in continual learning at USC. For more details, check out my publications on [Google Scholar](https://scholar.google.com/citations?user=A8J42tQAAAAJ).*
     `
-  },
-  {
-    id: "2",
-    slug: "multimodal-learning-vision-language",
-    title: "Multi-Modal Learning: Bridging Vision and Language",
-    excerpt: "How modern AI systems learn to understand and connect visual and textual information.",
-    date: "2023-12-20",
-    readingTime: "15 min",
-    category: "ai",
-    tags: ["Vision", "NLP", "Multi-Modal", "Transformers"],
-    author: {
-      name: "Zizhao Hu",
-      avatar: "/profile.jpg"
     },
-    content: `
+    {
+        id: "2",
+        slug: "multimodal-learning-vision-language",
+        title: "Multi-Modal Learning: Bridging Vision and Language",
+        excerpt: "How modern AI systems learn to understand and connect visual and textual information.",
+        date: "2023-12-20",
+        readingTime: "15 min",
+        category: "ai",
+        tags: ["Vision", "NLP", "Multi-Modal", "Transformers"],
+        coverImage: "/images/blogs/multimodal.png",
+        author: {
+            name: "Zizhao Hu",
+            avatar: "/profile.jpg"
+        },
+        content: `
 # Multi-Modal Learning: Bridging Vision and Language
 
 Humans effortlessly combine information from multiple senses—we see an apple and simultaneously recall its taste, texture, and the word "apple." For decades, AI systems processed each modality in isolation. But recent breakthroughs in multi-modal learning are finally enabling machines to connect vision and language in powerful ways.
+
+![Multi-Modal AI Visualization](/images/blogs/multimodal.png)
 
 ## Why Multi-Modal Matters
 
@@ -471,24 +478,27 @@ The goal is AI systems with human-like multimodal understanding—systems that d
 
 *For more on my vision-language research, see my publications on [Google Scholar](https://scholar.google.com/citations?user=A8J42tQAAAAJ).*
     `
-  },
-  {
-    id: "3",
-    slug: "llm-scientific-research",
-    title: "The Future of Large Language Models in Scientific Research",
-    excerpt: "Exploring how LLMs are transforming the way we approach scientific discovery and research methodology.",
-    date: "2024-01-15",
-    readingTime: "10 min",
-    category: "ai",
-    tags: ["LLM", "Research", "Machine Learning", "Science"],
-    author: {
-      name: "Zizhao Hu",
-      avatar: "/profile.jpg"
     },
-    content: `
+    {
+        id: "3",
+        slug: "llm-scientific-research",
+        title: "The Future of Large Language Models in Scientific Research",
+        excerpt: "Exploring how LLMs are transforming the way we approach scientific discovery and research methodology.",
+        date: "2024-01-15",
+        readingTime: "10 min",
+        category: "ai",
+        tags: ["LLM", "Research", "Machine Learning", "Science"],
+        coverImage: "/images/blogs/science.png",
+        author: {
+            name: "Zizhao Hu",
+            avatar: "/profile.jpg"
+        },
+        content: `
 # The Future of Large Language Models in Scientific Research
 
 Large Language Models are no longer just impressive demos—they're becoming genuine tools for scientific discovery. From literature review to hypothesis generation, LLMs are reshaping how researchers work. But what can they actually do today, and what are their limitations?
+
+![AI In Science Visualization](/images/blogs/science.png)
 
 ## LLMs as Research Assistants
 
@@ -708,14 +718,14 @@ The most effective researchers will be those who learn to collaborate with AI wh
 
 *Interested in AI for science? Check out my research on multi-agent systems and synthetic data generation at [Google Scholar](https://scholar.google.com/citations?user=A8J42tQAAAAJ).*
     `
-  }
+    }
 ];
 
 export function getBlogBySlug(slug: string): BlogPost | undefined {
-  return blogPosts.find(post => post.slug === slug);
+    return blogPosts.find(post => post.slug === slug);
 }
 
 export function getBlogsByCategory(category: string): BlogPost[] {
-  if (category === "all") return blogPosts;
-  return blogPosts.filter(post => post.category === category);
+    if (category === "all") return blogPosts;
+    return blogPosts.filter(post => post.category === category);
 }

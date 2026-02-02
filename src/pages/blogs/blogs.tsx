@@ -60,11 +60,10 @@ export const Blogs = () => {
                 <button
                   key={category.id}
                   onClick={() => setActiveCategory(category.id)}
-                  className={`relative px-4 py-2 text-xs font-medium transition-colors duration-200 ${
-                    activeCategory === category.id
+                  className={`relative px-4 py-2 text-xs font-medium transition-colors duration-200 ${activeCategory === category.id
                       ? "text-blue-600 dark:text-blue-400"
                       : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                  }`}
+                    }`}
                 >
                   {category.label}
                   {activeCategory === category.id && (
@@ -84,11 +83,10 @@ export const Blogs = () => {
                 <button
                   key={tag}
                   onClick={() => toggleTag(tag)}
-                  className={`px-2 py-0.5 text-xs rounded-full transition-all duration-200 ${
-                    selectedTags.includes(tag)
+                  className={`px-2 py-0.5 text-xs rounded-full transition-all duration-200 ${selectedTags.includes(tag)
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                  }`}
+                    }`}
                 >
                   {tag}
                 </button>
@@ -110,9 +108,18 @@ export const Blogs = () => {
               <article
                 key={post.id}
                 onClick={() => navigate(`/blogs/${post.slug}`)}
-                className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer flex flex-col sm:flex-row gap-4"
               >
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                {post.coverImage && (
+                  <div className="w-full sm:w-40 h-40 sm:h-auto rounded-lg overflow-hidden flex-shrink-0 border border-gray-100 dark:border-gray-700">
+                    <img
+                      src={post.coverImage}
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 flex-1">
                   <div className="flex-1">
                     <h2 className="text-base font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">
                       {post.title}
@@ -135,7 +142,7 @@ export const Blogs = () => {
                       <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
-                  <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-1 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-1 text-[10px] text-gray-500 dark:text-gray-400 mt-1">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       <span>{formatDate(post.date)}</span>

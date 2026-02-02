@@ -11,6 +11,7 @@ interface Project {
   color: string;
   link?: string;
   github?: string;
+  image?: string;
 }
 
 const projects: Project[] = [
@@ -28,6 +29,7 @@ const projects: Project[] = [
     icon: Network,
     color: "blue",
     github: "https://github.com/zizhao-hu/agentforge",
+    image: "/images/projects/agentforge.png",
   },
   {
     title: "Project Orion",
@@ -57,6 +59,7 @@ const projects: Project[] = [
     icon: Brain,
     color: "green",
     github: "https://github.com/zizhao-hu/dream-c2l",
+    image: "/images/projects/dream.png",
   },
   {
     title: "ReasonChain: Test-Time Compute Scaling",
@@ -85,6 +88,7 @@ const projects: Project[] = [
     status: "research",
     icon: Globe,
     color: "cyan",
+    image: "/images/projects/visionground.png",
   },
   {
     title: "Project Canary",
@@ -185,7 +189,7 @@ export const Projects = () => {
   return (
     <div className="flex flex-col min-h-dvh bg-background">
       <Header />
-      
+
       <main className="flex-1 overflow-y-auto pb-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
           {/* Hero */}
@@ -211,10 +215,19 @@ export const Projects = () => {
                 return (
                   <div
                     key={project.title}
-                    className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:shadow-md transition-shadow group"
+                    className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:shadow-md transition-shadow group flex flex-col md:flex-row gap-4"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-lg bg-${project.color}-100 dark:bg-${project.color}-900/30 flex items-center justify-center flex-shrink-0`}>
+                    {project.image && (
+                      <div className="w-full md:w-32 h-32 md:h-auto rounded-lg overflow-hidden flex-shrink-0 border border-gray-100 dark:border-gray-700">
+                        <img
+                          src={project.image}
+                          alt={project.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className={`w-8 h-8 rounded-lg bg-${project.color}-100 dark:bg-${project.color}-900/30 flex items-center justify-center flex-shrink-0 mt-1`}>
                         <Icon className={`w-4 h-4 text-${project.color}-600 dark:text-${project.color}-400`} />
                       </div>
                       <div className="flex-1 min-w-0">

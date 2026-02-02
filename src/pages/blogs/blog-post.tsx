@@ -82,6 +82,17 @@ export const BlogPost = () => {
             </div>
           </header>
 
+          {/* Cover Image */}
+          {post.coverImage && (
+            <div className="mb-8 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="w-full h-auto max-h-[400px] object-cover"
+              />
+            </div>
+          )}
+
           {/* Post Content */}
           <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-600 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-900 dark:prose-pre:bg-gray-950 prose-pre:text-gray-100 prose-strong:text-gray-900 dark:prose-strong:text-white prose-blockquote:border-blue-500 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400 prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-50 dark:prose-th:bg-gray-800 prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:border-gray-200 dark:prose-td:border-gray-700">
             <ReactMarkdown

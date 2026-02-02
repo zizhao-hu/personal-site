@@ -27,7 +27,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
 
   return (
     <>
-      <header className="flex items-center justify-between px-4 sm:px-6 py-0 bg-background text-black dark:text-white w-full border-b border-gray-200 dark:border-gray-700">
+      <header className="sticky top-0 z-50 flex items-center justify-between px-4 sm:px-6 py-0 bg-background/80 backdrop-blur-md text-black dark:text-white w-full border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
         {/* Logo */}
         <button
           onClick={() => {
@@ -52,11 +52,10 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 ${
-                  active
+                className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 ${active
                     ? "text-blue-600 dark:text-blue-400"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                }`}
+                  }`}
               >
                 {item.label}
                 {/* Active underline indicator */}
@@ -94,11 +93,10 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
                   navigate(item.path);
                   setMobileMenuOpen(false);
                 }}
-                className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 ${
-                  active
+                className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 ${active
                     ? "text-blue-600 dark:text-blue-400 border-l-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-                }`}
+                  }`}
               >
                 {item.label}
               </button>

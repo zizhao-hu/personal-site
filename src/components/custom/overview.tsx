@@ -4,54 +4,65 @@ export const Overview = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 bg-background">
       {/* Hero Section */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-6">
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8 mt-2">
         {/* Profile Picture */}
-        <div className="w-28 h-28 rounded-xl overflow-hidden border-2 border-blue-200 dark:border-blue-700 shadow-lg flex-shrink-0">
-          <img 
-            src="/images/profile.jpg" 
-            alt="Zizhao Hu" 
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              const parent = target.parentElement;
-              if (parent) {
-                parent.innerHTML = `
-                  <div class="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold">
-                    ZH
-                  </div>
-                `;
-              }
-            }}
-          />
+        <div className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative w-32 h-32 rounded-2xl overflow-hidden border border-white/10 dark:border-black/50 shadow-2xl flex-shrink-0 bg-background">
+            <img
+              src="/images/profile.jpg"
+              alt="Zizhao Hu"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold">
+                      ZH
+                    </div>
+                  `;
+                }
+              }}
+            />
+          </div>
         </div>
-        
+
         {/* Main Info */}
         <div className="flex-1 text-center md:text-left">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            Zizhao Hu
-          </h1>
-          <p className="text-base text-blue-600 dark:text-blue-400 font-medium mb-2">
-            AI Researcher · PhD Student at USC
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+              Zizhao Hu
+            </h1>
+            <div className="flex items-center justify-center md:justify-start gap-1.5">
+              <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-green-600 dark:text-green-400">Available for Collaboration</span>
+            </div>
+          </div>
+
+          <p className="text-lg text-blue-600 dark:text-blue-400 font-medium mb-3">
+            AI Researcher · PhD Student at USC · MOVE Fellow
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-3 max-w-2xl">
-            Building AI systems that improve themselves while remaining under control. My research focuses on 
-            <span className="text-purple-600 dark:text-purple-400 font-medium"> multi-agent collaboration</span>, 
-            <span className="text-green-600 dark:text-green-400 font-medium"> vision-language architectures</span>, and 
-            <span className="text-orange-600 dark:text-orange-400 font-medium"> continual learning</span>.
-            MOVE Fellow at Handshake AI, contributing to frontier model training and AI safety research.
+
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4 max-w-2xl">
+            I build AI systems that improve themselves while remaining under control. My work spans
+            <span className="text-gray-900 dark:text-white font-semibold"> multi-agent collaboration</span>,
+            <span className="text-gray-900 dark:text-white font-semibold"> vision-language architectures</span>, and
+            <span className="text-gray-900 dark:text-white font-semibold"> continual learning</span>.
+            Specializing in frontier model training and safety as a MOVE Fellow at Handshake AI.
           </p>
-          
+
           {/* Quick Stats */}
-          <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-3">
-            <div className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
+          <div className="flex flex-wrap justify-center md:justify-start gap-2">
+            <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] font-semibold uppercase tracking-tight">
               🎓 USC PhD Student
             </div>
-            <div className="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium">
-              🤖 MINDS Lab / GLAMOUR Lab
+            <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] font-semibold uppercase tracking-tight">
+              🤖 GLAMOUR / MINDS Lab
             </div>
-            <div className="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium">
-              🤝 MOVE Fellow @ Handshake AI
+            <div className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 text-[10px] font-semibold uppercase tracking-tight">
+              🌐 Handshake AI @ MOVE
             </div>
           </div>
         </div>

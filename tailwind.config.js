@@ -1,15 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-    darkMode: ["class"],
-    content: [
+  darkMode: ["class"],
+  content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
     './components/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     fontFamily: {
-      sans: ['geist'],
-      mono: ['geist-mono'],
+      sans: ['Lora', 'Georgia', 'serif'],
+      heading: ['Poppins', 'Arial', 'sans-serif'],
+      mono: ['geist-mono', 'monospace'],
     },
     extend: {
       // Material Design 8px grid spacing
@@ -90,6 +91,15 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        brand: {
+          orange: '#d97757',
+          blue: '#6a9bcc',
+          green: '#788c5d',
+          dark: '#141413',
+          light: '#faf9f5',
+          'mid-gray': '#b0aea5',
+          'light-gray': '#e8e6dc',
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -118,11 +128,11 @@ export default {
           },
         },
         'gradient-wave': {
-          '0%, 100%': { 
+          '0%, 100%': {
             backgroundPosition: '0% 50%',
             backgroundSize: '200% 200%'
           },
-          '50%': { 
+          '50%': {
             backgroundPosition: '100% 50%',
             backgroundSize: '200% 200%'
           }

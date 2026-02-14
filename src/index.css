@@ -1,77 +1,104 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Brand Fonts - Poppins for headings, Lora for body */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    /* Brand colors from style.md — warm, earthy palette */
+    --background: 48 33% 97%;       /* #faf9f5 */
+    --foreground: 60 4% 8%;          /* #141413 */
+    --card: 48 33% 97%;
+    --card-foreground: 60 4% 8%;
+    --popover: 48 33% 97%;
+    --popover-foreground: 60 4% 8%;
+    --primary: 60 4% 8%;             /* #141413 */
+    --primary-foreground: 48 33% 97%;
+    --secondary: 45 19% 90%;         /* #e8e6dc */
+    --secondary-foreground: 60 4% 8%;
+    --muted: 45 19% 90%;             /* #e8e6dc */
+    --muted-foreground: 48 5% 67%;   /* #b0aea5 */
+    --accent: 17 60% 60%;            /* #d97757 — brand orange */
+    --accent-foreground: 48 33% 97%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
+    --destructive-foreground: 48 33% 97%;
+    --border: 45 19% 90%;            /* #e8e6dc */
+    --input: 45 19% 90%;
+    --ring: 17 60% 60%;              /* brand orange for focus */
+    --chart-1: 17 60% 60%;           /* orange */
+    --chart-2: 207 42% 61%;          /* blue */
+    --chart-3: 93 22% 46%;           /* green */
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem
+    --radius: 0.5rem;
+
+    /* Brand accent tokens */
+    --brand-orange: #d97757;
+    --brand-blue: #6a9bcc;
+    --brand-green: #788c5d;
+    --brand-dark: #141413;
+    --brand-light: #faf9f5;
+    --brand-mid-gray: #b0aea5;
+    --brand-light-gray: #e8e6dc;
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 60 4% 8%;          /* #141413 */
+    --foreground: 48 33% 97%;        /* #faf9f5 */
+    --card: 60 3% 11%;
+    --card-foreground: 48 33% 97%;
+    --popover: 60 3% 11%;
+    --popover-foreground: 48 33% 97%;
+    --primary: 48 33% 97%;
+    --primary-foreground: 60 4% 8%;
+    --secondary: 60 3% 15%;
+    --secondary-foreground: 48 33% 97%;
+    --muted: 60 3% 15%;
+    --muted-foreground: 48 5% 67%;   /* #b0aea5 */
+    --accent: 17 60% 60%;            /* brand orange */
+    --accent-foreground: 48 33% 97%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
+    --destructive-foreground: 48 33% 97%;
+    --border: 60 3% 18%;
+    --input: 60 3% 18%;
+    --ring: 17 60% 60%;
+    --chart-1: 17 55% 55%;
+    --chart-2: 207 42% 55%;
+    --chart-3: 93 22% 42%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%
+    --chart-5: 340 75% 55%;
   }
 }
+
 @layer base {
   @font-face {
     font-family: 'geist';
     src: url(./assets/fonts/geist.woff2) format('woff2');
   }
+
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-family: 'Lora', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Brand Typography — Poppins for all headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', Arial, sans-serif;
   }
 }
 
 @layer components {
+  /* Brand Gradient Wave */
   .gradient-wave-bg {
-    background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6);
+    background: linear-gradient(-45deg, var(--brand-orange), var(--brand-blue), var(--brand-green), var(--brand-orange));
     background-size: 200% 200%;
     animation: gradient-wave 3s ease infinite;
     position: relative;
@@ -87,27 +114,33 @@
   }
 
   .dark .gradient-wave-bg {
-    background: linear-gradient(-45deg, #1e40af, #7c3aed, #0891b2, #1e40af);
+    background: linear-gradient(-45deg, #b85e3f, #4a7aab, #5e7345, #b85e3f);
     background-size: 200% 200%;
   }
 
-  /* Material Design Typography Hierarchy */
+  /* Brand Typography Hierarchy */
   .text-display-large {
+    font-family: 'Poppins', Arial, sans-serif;
     @apply text-4xl font-bold tracking-tight;
   }
   .text-display-medium {
+    font-family: 'Poppins', Arial, sans-serif;
     @apply text-3xl font-bold tracking-tight;
   }
   .text-display-small {
+    font-family: 'Poppins', Arial, sans-serif;
     @apply text-2xl font-semibold;
   }
   .text-headline-large {
+    font-family: 'Poppins', Arial, sans-serif;
     @apply text-xl font-semibold;
   }
   .text-headline-medium {
+    font-family: 'Poppins', Arial, sans-serif;
     @apply text-lg font-semibold;
   }
   .text-headline-small {
+    font-family: 'Poppins', Arial, sans-serif;
     @apply text-base font-semibold;
   }
   .text-body-large {
@@ -120,13 +153,15 @@
     @apply text-xs;
   }
   .text-label-large {
+    font-family: 'Poppins', Arial, sans-serif;
     @apply text-sm font-medium;
   }
   .text-label-medium {
+    font-family: 'Poppins', Arial, sans-serif;
     @apply text-xs font-medium uppercase tracking-wider;
   }
 
-  /* Material Design Micro-interactions */
+  /* Micro-interactions */
   .transition-micro {
     @apply transition-all duration-200 ease-out;
   }
@@ -134,21 +169,25 @@
     @apply transition-all duration-300 ease-in-out;
   }
 
-  /* Material Design Card Elevations */
+  /* Card Elevations */
   .card-elevated {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow-elevation-2 dark:shadow-elevation-2-dark;
+    @apply rounded-lg shadow-elevation-2 dark:shadow-elevation-2-dark;
+    background-color: hsl(var(--card));
   }
   .card-elevated:hover {
     @apply shadow-elevation-3 dark:shadow-elevation-3-dark;
   }
   .card-outlined {
-    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg;
+    @apply border rounded-lg;
+    background-color: hsl(var(--card));
+    border-color: hsl(var(--border));
   }
   .card-filled {
-    @apply bg-gray-100 dark:bg-gray-800 rounded-lg;
+    @apply rounded-lg;
+    background-color: hsl(var(--muted));
   }
 
-  /* Material Design Interactive States */
+  /* Interactive States */
   .interactive-surface {
     @apply relative overflow-hidden transition-micro;
   }
@@ -163,10 +202,22 @@
     @apply opacity-10;
   }
 
-  /* Consistent Focus States */
+  /* Focus States — uses brand accent */
   .focus-ring {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    --tw-ring-color: var(--brand-orange);
   }
+
+  /* Brand accent utilities */
+  .text-brand-orange { color: var(--brand-orange); }
+  .text-brand-blue { color: var(--brand-blue); }
+  .text-brand-green { color: var(--brand-green); }
+  .bg-brand-orange { background-color: var(--brand-orange); }
+  .bg-brand-blue { background-color: var(--brand-blue); }
+  .bg-brand-green { background-color: var(--brand-green); }
+  .border-brand-orange { border-color: var(--brand-orange); }
+  .border-brand-blue { border-color: var(--brand-blue); }
+  .border-brand-green { border-color: var(--brand-green); }
 }
 
 @keyframes gradientMove {

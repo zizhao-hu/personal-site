@@ -24,7 +24,7 @@ export const FloatingChat = () => {
   const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
   const [selectedModel, setSelectedModel] = useState("Qwen2.5-0.5B-Instruct-q4f16_1-MLC");
   const [showOverlay, setShowOverlay] = useState(false);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -60,13 +60,13 @@ export const FloatingChat = () => {
       }
 
       setIsInitializing(true);
-      
+
       try {
         const importResult = await testWebLLMImport();
         if (!importResult.success) throw new Error("WebLLM import failed");
-        
+
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
+
         if (!isMobile) {
           try {
             await webLLMService.initialize((progress) => {
@@ -100,11 +100,11 @@ export const FloatingChat = () => {
   // Handle model selection
   const handleModelSelect = async (modelId: string) => {
     if (modelId === selectedModel) return;
-    
+
     setSelectedModel(modelId);
     setIsInitializing(true);
     setProgressPercentage(undefined);
-    
+
     try {
       await webLLMService.initialize((progress) => {
         const percentageMatch = progress.match(/(\d+)%/);
@@ -122,12 +122,12 @@ export const FloatingChat = () => {
 
   const handleSubmit = async () => {
     const currentService = useMockService ? mockLLMService : webLLMService;
-    
+
     if (!currentService.isReady()) {
       toast.error("AI model is still loading...");
       return;
     }
-    
+
     if (isLoading || isStreaming || !question.trim()) return;
 
     const userMessage: message = {
@@ -135,7 +135,7 @@ export const FloatingChat = () => {
       role: "user",
       content: question
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
     setQuestion("");
     setIsLoading(true);
@@ -148,16 +148,16 @@ export const FloatingChat = () => {
           role: msg.role as "user" | "assistant",
           content: msg.content
         }));
-      
+
       chatMessages.push({ role: "user", content: userMessage.content });
-      
+
       const assistantMessageId = uuidv4();
       const assistantMessage: message = {
         id: assistantMessageId,
         role: "assistant",
         content: ""
       };
-      
+
       setMessages(prev => [...prev, assistantMessage]);
       setIsLoading(false);
       setIsStreaming(true);
@@ -166,9 +166,9 @@ export const FloatingChat = () => {
         let fullContent = "";
         for await (const chunk of webLLMService.generateStreamingResponse(chatMessages)) {
           fullContent += chunk;
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === assistantMessageId 
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === assistantMessageId
                 ? { ...msg, content: fullContent }
                 : msg
             )
@@ -176,9 +176,9 @@ export const FloatingChat = () => {
         }
       } else {
         const response = await currentService.generateResponse(chatMessages);
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === assistantMessageId 
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === assistantMessageId
               ? { ...msg, content: response }
               : msg
           )
@@ -235,12 +235,12 @@ export const FloatingChat = () => {
                 </button>
               </div>
             </div>
-            
+
             {/* Messages */}
             <div className="overflow-y-auto max-h-[calc(60vh-56px)] p-2">
               {messages.map((message, index) => (
-                <PreviewMessage 
-                  key={message.id || index} 
+                <PreviewMessage
+                  key={message.id || index}
                   message={message}
                   isStreaming={isStreaming && index === messages.length - 1 && message.role === 'assistant'}
                 />
@@ -268,39 +268,37 @@ export const FloatingChat = () => {
         )}
       </AnimatePresence>
 
-      {/* Floating Input Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-2 md:px-4 md:pb-4 bg-gradient-to-t from-white dark:from-gray-900 via-white/80 dark:via-gray-900/80 to-transparent pt-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+      {/* Floating Input Bar — Compact */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-2 md:px-4 md:pb-3 bg-gradient-to-t from-background via-background/80 to-transparent pt-3">
+        <div className="max-w-xl mx-auto">
+          <div className="relative bg-card rounded-lg shadow-md border border-border">
             {/* Loading Overlay */}
             {isDisabled && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="absolute inset-0 bg-blue-50/90 dark:bg-blue-900/30 backdrop-blur-sm rounded-xl z-20 flex items-center justify-center"
+                className="absolute inset-0 bg-brand-light/90 dark:bg-brand-dark/80 backdrop-blur-sm rounded-lg z-20 flex items-center justify-center"
               >
-                <div className="flex flex-col items-center gap-2">
-                  <span className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground font-medium font-heading">
                     Loading model...
                   </span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-24 bg-blue-200 dark:bg-blue-800 rounded-full h-1">
-                      <motion.div
-                        className="bg-blue-600 h-1 rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progressPercentage || 0}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                      {progressPercentage || 0}%
-                    </span>
+                  <div className="w-16 bg-border rounded-full h-1">
+                    <motion.div
+                      className="bg-brand-orange h-1 rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPercentage || 0}%` }}
+                    />
                   </div>
+                  <span className="text-[10px] text-brand-orange font-medium">
+                    {progressPercentage || 0}%
+                  </span>
                 </div>
               </motion.div>
             )}
 
-            {/* Top Bar - Model Selector & Disclaimer */}
-            <div className="flex items-center justify-between px-2 py-1.5 border-b border-gray-100 dark:border-gray-700">
+            {/* Single Row — Model + Input + Send */}
+            <div className="flex items-center gap-1.5 p-1">
               <ModelSelector
                 selectedModel={selectedModel}
                 onModelSelect={handleModelSelect}
@@ -308,23 +306,18 @@ export const FloatingChat = () => {
                 progressPercentage={progressPercentage}
               />
               <div className="relative group">
-                <button className="p-1 text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300">
-                  <AlertTriangle className="w-3.5 h-3.5" />
+                <button className="p-0.5 text-amber-500 hover:text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="w-3 h-3" />
                 </button>
-                <div className="absolute right-0 bottom-full mb-1 w-48 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  Small models may produce inaccurate or false information. Please verify important facts.
-                  <div className="absolute right-2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                <div className="absolute left-0 bottom-full mb-1 w-44 p-1.5 bg-gray-900 dark:bg-gray-700 text-white text-[10px] rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  Small models may produce inaccurate information.
                 </div>
               </div>
-            </div>
-
-            {/* Input Row */}
-            <div className="flex items-end gap-1.5 p-1.5">
-              <div className="flex-1 relative">
+              <div className="flex-1">
                 <Textarea
                   ref={textareaRef}
                   placeholder="Ask me anything..."
-                  className="min-h-[32px] max-h-[100px] py-2 px-3 resize-none rounded-lg text-xs border-0 bg-gray-100 dark:bg-gray-700 focus:ring-1 focus:ring-blue-500"
+                  className="min-h-[28px] max-h-[60px] py-1.5 px-2.5 resize-none rounded-md text-xs border-0 bg-muted focus:ring-1 focus:ring-brand-orange font-sans"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={(event) => {
@@ -337,14 +330,12 @@ export const FloatingChat = () => {
                   disabled={isDisabled}
                 />
               </div>
-
-              {/* Send Button - Smaller */}
               <Button
-                className="rounded-lg p-1.5 h-8 w-8 flex-shrink-0"
+                className="rounded-md p-1 h-7 w-7 flex-shrink-0"
                 onClick={handleSubmit}
                 disabled={!question.trim() || isDisabled || isLoading || isStreaming}
               >
-                <ArrowUpIcon size={12} />
+                <ArrowUpIcon size={11} />
               </Button>
             </div>
           </div>

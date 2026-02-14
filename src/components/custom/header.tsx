@@ -51,7 +51,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex items-center justify-between px-4 sm:px-6 py-0 bg-background/80 backdrop-blur-md text-black dark:text-white w-full border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
+      <header className="sticky top-0 z-50 flex items-center justify-between px-4 sm:px-6 py-0 bg-background/80 backdrop-blur-md text-foreground w-full border-b border-border transition-all duration-300">
         {/* Logo */}
         <button
           onClick={() => {
@@ -60,11 +60,11 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
           }}
           className="flex items-center gap-1.5 hover:opacity-80 transition-opacity py-2"
         >
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-            <span className="text-white font-bold text-xs">ZH</span>
+          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-brand-orange to-brand-blue flex items-center justify-center">
+            <span className="text-white font-bold text-xs font-heading">ZH</span>
           </div>
           <div className="hidden sm:block">
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Zizhao Hu</span>
+            <span className="text-sm font-semibold text-foreground font-heading">Zizhao Hu</span>
           </div>
         </button>
 
@@ -73,14 +73,14 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
           {/* About tab */}
           <button
             onClick={() => navigate("/")}
-            className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 ${isActive("/")
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+            className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 font-heading ${isActive("/")
+              ? "text-brand-orange"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             About
             {isActive("/") && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-orange" />
             )}
           </button>
 
@@ -96,21 +96,21 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
                 navigate("/research");
                 setResearchDropdownOpen(false);
               }}
-              className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 flex items-center gap-0.5 ${isResearchActive
-                  ? "text-blue-600 dark:text-blue-400"
-                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 flex items-center gap-0.5 font-heading ${isResearchActive
+                ? "text-brand-orange"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               Research
               <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${researchDropdownOpen ? "rotate-180" : ""}`} />
               {isResearchActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-orange" />
               )}
             </button>
 
             {/* Dropdown panel */}
             {researchDropdownOpen && (
-              <div className="absolute top-full left-0 mt-0 w-52 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="absolute top-full left-0 mt-0 w-52 bg-card border border-border rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                 {researchSubItems.map((item) => {
                   const active = isActive(item.path);
                   return (
@@ -120,9 +120,9 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
                         navigate(item.path);
                         setResearchDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-150 ${active
-                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                      className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-150 font-heading ${active
+                        ? "text-brand-orange bg-accent"
+                        : "text-foreground/70 hover:bg-muted hover:text-foreground"
                         }`}
                     >
                       {item.label}
@@ -140,14 +140,14 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 ${active
-                    ? "text-blue-600 dark:text-blue-400"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 font-heading ${active
+                  ? "text-brand-orange"
+                  : "text-muted-foreground hover:text-foreground"
                   }`}
               >
                 {item.label}
                 {active && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-orange" />
                 )}
               </button>
             );
@@ -161,7 +161,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="md:hidden p-1.5 rounded-md hover:bg-muted"
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
@@ -170,16 +170,16 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-background/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-2 py-1 sticky top-[41px] z-40">
+        <div className="md:hidden bg-background/95 backdrop-blur-md border-b border-border px-2 py-1 sticky top-[41px] z-40">
           {/* About */}
           <button
             onClick={() => {
               navigate("/");
               setMobileMenuOpen(false);
             }}
-            className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 ${isActive("/")
-                ? "text-blue-600 dark:text-blue-400 border-l-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 font-heading ${isActive("/")
+              ? "text-brand-orange border-l-2 border-brand-orange bg-accent"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
           >
             About
@@ -188,9 +188,9 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
           {/* Research collapsible group */}
           <button
             onClick={() => setMobileResearchOpen(!mobileResearchOpen)}
-            className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 flex items-center justify-between ${isResearchActive
-                ? "text-blue-600 dark:text-blue-400 border-l-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 flex items-center justify-between font-heading ${isResearchActive
+              ? "text-brand-orange border-l-2 border-brand-orange bg-accent"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
           >
             Research
@@ -198,7 +198,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
           </button>
 
           {mobileResearchOpen && (
-            <div className="ml-3 border-l border-gray-200 dark:border-gray-700">
+            <div className="ml-3 border-l border-border">
               {researchSubItems.map((item) => {
                 const active = isActive(item.path);
                 return (
@@ -208,9 +208,9 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
                       navigate(item.path);
                       setMobileMenuOpen(false);
                     }}
-                    className={`relative w-full text-left pl-4 pr-3 py-1.5 text-xs font-medium transition-colors duration-200 ${active
-                        ? "text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/10"
-                        : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                    className={`relative w-full text-left pl-4 pr-3 py-1.5 text-xs font-medium transition-colors duration-200 font-heading ${active
+                      ? "text-brand-orange bg-accent/50"
+                      : "text-muted-foreground hover:text-foreground"
                       }`}
                   >
                     {item.label}
@@ -230,9 +230,9 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
                   navigate(item.path);
                   setMobileMenuOpen(false);
                 }}
-                className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 ${active
-                    ? "text-blue-600 dark:text-blue-400 border-l-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 font-heading ${active
+                  ? "text-brand-orange border-l-2 border-brand-orange bg-accent"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
               >
                 {item.label}

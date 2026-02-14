@@ -1,35 +1,47 @@
+/* Brand Fonts - Poppins for headings, Lora for body */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Brand Fonts - Poppins for headings, Lora for body */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
-
 @layer base {
   :root {
     /* Brand colors from style.md — warm, earthy palette */
-    --background: 48 33% 97%;       /* #faf9f5 */
-    --foreground: 60 4% 8%;          /* #141413 */
+    --background: 48 33% 97%;
+    /* #faf9f5 */
+    --foreground: 60 4% 8%;
+    /* #141413 */
     --card: 48 33% 97%;
     --card-foreground: 60 4% 8%;
     --popover: 48 33% 97%;
     --popover-foreground: 60 4% 8%;
-    --primary: 60 4% 8%;             /* #141413 */
+    --primary: 60 4% 8%;
+    /* #141413 */
     --primary-foreground: 48 33% 97%;
-    --secondary: 45 19% 90%;         /* #e8e6dc */
+    --secondary: 45 19% 90%;
+    /* #e8e6dc */
     --secondary-foreground: 60 4% 8%;
-    --muted: 45 19% 90%;             /* #e8e6dc */
-    --muted-foreground: 48 5% 67%;   /* #b0aea5 */
-    --accent: 17 60% 60%;            /* #d97757 — brand orange */
+    --muted: 45 19% 90%;
+    /* #e8e6dc */
+    --muted-foreground: 48 5% 67%;
+    /* #b0aea5 */
+    --accent: 17 60% 60%;
+    /* #d97757 — brand orange */
     --accent-foreground: 48 33% 97%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 48 33% 97%;
-    --border: 45 19% 90%;            /* #e8e6dc */
+    --border: 45 19% 90%;
+    /* #e8e6dc */
     --input: 45 19% 90%;
-    --ring: 17 60% 60%;              /* brand orange for focus */
-    --chart-1: 17 60% 60%;           /* orange */
-    --chart-2: 207 42% 61%;          /* blue */
-    --chart-3: 93 22% 46%;           /* green */
+    --ring: 17 60% 60%;
+    /* brand orange for focus */
+    --chart-1: 17 60% 60%;
+    /* orange */
+    --chart-2: 207 42% 61%;
+    /* blue */
+    --chart-3: 93 22% 46%;
+    /* green */
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
@@ -45,8 +57,10 @@
   }
 
   .dark {
-    --background: 60 4% 8%;          /* #141413 */
-    --foreground: 48 33% 97%;        /* #faf9f5 */
+    --background: 60 4% 8%;
+    /* #141413 */
+    --foreground: 48 33% 97%;
+    /* #faf9f5 */
     --card: 60 3% 11%;
     --card-foreground: 48 33% 97%;
     --popover: 60 3% 11%;
@@ -56,8 +70,10 @@
     --secondary: 60 3% 15%;
     --secondary-foreground: 48 33% 97%;
     --muted: 60 3% 15%;
-    --muted-foreground: 48 5% 67%;   /* #b0aea5 */
-    --accent: 17 60% 60%;            /* brand orange */
+    --muted-foreground: 48 5% 67%;
+    /* #b0aea5 */
+    --accent: 17 60% 60%;
+    /* brand orange */
     --accent-foreground: 48 33% 97%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 48 33% 97%;
@@ -90,12 +106,18 @@
   }
 
   /* Brand Typography — Poppins for all headings */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Poppins', Arial, sans-serif;
   }
 }
 
 @layer components {
+
   /* Brand Gradient Wave */
   .gradient-wave-bg {
     background: linear-gradient(-45deg, var(--brand-orange), var(--brand-blue), var(--brand-green), var(--brand-orange));
@@ -123,39 +145,49 @@
     font-family: 'Poppins', Arial, sans-serif;
     @apply text-4xl font-bold tracking-tight;
   }
+
   .text-display-medium {
     font-family: 'Poppins', Arial, sans-serif;
     @apply text-3xl font-bold tracking-tight;
   }
+
   .text-display-small {
     font-family: 'Poppins', Arial, sans-serif;
     @apply text-2xl font-semibold;
   }
+
   .text-headline-large {
     font-family: 'Poppins', Arial, sans-serif;
     @apply text-xl font-semibold;
   }
+
   .text-headline-medium {
     font-family: 'Poppins', Arial, sans-serif;
     @apply text-lg font-semibold;
   }
+
   .text-headline-small {
     font-family: 'Poppins', Arial, sans-serif;
     @apply text-base font-semibold;
   }
+
   .text-body-large {
     @apply text-base;
   }
+
   .text-body-medium {
     @apply text-sm;
   }
+
   .text-body-small {
     @apply text-xs;
   }
+
   .text-label-large {
     font-family: 'Poppins', Arial, sans-serif;
     @apply text-sm font-medium;
   }
+
   .text-label-medium {
     font-family: 'Poppins', Arial, sans-serif;
     @apply text-xs font-medium uppercase tracking-wider;
@@ -165,6 +197,7 @@
   .transition-micro {
     @apply transition-all duration-200 ease-out;
   }
+
   .transition-standard {
     @apply transition-all duration-300 ease-in-out;
   }
@@ -174,14 +207,17 @@
     @apply rounded-lg shadow-elevation-2 dark:shadow-elevation-2-dark;
     background-color: hsl(var(--card));
   }
+
   .card-elevated:hover {
     @apply shadow-elevation-3 dark:shadow-elevation-3-dark;
   }
+
   .card-outlined {
     @apply border rounded-lg;
     background-color: hsl(var(--card));
     border-color: hsl(var(--border));
   }
+
   .card-filled {
     @apply rounded-lg;
     background-color: hsl(var(--muted));
@@ -191,13 +227,16 @@
   .interactive-surface {
     @apply relative overflow-hidden transition-micro;
   }
+
   .interactive-surface::after {
     content: '';
     @apply absolute inset-0 bg-current opacity-0 transition-opacity duration-200;
   }
+
   .interactive-surface:hover::after {
     @apply opacity-5;
   }
+
   .interactive-surface:active::after {
     @apply opacity-10;
   }
@@ -209,21 +248,48 @@
   }
 
   /* Brand accent utilities */
-  .text-brand-orange { color: var(--brand-orange); }
-  .text-brand-blue { color: var(--brand-blue); }
-  .text-brand-green { color: var(--brand-green); }
-  .bg-brand-orange { background-color: var(--brand-orange); }
-  .bg-brand-blue { background-color: var(--brand-blue); }
-  .bg-brand-green { background-color: var(--brand-green); }
-  .border-brand-orange { border-color: var(--brand-orange); }
-  .border-brand-blue { border-color: var(--brand-blue); }
-  .border-brand-green { border-color: var(--brand-green); }
+  .text-brand-orange {
+    color: var(--brand-orange);
+  }
+
+  .text-brand-blue {
+    color: var(--brand-blue);
+  }
+
+  .text-brand-green {
+    color: var(--brand-green);
+  }
+
+  .bg-brand-orange {
+    background-color: var(--brand-orange);
+  }
+
+  .bg-brand-blue {
+    background-color: var(--brand-blue);
+  }
+
+  .bg-brand-green {
+    background-color: var(--brand-green);
+  }
+
+  .border-brand-orange {
+    border-color: var(--brand-orange);
+  }
+
+  .border-brand-blue {
+    border-color: var(--brand-blue);
+  }
+
+  .border-brand-green {
+    border-color: var(--brand-green);
+  }
 }
 
 @keyframes gradientMove {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }

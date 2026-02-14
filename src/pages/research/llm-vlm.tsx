@@ -1,5 +1,5 @@
 import { Header } from "@/components/custom/header";
-import { ExternalLink, FileText, Calendar, MessageSquare, Eye } from "lucide-react";
+import { ExternalLink, FileText, Calendar, BookOpen, Sparkles, Settings, RefreshCw } from "lucide-react";
 
 const publications = [
     {
@@ -15,24 +15,24 @@ const publications = [
 
 const keyTopics = [
     {
-        title: "Multi-Agent LLM Systems",
-        description: "Designing orchestration frameworks where specialized LLM agents collaborate on complex reasoning tasks. One agent plans, another executes, and a third verifies—creating self-correcting workflows that scale beyond single-model capabilities.",
-        icon: MessageSquare,
+        title: "Pretraining",
+        description: "Large-scale pretraining of language and vision-language models from scratch. Research on data mixing strategies, tokenization, training stability, scaling laws, and contrastive objectives that produce strong foundation models across modalities.",
+        icon: BookOpen,
     },
     {
-        title: "Vision-Language Model Training",
-        description: "Building VLMs that seamlessly integrate visual and textual understanding. Research on contrastive pre-training, cross-modal attention, and efficient fine-tuning strategies that reduce compute while maintaining performance across multimodal benchmarks.",
-        icon: Eye,
+        title: "Supervised Fine-Tuning (SFT)",
+        description: "Adapting pretrained models to follow instructions and perform domain-specific tasks through curated demonstration data. Investigating efficient fine-tuning methods (LoRA, QLoRA), data quality vs. quantity trade-offs, and multi-task instruction tuning.",
+        icon: Sparkles,
     },
     {
-        title: "Test-Time Compute & Reasoning",
-        description: "Scaling inference over training. Exploring how to make LLMs 'think longer' before responding, using chain-of-thought verification, confidence calibration, and dynamic compute allocation based on problem complexity.",
-        icon: MessageSquare,
+        title: "Post-Training",
+        description: "Alignment and preference optimization after SFT—including RLHF, DPO, and iterative self-play. Research on reward modeling, safety tuning, red-teaming, and how post-training shapes model behavior, helpfulness, and refusal boundaries.",
+        icon: Settings,
     },
     {
-        title: "Safety & Alignment",
-        description: "Ensuring LLMs remain reliable and aligned through reasoning refinement, jailbreak detection, and safety injections. Contributing to frontier model training as a MOVE Fellow at Handshake AI.",
-        icon: Eye,
+        title: "Continual Learning",
+        description: "Enabling LLMs and VLMs to learn new knowledge and capabilities over time without catastrophic forgetting. Developing replay-free and parameter-efficient continual learning methods tailored for large-scale generative models.",
+        icon: RefreshCw,
     },
 ];
 
@@ -55,10 +55,10 @@ export const LlmVlmResearch = () => {
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
                             Large Language Models and Vision-Language Models are at the core of modern AI.
-                            My work in this area spans <strong>multi-agent LLM orchestration</strong>,
-                            <strong> vision-language pre-training</strong>, <strong>test-time reasoning</strong>,
-                            and <strong>AI safety & alignment</strong>—building systems that can reason across
-                            modalities while remaining reliable and controllable.
+                            My work in this area spans the full model lifecycle—from <strong>pretraining</strong> foundation
+                            models, through <strong>supervised fine-tuning (SFT)</strong>, to <strong>post-training</strong> alignment
+                            and safety—while also investigating how to enable <strong>continual learning</strong> in
+                            large-scale generative systems.
                         </p>
                     </div>
 
@@ -99,8 +99,8 @@ export const LlmVlmResearch = () => {
                                 <div
                                     key={index}
                                     className={`p-3 rounded-lg border ${pub.highlight
-                                            ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20"
-                                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
+                                        ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20"
+                                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
                                         }`}
                                 >
                                     {pub.highlight && (

@@ -43,7 +43,7 @@ const publications: Publication[] = [
 const researchAreas = [
   {
     title: "LLM / VLM",
-    description: "Multi-agent LLM orchestration, vision-language pre-training, test-time reasoning, and AI safety & alignment.",
+    description: "Pretraining, supervised fine-tuning (SFT), post-training alignment, and continual learning for large-scale language and vision-language models.",
     icon: Users,
     color: "blue",
     highlight: true,
@@ -108,8 +108,8 @@ export const Research = () => {
                     key={area.title}
                     onClick={() => navigate(area.path)}
                     className={`p-3 rounded-lg border cursor-pointer ${area.highlight
-                        ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20"
-                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
+                      ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20"
+                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
                       } hover:shadow-md transition-all hover:scale-[1.01] group`}
                   >
                     {area.highlight && (

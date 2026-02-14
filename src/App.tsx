@@ -2,6 +2,10 @@ import './App.css'
 import { Home } from './pages/home/home'
 import { Chat } from './pages/chat/chat'
 import { Research } from './pages/research/research'
+import { LlmVlmResearch } from './pages/research/llm-vlm'
+import { ArchitectureResearch } from './pages/research/architecture'
+import { ContinualLearningResearch } from './pages/research/continual-learning'
+import { SyntheticDataResearch } from './pages/research/synthetic-data'
 import { Projects } from './pages/projects/projects'
 import { Blogs } from './pages/blogs/blogs'
 import { BlogPost } from './pages/blogs/blog-post'
@@ -20,6 +24,10 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/research" element={<Research />} />
+        <Route path="/research/llm-vlm" element={<LlmVlmResearch />} />
+        <Route path="/research/architecture" element={<ArchitectureResearch />} />
+        <Route path="/research/continual-learning" element={<ContinualLearningResearch />} />
+        <Route path="/research/synthetic-data" element={<SyntheticDataResearch />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:slug" element={<BlogPost />} />
@@ -43,3 +51,4 @@ function App() {
 }
 
 export default App;
+

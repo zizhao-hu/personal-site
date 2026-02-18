@@ -224,15 +224,15 @@ export const FloatingChat = () => {
                   mass: 0.7
                 }}
                 style={{ transformOrigin: "bottom center" }}
-                className="mb-2 relative overflow-hidden rounded-2xl"
+                className="mb-2 relative rounded-2xl"
               >
                 {/* Futuristic panel border effect */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-brand-orange/20 via-transparent to-brand-orange/10 pointer-events-none z-10" />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-brand-orange/20 via-transparent to-brand-orange/10 pointer-events-none z-[1]" />
                 <div className="absolute inset-[1px] rounded-[15px] bg-background z-0" />
 
                 {/* Scan-line overlay for futuristic feel */}
                 <div
-                  className="absolute inset-0 rounded-2xl pointer-events-none z-20 opacity-[0.03]"
+                  className="absolute inset-0 rounded-2xl pointer-events-none z-[2] opacity-[0.03]"
                   style={{
                     backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, currentColor 2px, currentColor 3px)",
                   }}
@@ -386,7 +386,7 @@ export const FloatingChat = () => {
             <div className="h-[2px] bg-gradient-to-r from-transparent via-brand-orange/40 to-transparent" />
 
             {/* Single Row — Model + Input + Send */}
-            <div className="flex items-center gap-1.5 p-1.5">
+            <div className="flex items-center gap-1.5 p-1.5 relative z-30">
               <ModelSelector
                 selectedModel={selectedModel}
                 onModelSelect={handleModelSelect}

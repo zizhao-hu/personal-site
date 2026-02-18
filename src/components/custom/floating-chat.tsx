@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Textarea } from "../ui/textarea";
-import { Button } from "../ui/button";
-import { ArrowUpIcon } from "./icons";
+import { ArrowUpIcon, SparklesIcon } from "./icons";
 import { ModelSelector } from "./model-selector";
-import { PreviewMessage, ThinkingMessage } from "./message";
+import { Markdown } from "./markdown";
 import { webLLMService } from "@/lib/webllm-service";
 import { mockLLMService } from "@/lib/mock-llm-service";
 import { testWebLLMImport } from "@/lib/webllm-import-test";
@@ -278,16 +277,56 @@ export const FloatingChat = () => {
                     </div>
                   </div>
 
-                  {/* Messages area */}
-                  <div className="overflow-y-auto max-h-[50vh] p-3 space-y-1 scroll-smooth">
+                  {/* Messages area — compact inline rendering */}
+                  <div className="overflow-y-auto max-h-[50vh] p-2 space-y-2 scroll-smooth">
                     {messages.map((msg, index) => (
-                      <PreviewMessage
+                      <motion.div
                         key={msg.id || index}
-                        message={msg}
-                        isStreaming={isStreaming && index === messages.length - 1 && msg.role === 'assistant'}
-                      />
+                        initial={{ y: 4, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'
+                          }`}
+                      >
+                        {msg.role === 'assistant' && (
+                          <div className="w-5 h-5 flex items-center justify-center rounded-full ring-1 ring-border shrink-0 mt-0.5">
+                            <SparklesIcon size={10} />
+                          </div>
+                        )}
+                        <div
+                          className={`max-w-[85%] text-[13px] leading-relaxed ${msg.role === 'user'
+                              ? 'bg-zinc-700 dark:bg-muted text-white px-2.5 py-1.5 rounded-xl rounded-br-md'
+                              : 'text-foreground'
+                            }`}
+                        >
+                          {msg.role === 'assistant' ? (
+                            <div className="chat-compact-md">
+                              <Markdown>{msg.content}</Markdown>
+                              {isStreaming && index === messages.length - 1 && (
+                                <span className="inline-block w-1.5 h-3.5 bg-current animate-pulse ml-0.5" />
+                              )}
+                            </div>
+                          ) : (
+                            msg.content
+                          )}
+                        </div>
+                      </motion.div>
                     ))}
-                    {isLoading && !isStreaming && <ThinkingMessage />}
+                    {isLoading && !isStreaming && (
+                      <motion.div
+                        initial={{ y: 4, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1, transition: { delay: 0.15 } }}
+                        className="flex gap-2 items-center"
+                      >
+                        <div className="w-5 h-5 flex items-center justify-center rounded-full ring-1 ring-border shrink-0">
+                          <SparklesIcon size={10} />
+                        </div>
+                        <div className="flex gap-1 py-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </motion.div>
+                    )}
                     <div ref={messagesEndRef} />
                   </div>
 
@@ -394,13 +433,13 @@ export const FloatingChat = () => {
                 </button>
               )}
 
-              <Button
-                className="rounded-lg p-1 h-7 w-7 flex-shrink-0 bg-brand-orange hover:bg-brand-orange/85 text-white"
+              <button
+                className="rounded-lg h-7 w-7 flex-shrink-0 bg-brand-orange hover:bg-brand-orange/85 text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none"
                 onClick={handleSubmit}
                 disabled={!question.trim() || isDisabled || isLoading || isStreaming}
               >
-                <ArrowUpIcon size={11} />
-              </Button>
+                <ArrowUpIcon size={12} />
+              </button>
             </div>
           </div>
         </div>

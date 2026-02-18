@@ -17,6 +17,330 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
     {
+        id: "4",
+        slug: "the-interview-is-dead",
+        title: "The Interview Is Dead: What AI Evaluation Teaches Us About Hiring Humans",
+        excerpt: "AI benchmarks drive model development. So why are we still evaluating humans with whiteboards and trivia? It's time to rethink hiring around human-AI collaboration and real deliverables.",
+        date: "2026-02-18",
+        readingTime: "14 min",
+        category: "ai",
+        tags: ["AI Evaluation", "Human-AI Collaboration", "Hiring", "Future of Work"],
+        coverImage: "/images/blogs/interview-dead.png",
+        author: {
+            name: "Zizhao Hu",
+            avatar: "/profile.jpg"
+        },
+        content: `
+# The Interview Is Dead: What AI Evaluation Teaches Us About Hiring Humans
+
+There's a dirty secret hiding in plain sight across the tech industry: **we've gotten incredibly good at evaluating AI, and embarrassingly bad at evaluating humans.**
+
+The AI research community has built a sophisticated culture around evaluation. Benchmarks like MMLU, HumanEval, MT-Bench, and GPQA don't just *measure* models—they actively **drive development**. Teams orient their entire research agenda around moving scores on these benchmarks. A new eval drops and suddenly every lab in the world is optimizing for it. Evaluation, in the AI world, is the engine that shapes what gets built.
+
+Now look at how we evaluate humans for technical roles. Whiteboard coding. LeetCode grinding. "Reverse a linked list." "Tell me about a time you showed leadership."
+
+*Does anyone else see the irony?*
+
+![The evolution of technical interviews](/images/blogs/interview-dead.png)
+
+## The Evaluation Principle: You Become What You Measure
+
+In AI, we've learned a fundamental truth: **the evaluatee adapts to the evaluation.** This is why benchmark design is treated as a first-class research problem. Design a bad benchmark and you get models that ace the test but fail in the real world—Goodhart's Law in action.
+
+\`\`\`
+Goodhart's Law:
+"When a measure becomes a target,
+ it ceases to be a good measure."
+\`\`\`
+
+The same principle applies to hiring. When we evaluate humans on LeetCode puzzles, we produce **LeetCode grinders**—people who are brilliant at algorithmic trivia but may struggle to architect a real system, communicate with a team, or ship a product.
+
+When we evaluate humans on whiteboard coding without access to documentation, Stack Overflow, or AI tools, we're testing a skill that **no one uses in actual work anymore.**
+
+Let that sink in. We're measuring a capability that is *actively irrelevant* to the job.
+
+## What AI Evaluation Gets Right
+
+Let's examine why AI evals work so well:
+
+### 1. They Test Real Capabilities
+
+Modern AI benchmarks don't ask models to recite training data. They present novel problems that require genuine reasoning, generation, and application. HumanEval doesn't test if a model memorized Python syntax—it tests if the model can *solve programming problems.*
+
+### 2. They Measure End-to-End Performance
+
+The best evals look at the **final output quality**, not intermediate steps. SWE-bench doesn't grade models on whether they wrote the "correct" git commands—it checks whether the pull request actually fixes the bug.
+
+### 3. They Reflect Real-World Scenarios
+
+MT-Bench evaluates models through multi-turn conversations because that's how people actually use chatbots. GPQA uses PhD-level questions because that's the frontier where capability matters.
+
+### 4. They Evolve
+
+When models saturate a benchmark, the community creates harder ones. Evaluation stays ahead of capability, constantly pushing the frontier.
+
+\`\`\`python
+# The AI evaluation flywheel
+class EvalDrivenDevelopment:
+    def __init__(self):
+        self.benchmarks = []
+        self.capabilities = []
+
+    def cycle(self):
+        # 1. Create meaningful evaluation
+        new_eval = design_benchmark(
+            reflects_real_work=True,
+            measures_end_to_end=True,
+            hard_enough_to_differentiate=True
+        )
+        self.benchmarks.append(new_eval)
+
+        # 2. Development adapts to evaluation
+        improved_model = train_to_improve(new_eval)
+        self.capabilities.append(improved_model)
+
+        # 3. When saturated, create harder eval
+        if is_saturated(new_eval):
+            self.cycle()  # Recurse!
+\`\`\`
+
+Now ask yourself: does the typical software engineering interview do *any* of these things?
+
+## The Human Evaluation Gap
+
+Here's where it gets uncomfortable. Compare:
+
+| | AI Evaluation | Human Evaluation (Interviews) |
+|---|---|---|
+| **Tests real capabilities** | ✅ Novel problems | ❌ Memorized patterns |
+| **Measures end-to-end** | ✅ Final output quality | ❌ Intermediate steps only |
+| **Reflects real work** | ✅ Actual use cases | ❌ Artificial constraints |
+| **Uses real tools** | ✅ Full capability stack | ❌ Whiteboard, no tools |
+| **Evolves** | ✅ Constantly updated | ❌ Same format for 20+ years |
+| **Tests collaboration** | ⚠️ Emerging (multi-agent) | ❌ Solo performance only |
+
+The gap is staggering. We've been refining AI evaluation methodology for years while human evaluation has remained essentially frozen since the 1990s.
+
+## The Elephant in the Room: AI Is Now Part of the Workflow
+
+Here's the thing that makes this conversation urgent: **AI is no longer a future consideration—it's a present-day tool.** Every developer, designer, researcher, and knowledge worker is (or should be) using AI assistants daily. The question isn't whether someone *can* code—it's whether they can **orchestrate AI to produce excellent work while catching its mistakes.**
+
+This is a fundamentally different skill than writing code from scratch on a whiteboard. It requires:
+
+- **Architectural thinking**: Seeing the big picture before diving into details
+- **Verification ability**: Knowing when AI output is wrong, even when it looks convincing
+- **Prompt engineering**: Communicating intent clearly to AI systems
+- **Taste and judgment**: Choosing between multiple valid approaches
+- **Integration skills**: Weaving AI-generated components into a coherent whole
+
+None of these are measured by traditional interviews.
+
+## A New Framework: The Deliverable-Based Collaboration Interview
+
+Here's my proposal for what technical interviews should look like in the age of AI:
+
+### The Setup
+
+Give the candidate a **general, real-world problem** that requires both big-picture thinking and attention to detail. The problem should be:
+
+1. **Broad enough** to require strategic decisions
+2. **Deep enough** to demand technical precision
+3. **Open-ended enough** to allow creative solutions
+4. **Realistic enough** to mirror actual work
+
+\`\`\`
+Example Problem Statements:
+
+🌐 "Build a tool that helps researchers track and compare
+   results across multiple ML experiments."
+
+🎨 "Design and implement an interactive data visualization
+   dashboard for a public dataset of your choosing."
+
+📱 "Create a mobile-friendly web application that solves
+   a genuine problem for a specific user group."
+\`\`\`
+
+### The Process
+
+The candidate works **with AI tools** (ChatGPT, Claude, Copilot, Cursor—whatever they prefer) to solve the problem over a realistic timeframe. The key constraint: **the AI needs human verification at every step.**
+
+This creates a natural evaluation structure:
+
+\`\`\`
+                    ┌─────────────────┐
+                    │  Big Picture     │
+                    │  (Architecture)  │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  Human Decision  │
+                    │  + AI Execution  │
+                    └────────┬────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+        ┌─────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐
+        │ Component  │ │ Component  │ │ Component  │
+        │     A      │ │     B      │ │     C      │
+        └─────┬─────┘ └─────┬─────┘ └─────┬─────┘
+              │              │              │
+        ┌─────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐
+        │  Human     │ │  Human     │ │  Human     │
+        │  Verifies  │ │  Verifies  │ │  Verifies  │
+        └─────┬─────┘ └─────┬─────┘ └─────┬─────┘
+              │              │              │
+              └──────────────┼──────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Deliverable    │
+                    │  (Website/Tool)  │
+                    └─────────────────┘
+\`\`\`
+
+The candidate starts from the **big picture**—What's the architecture? What are the key design decisions? What tradeoffs am I making?—and works down to **small details**—Is this edge case handled? Is the error message helpful? Does the animation feel right?
+
+At each level, the AI does the heavy lifting of code generation, but the **human decides, guides, and verifies.** This is exactly how modern software development works.
+
+### The Deliverable
+
+At the end, the candidate produces a **real, working artifact**:
+
+- A deployed website
+- A functional tool or CLI
+- A data analysis report with visualizations
+- A working prototype with documentation
+
+This is what the interviewer evaluates. Not "did they know the optimal Big-O complexity?"—but **"did they build something that works, that's well-designed, and that solves the problem?"**
+
+### The Evaluation: What to Measure
+
+Here's where it gets interesting. The evaluation should capture two dimensions:
+
+#### Dimension 1: The Deliverable (60%)
+
+\`\`\`python
+deliverable_metrics = {
+    "functionality":    "Does it work? Does it solve the stated problem?",
+    "design_quality":   "Is it well-architected? Is the UX thoughtful?",
+    "attention_to_detail": "Edge cases, error handling, polish",
+    "creativity":       "Novel approaches, unexpected solutions",
+    "completeness":     "Scope management—what was included/excluded and why",
+}
+\`\`\`
+
+The interviewer can dig into specific details: *"I notice you chose a particular data structure here—walk me through that decision."* or *"This error message is really helpful—was that your idea or the AI's?"*
+
+#### Dimension 2: The Collaboration Process (40%)
+
+This is the new dimension that doesn't exist in traditional interviews. We capture **how well the human collaborates with AI:**
+
+\`\`\`python
+collaboration_metrics = {
+    "problem_decomposition":  "How effectively did they break the problem down?",
+    "ai_guidance_quality":    "Were their prompts clear and strategic?",
+    "verification_accuracy":  "Did they catch AI mistakes? Miss any?",
+    "iteration_efficiency":   "How quickly did they converge on good solutions?",
+    "tool_fluency":           "Comfortable with AI tools? Switching between them?",
+    "judgment_calls":         "When did they override the AI? Were they right?",
+}
+\`\`\`
+
+This second dimension is crucial. Two candidates might produce similar deliverables, but one might have caught three critical AI hallucinations while the other blindly accepted buggy code. That difference matters enormously in a real work environment.
+
+## A Concrete Example
+
+Let's walk through what this looks like in practice:
+
+**Problem**: *"Build an interactive tool that helps a small restaurant manage and display their weekly specials. The tool should work on mobile devices and be easy for non-technical staff to update."*
+
+**What we're watching for:**
+
+\`\`\`
+Big Picture Decisions (observed in first 15 minutes):
+├── Does the candidate sketch the architecture before coding?
+├── Do they consider the end user (non-technical restaurant staff)?
+├── Do they make reasonable technology choices?
+└── Do they scope the problem well?
+
+AI Collaboration (observed throughout):
+├── Are they giving the AI clear, well-structured instructions?
+├── Do they review AI-generated code or blindly paste it?
+├── Do they catch when the AI makes incorrect assumptions?
+├── Do they iterate effectively when something doesn't work?
+└── Do they know when to write code themselves vs. delegate to AI?
+
+Detail Execution (observed in final artifact):
+├── Mobile responsiveness
+├── Error states and edge cases
+├── Accessibility considerations
+├── Data persistence approach
+└── Overall polish and usability
+\`\`\`
+
+## Why This Matters Now
+
+Three forces are converging to make this urgent:
+
+### 1. AI Capability Is Accelerating
+
+Every quarter, AI coding assistants get significantly better. The gap between "what AI can do alone" and "what a skilled human + AI can do" is where the real value lives. We need to measure people's ability to operate in that gap.
+
+### 2. The Nature of Work Is Changing
+
+Software engineers in 2026 spend more time reviewing, guiding, and verifying AI-generated code than writing it from scratch. An interview that bans AI tools is evaluating for a job that no longer exists.
+
+### 3. The Competition for Talent Is Global
+
+Companies that adopt better evaluation methods will identify genuinely capable people who are overlooked by traditional interviews. LeetCode proficiency has never been a strong predictor of job performance—but it *has* been a strong predictor of "has free time to grind practice problems."
+
+## Addressing Objections
+
+**"But we need to know if they can actually code!"**
+
+You'll see this in the deliverable. If they can orchestrate AI to produce a working, well-designed application, they understand code deeply enough. You can't verify AI output without understanding the fundamentals.
+
+**"This takes too long for an interview."**
+
+A 3-4 hour work session produces far more signal than six 45-minute LeetCode rounds. You're also testing stamina, project management, and prioritization—skills that actually matter on the job.
+
+**"How do we standardize the evaluation?"**
+
+The same way AI benchmarks do: define clear rubrics, use multiple evaluators, and iterate on the evaluation methodology. This is a solved problem in AI—we just need to apply it to humans.
+
+**"What about candidates who aren't familiar with AI tools?"**
+
+That's itself a signal. In 2026, AI fluency is a core job skill. But you can provide a brief introduction at the start and see how quickly they adapt—that's valuable information too.
+
+## The Meta-Lesson
+
+The deepest insight from AI evaluation culture isn't about any specific benchmark. It's this: **evaluation and capability co-evolve.** Better evals produce better models. Better models demand better evals.
+
+The same will happen with human evaluation. If we start measuring what actually matters—collaboration, judgment, end-to-end delivery, real-world problem solving—we'll get people who are better at those things. Not because we selected for them, but because we **created a culture that values them.**
+
+The interview isn't just a filter. It's a signal to the entire industry about what matters. Right now, that signal says: "Memorize algorithms. Work alone. Pretend AI doesn't exist."
+
+It's time to send a different signal.
+
+## A Call to Action
+
+If you're in a position to influence hiring at your company:
+
+1. **Run a pilot**: Try one deliverable-based interview alongside your existing process. Compare the signal quality.
+2. **Let candidates use AI**: Watch what happens. The differentiation between candidates becomes *more* pronounced, not less.
+3. **Judge the output**: Focus on the artifact. Would you ship this? Would you want this person on your team based on what they built?
+4. **Measure collaboration**: Pay attention to how they work with AI. This is the meta-skill of the decade.
+
+The AI evaluation revolution already happened. The human evaluation revolution is overdue.
+
+Let's build it.
+
+---
+
+*This post reflects my perspective as a PhD researcher working at the intersection of AI systems and human collaboration. For more on my work, visit [Google Scholar](https://scholar.google.com/citations?user=A8J42tQAAAAJ).*
+    `
+    },
+    {
         id: "1",
         slug: "continual-learning-neural-networks",
         title: "Understanding Continual Learning in Neural Networks",

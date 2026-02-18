@@ -294,3 +294,51 @@
     background-position: 200% 0;
   }
 }
+
+/* Compact markdown for the floating chat drawer */
+.chat-compact-md {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.chat-compact-md h1,
+.chat-compact-md h2,
+.chat-compact-md h3,
+.chat-compact-md h4,
+.chat-compact-md h5,
+.chat-compact-md h6 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.chat-compact-md p {
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+.chat-compact-md pre {
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin: 4px 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.chat-compact-md code {
+  font-size: 11px;
+  padding: 1px 4px;
+}
+
+.chat-compact-md ul,
+.chat-compact-md ol {
+  margin-left: 12px;
+  font-size: 13px;
+}
+
+.chat-compact-md li {
+  padding-top: 1px;
+  padding-bottom: 1px;
+}

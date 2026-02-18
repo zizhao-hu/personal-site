@@ -13,6 +13,7 @@ import { Tutorials } from './pages/tutorials/tutorials'
 import { TutorialDetail } from './pages/tutorials/tutorial-detail'
 import { Tools } from './pages/tools/tools'
 import { PipelineDesigner } from './pages/tools/pipeline-designer'
+import { SlideMaker } from './pages/tools/slide-maker'
 import { FloatingChat } from './components/custom/floating-chat'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext'
@@ -38,6 +39,7 @@ function AppContent() {
         <Route path="/chat" element={<Chat />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="/tools/pipeline-designer" element={<PipelineDesigner />} />
+        <Route path="/tools/slide-maker" element={<SlideMaker />} />
       </Routes>
       {showFloatingChat && <FloatingChat />}
     </div>

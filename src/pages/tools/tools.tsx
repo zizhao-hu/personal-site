@@ -11,6 +11,14 @@ const tools = [
         icon: '🔧',
         tags: ['Canvas', 'Diagrams', 'Research'],
     },
+    {
+        id: 'slide-maker',
+        title: 'Research Slide Maker',
+        description: 'Build academic presentation slides with a pre-defined research template sequence. Drag, resize, and edit elements, then export for Google Slides.',
+        path: '/tools/slide-maker',
+        icon: '📊',
+        tags: ['Slides', 'Presentations', 'Research'],
+    },
 ];
 
 export const Tools = () => {

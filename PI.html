@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pipeline Designer - Pro Editor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Poppins:wght@400;600&display=swap');
+
+        :root {
+            --anth-dark: #141413;
+            --anth-light: #faf9f5;
+            --anth-mid-gray: #b0aea5;
+            --anth-light-gray: #e8e6dc;
+            --anth-orange: #d97757;
+            --anth-blue: #6a9bcc;
+            --anth-green: #788c5d;
+            --anth-clay: #c2968a;
+            --font-heading: 'Poppins', Arial, sans-serif;
+            --font-body: 'Lora', Georgia, serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--anth-light);
+            color: var(--anth-dark);
+            font-family: var(--font-body);
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+        }
+
+        .canvas-container {
+            position: relative;
+            background: #FFFFFF;
+            border: 1px solid var(--anth-light-gray);
+            border-radius: 12px;
+            cursor: default;
+        }
+
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+
+        #text-editor {
+            position: absolute;
+            display: none;
+            background: white;
+            border: 1px solid var(--anth-orange);
+            padding: 2px 4px;
+            font-family: var(--font-heading);
+            font-size: 10px;
+            z-index: 1000;
+            outline: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            resize: none;
+        }
+
+        #context-menu {
+            position: absolute;
+            display: none;
+            background: white;
+            border: 1px solid var(--anth-light-gray);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            z-index: 2000;
+            padding: 6px 0;
+            min-width: 140px;
+        }
+
+        .menu-item {
+            padding: 8px 12px;
+            font-family: var(--font-heading);
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+        }
+
+        .menu-item:hover {
+            background: var(--anth-light);
+        }
+
+        .color-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            margin-top: 15px;
+            font-size: 12px;
+            color: var(--anth-mid-gray);
+            font-family: var(--font-heading);
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--anth-dark);
+            background: var(--anth-dark);
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--anth-light);
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        button.active {
+            background: var(--anth-blue);
+            border-color: var(--anth-blue);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            background: var(--anth-dark);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 11px;
+            display: none;
+            pointer-events: none;
+            z-index: 3000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="canvas-container" id="container">
+    <canvas id="pipelineCanvas"></canvas>
+    <textarea id="text-editor"></textarea>
+    <div id="context-menu">
+        <div class="menu-item" onclick="setVariant('neutral')"><div class="color-swatch" style="background: #b0aea5"></div> Neutral (Grey)</div>
+        <div class="menu-item" onclick="setVariant('blue')"><div class="color-swatch" style="background: #6a9bcc"></div> Blue</div>
+        <div class="menu-item" onclick="setVariant('orange')"><div class="color-swatch" style="background: #d97757"></div> Orange</div>
+        <div class="menu-item" onclick="setVariant('green')"><div class="color-swatch" style="background: #788c5d"></div> Green</div>
+        <div class="menu-item" onclick="setVariant('clay')"><div class="color-swatch" style="background: #c2968a"></div> Clay</div>
+        <div class="menu-item" onclick="setVariant('dark')"><div class="color-swatch" style="background: #141413"></div> Dark</div>
+    </div>
+</div>
+
+<div class="instructions">
+    • Answer blocks are <b>multi-line centered</b> • <b>Add Connection</b> for manual arrows • <b>Ctrl+C / Ctrl+V</b> to duplicate
+</div>
+
+<div class="controls">
+    <button id="btn-connect" onclick="toggleConnectMode()">Add Connection</button>
+    <button onclick="resetLayout()">Reset Layout</button>
+    <button onclick="downloadCanvas()">Export PNG</button>
+</div>
+
+<div id="toast" class="toast">Layout Updated</div>
+
+<script>
+    const canvas = document.getElementById('pipelineCanvas');
+    const ctx = canvas.getContext('2d');
+    const editor = document.getElementById('text-editor');
+    const menu = document.getElementById('context-menu');
+    const container = document.getElementById('container');
+    const dpr = window.devicePixelRatio || 2;
+    const GRID_SIZE = 10;
+
+    const brand = {
+        dark: '#141413', light: '#faf9f5', midGray: '#b0aea5',
+        orange: '#d97757', blue: '#6a9bcc', green: '#788c5d', clay: '#c2968a'
+    };
+
+    const colors = {
+        neutral: { head: brand.midGray, body: brand.light, border: brand.midGray, textTitle: brand.light, textBody: brand.dark },
+        orange: { head: brand.orange, body: brand.light, border: brand.orange, textTitle: brand.light, textBody: brand.dark },
+        green: { head: brand.green, body: brand.light, border: brand.green, textTitle: brand.light, textBody: brand.dark },
+        blue: { head: brand.blue, body: brand.light, border: brand.blue, textTitle: brand.light, textBody: brand.dark },
+        dark: { head: brand.dark, body: brand.light, border: brand.dark, textTitle: brand.light, textBody: brand.dark },
+        clay: { head: brand.clay, body: brand.light, border: brand.clay, textTitle: brand.light, textBody: brand.dark },
+        line: brand.midGray
+    };
+
+    let width = 1150;
+    let height = 750;
+    let nodes = [];
+    let connections = [];
+    let draggedNode = null;
+    let resizedNode = null;
+    let editingNode = null;
+    let editingField = 'content';
+    let selectionBox = null;
+    let selectedNodeIds = new Set();
+    let clipboard = { nodes: [], connections: [] };
+    let offset = { x: 0, y: 0 };
+    let isResizing = false;
+
+    let isConnecting = false;
+    let connectSourceId = null;
+    let mousePos = { x: 0, y: 0 };
+
+    function snap(val) { return Math.round(val / GRID_SIZE) * GRID_SIZE; }
+
+    function createNodes() {
+        nodes = [
+            // --- APPROACH A INFERENCE ---
+            { id: 'label_a', x: 40, y: 20, w: 180, h: 20, type: 'title', title: 'Approach A: Inference (Explicit)' },
+            { id: 'a_q1', x: 20, y: 120, w: 100, h: 45, type: 'headerNode', variant: 'neutral', title: 'User Prompt', content: '"Integral of x^2"' },
+            { id: 'a_r1', x: 140, y: 110, w: 40, h: 65, type: 'minimal', variant: 'orange', title: 'Router' },
+            { id: 'col_sys_a', x: 220, y: 30, w: 80, h: 15, type: 'colLabel', title: 'SYSTEM PROMPT' },
+            { id: 'a_p1', x: 220, y: 50, w: 80, h: 40, type: 'headerNode', variant: 'neutral', title: 'Scientist', content: 'System Prompt' },
+            { id: 'a_p2', x: 220, y: 100, w: 80, h: 40, type: 'headerNode', variant: 'neutral', title: 'Counselor', content: 'System Prompt' },
+            { id: 'a_p3', x: 220, y: 150, w: 80, h: 40, type: 'headerNode', variant: 'neutral', title: 'Default', content: 'System Prompt' },
+            { id: 'a_q2', x: 320, y: 100, w: 100, h: 45, type: 'headerNode', variant: 'neutral', title: 'User Prompt', content: '"Integral of x^2"' },
+            { id: 'a_llm', x: 440, y: 90, w: 40, h: 65, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
+            { id: 'col_ans_a', x: 500, y: 30, w: 80, h: 15, type: 'colLabel', title: 'ANSWER' },
+            { id: 'a_out1', x: 500, y: 50, w: 80, h: 35, type: 'plain', variant: 'green', content: '"x^3/3 + C"' },
+            { id: 'a_out2', x: 500, y: 100, w: 80, h: 35, type: 'plain', variant: 'neutral', content: '"Helpful msg"' },
+            { id: 'a_out3', x: 500, y: 150, w: 80, h: 35, type: 'plain', variant: 'neutral', content: '"Assistant reply"' },
+
+            // --- APPROACH B INFERENCE ---
+            { id: 'label_b_inf', x: 650, y: 20, w: 220, h: 20, type: 'title', title: 'Approach B: Inference (Distilled)' },
+            { id: 'bi_q', x: 650, y: 100, w: 100, h: 45, type: 'headerNode', variant: 'neutral', title: 'User Prompt', content: '"Integral of x^2"' },
+            { id: 'bi_llm', x: 790, y: 95, w: 50, h: 65, type: 'minimal', variant: 'orange', title: 'PESD LLM' },
+            { id: 'bi_ans', x: 880, y: 105, w: 100, h: 45, type: 'plain', variant: 'green', content: '"x^3/3 + C"' },
+
+            // --- APPROACH B TRAINING CONTAINER ---
+            { id: 'bt_container', x: 20, y: 280, w: 1060, h: 420, type: 'container', title: 'Approach B: Training (PESD Framework)' },
+            { id: 'label_bt1', x: 40, y: 320, w: 220, h: 15, type: 'title', title: '1. Synthetic Query Generation', size: 9 },
+            { id: 'label_bt2', x: 380, y: 320, w: 220, h: 15, type: 'title', title: '2. Synthetic Answer Generation', size: 9 },
+            { id: 'label_bt3', x: 740, y: 320, w: 220, h: 15, type: 'title', title: '3. Data Pairs Distillation', size: 9 },
+
+            // Training Labels
+            { id: 'col_sys_b1', x: 160, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYSTEM PROMPT' },
+            { id: 'col_sq_b1', x: 320, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYNTHETIC QUERY' },
+            
+            { id: 'bt1_q', x: 40, y: 400, w: 100, h: 45, type: 'headerNode', variant: 'neutral', title: 'User Prompt', content: '"User Query"' },
+            { id: 'bt1_sys1', x: 160, y: 370, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Scientist', content: 'System Prompt' },
+            { id: 'bt1_sys2', x: 160, y: 410, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Counselor', content: 'System Prompt' },
+            { id: 'bt1_sys3', x: 160, y: 450, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Default', content: 'System Prompt' },
+            { id: 'bt1_llm', x: 260, y: 395, w: 40, h: 60, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
+            { id: 'bt1_sq1', x: 320, y: 370, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q1"', stacked: true },
+            { id: 'bt1_sq2', x: 320, y: 405, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q2"', stacked: true },
+            { id: 'bt1_sq3', x: 320, y: 440, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q3"', stacked: true },
+
+            { id: 'col_sys_b2', x: 420, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYSTEM PROMPT' },
+            { id: 'col_sq_b2', x: 520, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYNTHETIC QUERY' },
+            { id: 'col_sa_b2', x: 680, y: 345, w: 85, h: 15, type: 'colLabel', title: 'SYNTHETIC ANSWER' },
+
+            { id: 'bt2_sys1', x: 420, y: 370, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Scientist', content: 'System Prompt' },
+            { id: 'bt2_sys2', x: 420, y: 410, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Counselor', content: 'System Prompt' },
+            { id: 'bt2_sys3', x: 420, y: 450, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Default', content: 'System Prompt' },
+            { id: 'bt2_sq1', x: 520, y: 370, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q1"', stacked: true },
+            { id: 'bt2_sq2', x: 520, y: 405, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q2"', stacked: true },
+            { id: 'bt2_sq3', x: 520, y: 440, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q3"', stacked: true },
+            { id: 'bt2_llm', x: 620, y: 395, w: 40, h: 60, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
+            { id: 'bt2_sa1', x: 680, y: 370, w: 85, h: 30, type: 'plain', variant: 'blue', content: '"Synth Ans 1"', stacked: true },
+            { id: 'bt2_sa2', x: 680, y: 405, w: 85, h: 30, type: 'plain', variant: 'blue', content: '"Synth Ans 2"', stacked: true },
+            { id: 'bt2_sa3', x: 680, y: 440, w: 85, h: 30, type: 'plain', variant: 'blue', content: '"Synth Ans 3"', stacked: true },
+
+            { id: 'col_sq_b3', x: 790, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYNTHETIC QUERY' },
+            { id: 'col_sa_b3', x: 950, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYNTHETIC ANSWER' },
+
+            { id: 'bt3_sq1', x: 790, y: 370, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Q1"', stacked: true },
+            { id: 'bt3_sq2', x: 790, y: 405, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Q2"', stacked: true },
+            { id: 'bt3_sq3', x: 790, y: 440, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Q3"', stacked: true },
+            { id: 'bt3_llm', x: 890, y: 395, w: 40, h: 60, type: 'minimal', variant: 'orange', title: 'Base LLM' },
+            { id: 'bt3_sa1', x: 950, y: 370, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Ans 1"', stacked: true },
+            { id: 'bt3_sa2', x: 950, y: 405, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Ans 2"', stacked: true },
+            { id: 'bt3_sa3', x: 950, y: 440, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Ans 3"', stacked: true }
+        ];
+
+        connections = [
+            { from: 'a_r1', to: ['a_p1', 'a_p2', 'a_p3'], type: 'split' },
+            { from: ['a_p1', 'a_p2', 'a_p3'], to: 'a_q2', type: 'merge' },
+            { from: 'a_q2', to: 'a_llm', type: 'direct' },
+            { from: 'a_llm', to: ['a_out1', 'a_out2', 'a_out3'], type: 'split' },
+            { from: 'bi_q', to: 'bi_llm', type: 'direct' },
+            { from: 'bi_llm', to: 'bi_ans', type: 'direct' },
+            { from: 'bi_llm', to: 'bt_container', type: 'direct', dash: [5,5], orientation: 'vertical' },
+            { from: 'bt1_q', to: ['bt1_sys1', 'bt1_sys2', 'bt1_sys3'], type: 'split' },
+            { from: ['bt1_sys1', 'bt1_sys2', 'bt1_sys3'], to: 'bt1_llm', type: 'merge' },
+            { from: 'bt1_llm', to: ['bt1_sq1', 'bt1_sq2', 'bt1_sq3'], type: 'split' },
+            { from: 'bt2_sys1', to: 'bt2_sq1', type: 'direct' },
+            { from: 'bt2_sys2', to: 'bt2_sq2', type: 'direct' },
+            { from: 'bt2_sys3', to: 'bt2_sq3', type: 'direct' },
+            { from: ['bt2_sq1', 'bt2_sq2', 'bt2_sq3'], to: 'bt2_llm', type: 'merge' },
+            { from: 'bt2_llm', to: ['bt2_sa1', 'bt2_sa2', 'bt2_sa3'], type: 'split' },
+            { from: ['bt3_sq1', 'bt3_sq2', 'bt3_sq3'], to: 'bt3_llm', type: 'merge' },
+            { from: 'bt3_llm', to: ['bt3_sa1', 'bt3_sa2', 'bt3_sa3'], type: 'split' }
+        ];
+        selectedNodeIds.clear();
+    }
+
+    function init() {
+        canvas.width = width * dpr; canvas.height = height * dpr;
+        canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
+        ctx.scale(dpr, dpr);
+        createNodes(); animate();
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        nodes.forEach(node => renderNode(node));
+        drawConnections();
+        if (isConnecting && connectSourceId) drawConnectionPreview();
+        if (selectionBox) drawSelectionBox();
+        requestAnimationFrame(animate);
+    }
+
+    function renderNode(node) {
+        ctx.save();
+        const isSelected = selectedNodeIds.has(node.id);
+        const isSource = connectSourceId === node.id;
+        const color = colors[node.variant] || colors.neutral;
+        ctx.shadowBlur = 0;
+
+        if (node.type === 'container') {
+            ctx.setLineDash([10, 5]); ctx.strokeStyle = brand.midGray; ctx.lineWidth = 2;
+            roundRect(node.x, node.y, node.w, node.h, 12, false, null, brand.midGray);
+            ctx.setLineDash([]); ctx.fillStyle = brand.midGray; ctx.font = "600 12px 'Poppins'";
+            ctx.fillText(node.title, node.x + 20, node.y + 25);
+        }
+        else if (node.type === 'title') drawTitle(node, node.size || 11);
+        else if (node.type === 'colLabel') drawTitle(node, 10, brand.midGray);
+        else if (node.type === 'headerNode') drawHeaderNode(node, color);
+        else if (node.type === 'minimal') drawMinimalNode(node, color);
+        else if (node.type === 'plain') drawPlainNode(node, color);
+
+        if (isSelected || draggedNode === node || isSource) {
+            ctx.strokeStyle = isSource ? brand.blue : brand.orange; 
+            ctx.lineWidth = 2; ctx.setLineDash([4, 2]);
+            ctx.strokeRect(node.x - 2, node.y - 2, node.w + 4, node.h + 4);
+        }
+        ctx.restore();
+    }
+
+    function drawTitle(node, size, color = brand.dark) {
+        ctx.fillStyle = color; ctx.font = `600 ${size}px 'Poppins'`; ctx.textAlign = "center";
+        ctx.fillText(node.title, node.x + node.w/2, node.y + node.h/2 + 5);
+    }
+
+    function drawHeaderNode(node, color) {
+        roundRect(node.x, node.y, node.w, node.h, 6, true, color.body, color.border);
+        ctx.fillStyle = color.head; const hH = 16;
+        roundRect(node.x, node.y, node.w, hH, 6, true, color.head, 'transparent');
+        ctx.fillRect(node.x, node.y + hH - 3, node.w, 3);
+        ctx.fillStyle = color.textTitle; ctx.font = "600 8.5px 'Poppins'"; ctx.textAlign = "left";
+        ctx.fillText(node.title, node.x + 6, node.y + 10);
+        ctx.fillStyle = brand.dark; ctx.font = "400 8.5px 'Lora'";
+        wrapText(node.content, node.x + 6, node.y + hH + 11, node.w - 12, 10, 8.5, "left");
+    }
+
+    function drawMinimalNode(node, color) {
+        roundRect(node.x, node.y, node.w, node.h, 6, true, color.head, color.border);
+        ctx.fillStyle = color.textTitle; ctx.font = "600 8.5px 'Poppins'"; ctx.textAlign = "center";
+        const txt = (node.title || "").split(' ');
+        if(txt.length > 1) {
+            ctx.fillText(txt[0], node.x + node.w/2, node.y + node.h/2 - 2);
+            ctx.fillText(txt[1], node.x + node.w/2, node.y + node.h/2 + 8);
+        } else { ctx.fillText(node.title || "", node.x + node.w/2, node.y + node.h/2 + 3); }
+    }
+
+    function drawPlainNode(node, color) {
+        if (node.stacked) { roundRect(node.x - 3, node.y + 3, node.w, node.h, 6, true, brand.light, color.border); }
+        roundRect(node.x, node.y, node.w, node.h, 6, true, brand.light, color.border);
+        ctx.fillStyle = brand.dark; ctx.font = "400 8.5px 'Lora'";
+        // Use wrapText with "center" alignment for Plain nodes (Answers)
+        wrapText(node.content, node.x + node.w/2, node.y + (node.h/2), node.w - 10, 10, 8.5, "center");
+    }
+
+    function drawConnectionPreview() {
+        const s = getNode(connectSourceId); if (!s) return;
+        ctx.save(); ctx.strokeStyle = brand.blue; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.moveTo(s.x + s.w, s.y + s.h/2);
+        ctx.lineTo(mousePos.x, mousePos.y); ctx.stroke(); ctx.restore();
+    }
+
+    function drawSelectionBox() {
+        ctx.save(); ctx.strokeStyle = brand.blue; ctx.setLineDash([5, 5]); ctx.lineWidth = 1;
+        ctx.fillStyle = 'rgba(106, 155, 204, 0.1)'; ctx.fillRect(selectionBox.x, selectionBox.y, selectionBox.w, selectionBox.h);
+        ctx.strokeRect(selectionBox.x, selectionBox.y, selectionBox.w, selectionBox.h); ctx.restore();
+    }
+
+    function toggleConnectMode() {
+        isConnecting = !isConnecting; connectSourceId = null;
+        const btn = document.getElementById('btn-connect');
+        if (isConnecting) { btn.classList.add('active'); btn.innerText = 'Connecting...'; } 
+        else { btn.classList.remove('active'); btn.innerText = 'Add Connection'; }
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        const mouse = getMousePos(e); let clickedNode = null;
+        if (editingNode) closeEditor(); menu.style.display = 'none';
+        if (e.button === 2) return; 
+        for (let i = nodes.length - 1; i >= 0; i--) {
+            const n = nodes[i]; if (mouse.x > n.x && mouse.x < n.x + n.w && mouse.y > n.y && mouse.y < n.y + n.h) { clickedNode = n; break; }
+        }
+        if (isConnecting && clickedNode) {
+            if (!connectSourceId) { connectSourceId = clickedNode.id; } 
+            else if (connectSourceId !== clickedNode.id) {
+                connections.push({ from: connectSourceId, to: clickedNode.id, type: 'direct' }); toggleConnectMode();
+            }
+            return;
+        }
+        if (clickedNode) {
+            if (['headerNode', 'minimal', 'plain', 'container'].includes(clickedNode.type) && mouse.x > clickedNode.x + clickedNode.w - 15 && mouse.y > clickedNode.y + clickedNode.h - 15) {
+                resizedNode = clickedNode; isResizing = true; return;
+            }
+            draggedNode = clickedNode; offset.x = mouse.x; offset.y = mouse.y;
+            if (!selectedNodeIds.has(clickedNode.id)) { if (!e.shiftKey) selectedNodeIds.clear(); selectedNodeIds.add(clickedNode.id); }
+        } else {
+            selectedNodeIds.clear(); selectionBox = { x: mouse.x, y: mouse.y, startX: mouse.x, startY: mouse.y, w: 0, h: 0 };
+        }
+    });
+
+    canvas.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); const mouse = getMousePos(e); let target = null;
+        for (let i = nodes.length - 1; i >= 0; i--) {
+            const n = nodes[i]; if (mouse.x > n.x && mouse.x < n.x + n.w && mouse.y > n.y && mouse.y < n.y + n.h) { target = n; break; }
+        }
+        if (target) {
+            if (!selectedNodeIds.has(target.id)) { selectedNodeIds.clear(); selectedNodeIds.add(target.id); }
+            menu.style.display = 'block'; menu.style.left = e.clientX - container.getBoundingClientRect().left + 'px';
+            menu.style.top = e.clientY - container.getBoundingClientRect().top + 'px';
+        }
+    });
+
+    function setVariant(v) { nodes.forEach(n => { if (selectedNodeIds.has(n.id)) n.variant = v; }); menu.style.display = 'none'; }
+
+    canvas.addEventListener('dblclick', (e) => {
+        const mouse = getMousePos(e);
+        for (let i = nodes.length - 1; i >= 0; i--) {
+            const n = nodes[i];
+            if (mouse.x > n.x && mouse.x < n.x + n.w && mouse.y > n.y && mouse.y < n.y + n.h) {
+                if (n.type === 'headerNode' && mouse.y < n.y + 16) editingField = 'title';
+                else editingField = 'content';
+                openEditor(n); return;
+            }
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (editingNode) return;
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const cmd = isMac ? e.metaKey : e.ctrlKey;
+        if (cmd && e.key.toLowerCase() === 'c') {
+            const selNodes = nodes.filter(n => selectedNodeIds.has(n.id));
+            const selConns = connections.filter(conn => {
+                const f = Array.isArray(conn.from) ? conn.from : [conn.from];
+                const t = Array.isArray(conn.to) ? conn.to : [conn.to];
+                return f.every(id => selectedNodeIds.has(id)) && t.every(id => selectedNodeIds.has(id));
+            });
+            clipboard = { nodes: selNodes.map(n => ({...n})), connections: selConns.map(c => ({...c})) };
+            showToast("Copied");
+        }
+        if (cmd && e.key.toLowerCase() === 'v') {
+            if (clipboard.nodes.length === 0) return;
+            const idMap = {}; const newNodesList = [];
+            clipboard.nodes.forEach(n => {
+                const newId = 'pasted_' + Math.random().toString(36).substr(2, 9);
+                idMap[n.id] = newId;
+                const newNode = { ...n, id: newId, x: snap(n.x + 30), y: snap(n.y + 30) };
+                nodes.push(newNode); newNodesList.push(newNode);
+            });
+            clipboard.connections.forEach(c => {
+                const newConn = { ...c };
+                if (Array.isArray(c.from)) newConn.from = c.from.map(id => idMap[id]); else newConn.from = idMap[c.from];
+                if (Array.isArray(c.to)) newConn.to = c.to.map(id => idMap[id]); else newConn.to = idMap[c.to];
+                connections.push(newConn);
+            });
+            selectedNodeIds.clear(); newNodesList.forEach(n => selectedNodeIds.add(n.id));
+            showToast("Pasted");
+        }
+        if (cmd && (e.key === 'Delete' || e.key === 'Backspace')) {
+            nodes = nodes.filter(n => !selectedNodeIds.has(n.id));
+            connections = connections.filter(conn => {
+                const f = Array.isArray(conn.from) ? conn.from : [conn.from];
+                const t = Array.isArray(conn.to) ? conn.to : [conn.to];
+                return [...f, ...t].every(id => nodes.some(n => n.id === id));
+            });
+            selectedNodeIds.clear();
+            showToast("Deleted");
+        }
+    });
+
+    function openEditor(node) {
+        editingNode = node; editor.style.display = 'block';
+        editor.style.left = node.x + 'px'; editor.style.top = node.y + 'px';
+        editor.style.width = node.w + 'px'; editor.style.height = node.h + 'px';
+        editor.value = (editingField === 'title' || ['title', 'colLabel', 'minimal', 'container'].includes(node.type)) ? node.title : (node.content || "");
+        editor.focus();
+    }
+
+    function closeEditor() {
+        if (!editingNode) return;
+        if (editingField === 'title' || ['title', 'colLabel', 'minimal', 'container'].includes(editingNode.type)) editingNode.title = editor.value;
+        else editingNode.content = editor.value;
+        editor.style.display = 'none'; editingNode = null;
+    }
+
+    editor.addEventListener('blur', closeEditor);
+    editor.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); closeEditor(); }});
+
+    window.addEventListener('mousemove', (e) => {
+        mousePos = getMousePos(e);
+        if (isResizing && resizedNode) {
+            resizedNode.w = snap(Math.max(40, mousePos.x - resizedNode.x));
+            resizedNode.h = snap(Math.max(20, mousePos.y - resizedNode.y));
+        } else if (draggedNode) {
+            const dx = snap(mousePos.x - offset.x), dy = snap(mousePos.y - offset.y);
+            if (dx !== 0 || dy !== 0) {
+                nodes.forEach(n => { if (selectedNodeIds.has(n.id)) { n.x += dx; n.y += dy; }});
+                offset.x += dx; offset.y += dy;
+            }
+        } else if (selectionBox) {
+            selectionBox.w = mousePos.x - selectionBox.startX; selectionBox.h = mousePos.y - selectionBox.startY;
+            selectionBox.x = selectionBox.w < 0 ? mousePos.x : selectionBox.startX;
+            selectionBox.y = selectionBox.h < 0 ? mousePos.y : selectionBox.startY;
+            selectedNodeIds.clear();
+            nodes.forEach(n => { if (n.x > selectionBox.x && n.x + n.w < selectionBox.x + Math.abs(selectionBox.w) && n.y > selectionBox.y && n.y + n.h < selectionBox.y + Math.abs(selectionBox.h)) selectedNodeIds.add(n.id); });
+        }
+    });
+
+    window.addEventListener('mouseup', () => { draggedNode = null; resizedNode = null; selectionBox = null; isResizing = false; });
+
+    function getMousePos(e) { const rect = canvas.getBoundingClientRect(); return { x: e.clientX - rect.left, y: e.clientY - rect.top }; }
+
+    function drawConnections() {
+        ctx.setLineDash([]); ctx.strokeStyle = brand.midGray; ctx.lineWidth = 1.2;
+        connections.forEach(l => {
+            ctx.setLineDash(l.dash || []);
+            const sources = Array.isArray(l.from) ? l.from.map(id => getNode(id)) : [getNode(l.from)];
+            const targets = Array.isArray(l.to) ? l.to.map(id => getNode(id)) : [getNode(l.to)];
+            if (sources.some(s => !s) || targets.some(t => !t)) return;
+            const s = sources[0]; const t = targets[0];
+            if (l.orientation === 'vertical') {
+                drawArrow(s.x + s.w/2, s.y + s.h, s.x + s.w/2, t.y);
+            } else if (l.type === 'split') {
+                const midX = s.x + s.w + (targets[0].x - (s.x + s.w)) / 2;
+                drawLine(s.x + s.w, s.y + s.h/2, midX, s.y + s.h/2);
+                drawLine(midX, Math.min(...targets.map(n => n.y + n.h/2)), midX, Math.max(...targets.map(n => n.y + n.h/2)));
+                targets.forEach(node => drawArrow(midX, node.y + node.h/2, node.x, node.y + node.h/2));
+            } else if (l.type === 'merge') {
+                const maxX = Math.max(...sources.map(n => n.x + n.w));
+                const midX = t.x - (t.x - maxX) / 2;
+                drawLine(midX, Math.min(...sources.map(n => n.y + n.h/2)), midX, Math.max(...sources.map(n => n.y + n.h/2)));
+                sources.forEach(node => drawLine(node.x + node.w, node.y + node.h/2, midX, node.y + node.h/2));
+                drawArrow(midX, t.y + t.h/2, t.x, t.y + t.h/2);
+            } else {
+                drawArrow(s.x + s.w, s.y + s.h/2, t.x, t.y + t.h/2);
+            }
+        });
+        const aq1 = getNode('a_q1'), ar1 = getNode('a_r1'); if (aq1 && ar1) drawArrow(aq1.x + aq1.w, aq1.y + aq1.h/2, ar1.x, ar1.y + ar1.h/2);
+    }
+
+    function getNode(id) { return nodes.find(n => n.id === id); }
+    function drawLine(x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+    function drawArrow(x1, y1, x2, y2) {
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        const a = Math.atan2(y2 - y1, x2 - x1); ctx.save(); ctx.translate(x2, y2); ctx.rotate(a);
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-5, -3); ctx.lineTo(-5, 3);
+        ctx.fillStyle = brand.midGray; ctx.fill(); ctx.restore();
+    }
+    function roundRect(x, y, w, h, r, f, fs, ss) {
+        ctx.beginPath(); ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+        if (f) { ctx.fillStyle = fs; ctx.fill(); }
+        if (ss && ss !== 'transparent') { ctx.strokeStyle = ss; ctx.lineWidth = 1; ctx.stroke(); }
+    }
+
+    function wrapText(t, x, y, mw, lh, fs, align = "left") {
+        if (!t) return;
+        ctx.font = `400 ${fs}px 'Lora'`;
+        ctx.textAlign = align;
+        const words = t.split(' ');
+        const lines = [];
+        let currentLine = words[0];
+
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = ctx.measureText(currentLine + " " + word).width;
+            if (width < mw) {
+                currentLine += " " + word;
+            } else {
+                lines.push(currentLine);
+                currentLine = word;
+            }
+        }
+        lines.push(currentLine);
+
+        // Center lines vertically relative to starting y
+        const totalHeight = lines.length * lh;
+        let startY = y - totalHeight / 2 + lh / 2 + 2;
+
+        lines.forEach((line) => {
+            ctx.fillText(line, x, startY);
+            startY += lh;
+        });
+    }
+
+    function resetLayout() { createNodes(); showToast("Layout Reset"); }
+    function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
+    function downloadCanvas() { const link = document.createElement('a'); link.download = 'ai-pipeline.png'; link.href = canvas.toDataURL(); link.click(); }
+    window.onload = init;
+</script>
+
+</body>
+</html>

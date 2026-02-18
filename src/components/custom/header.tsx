@@ -12,6 +12,7 @@ const navItems = [
   { path: "/projects", label: "Projects" },
   { path: "/blogs", label: "Blogs" },
   { path: "/tutorials", label: "Tutorials" },
+  { path: "/tools", label: "Tools" },
 ];
 
 const researchSubItems = [

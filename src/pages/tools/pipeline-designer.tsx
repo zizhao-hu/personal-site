@@ -2,6 +2,7 @@ import { Header } from '@/components/custom/header';
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { jsPDF } from 'jspdf';
 
 /* ─── Brand Palette ─── */
 const brand = {
@@ -584,6 +585,16 @@ export const PipelineDesigner = () => {
         link.click();
     };
 
+    const exportPDF = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [W, H] });
+        pdf.addImage(imgData, 'PNG', 0, 0, W, H);
+        pdf.save('ai-pipeline.pdf');
+        showToast('Exported PDF');
+    };
+
     const toggleConnect = () => {
         const next = !connectRef.current.active;
         connectRef.current = { active: next, sourceId: null };
@@ -652,8 +663,8 @@ export const PipelineDesigner = () => {
                         <button
                             onClick={toggleConnect}
                             className={`px-4 py-2 rounded-lg text-xs font-semibold font-heading transition-all ${connectMode
-                                    ? 'bg-brand-blue text-white'
-                                    : 'bg-foreground text-background hover:opacity-90'
+                                ? 'bg-brand-blue text-white'
+                                : 'bg-foreground text-background hover:opacity-90'
                                 }`}
                         >
                             {connectMode ? 'Connecting...' : 'Add Connection'}
@@ -669,6 +680,12 @@ export const PipelineDesigner = () => {
                             className="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-semibold font-heading hover:opacity-90 transition-all"
                         >
                             Export PNG
+                        </button>
+                        <button
+                            onClick={exportPDF}
+                            className="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-semibold font-heading hover:opacity-90 transition-all"
+                        >
+                            Export PDF
                         </button>
                     </div>
                 </div>

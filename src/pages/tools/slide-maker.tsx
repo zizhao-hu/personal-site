@@ -1,7 +1,8 @@
 import { Header } from '@/components/custom/header';
 import { useState, useRef, useCallback } from 'react';
-import { ArrowLeft, Plus, Trash2, ChevronLeft, ChevronRight, Type, AlignLeft, Square, Circle, Image, Download, Copy, RotateCcw, GripVertical, Minus, Table } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, ChevronLeft, ChevronRight, Type, AlignLeft, Square, Circle, Image, Download, Copy, RotateCcw, GripVertical, Minus, Table, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { jsPDF } from 'jspdf';
 
 /* ─── Brand ─── */
 const B = {
@@ -230,7 +231,7 @@ export const SlideMaker = () => {
 
     const resetAll = () => { setSlides(createTemplateSlides()); setCurrentIdx(0); setSelected(null); showToast('Reset to template'); };
 
-    /* ── Export to JSON (Google Slides compatible spec) ── */
+    /* ── Export to JSON ── */
     const exportJSON = () => {
         const data = JSON.stringify(slides, null, 2);
         const blob = new Blob([data], { type: 'application/json' });
@@ -239,6 +240,68 @@ export const SlideMaker = () => {
         a.download = 'slides-export.json';
         a.click();
         showToast('Exported JSON');
+    };
+
+    /* ── Export to PDF ── */
+    const hexToRgb = (hex: string) => {
+        const h = hex.replace('#', '');
+        return { r: parseInt(h.substring(0, 2), 16), g: parseInt(h.substring(2, 4), 16), b: parseInt(h.substring(4, 6), 16) };
+    };
+
+    const exportPDF = () => {
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [SW, SH] });
+        slides.forEach((s, si) => {
+            if (si > 0) pdf.addPage([SW, SH], 'landscape');
+            // Background
+            const bg = hexToRgb(s.bg);
+            pdf.setFillColor(bg.r, bg.g, bg.b);
+            pdf.rect(0, 0, SW, SH, 'F');
+            // Elements
+            s.elements.forEach(el => {
+                if (el.type === 'divider') {
+                    const c = hexToRgb(el.bg || B.orange);
+                    pdf.setFillColor(c.r, c.g, c.b);
+                    pdf.rect(el.x, el.y, el.w, el.h, 'F');
+                } else if (el.type === 'box' || el.type === 'circle') {
+                    const c = hexToRgb(el.bg || B.lgray);
+                    pdf.setFillColor(c.r, c.g, c.b);
+                    if (el.type === 'circle') {
+                        pdf.ellipse(el.x + el.w / 2, el.y + el.h / 2, el.w / 2, el.h / 2, 'F');
+                    } else {
+                        pdf.roundedRect(el.x, el.y, el.w, el.h, el.borderRadius || 0, el.borderRadius || 0, 'F');
+                    }
+                } else if (el.type === 'table' && el.rows) {
+                    const cols = el.rows[0]?.length || 1;
+                    const colW = el.w / cols;
+                    const rowH = el.h / el.rows.length;
+                    el.rows.forEach((row, ri) => {
+                        row.forEach((cell, ci) => {
+                            const isHeader = ri === 0;
+                            const cellBg = hexToRgb(isHeader ? B.dark : (ri % 2 === 0 ? '#f5f4ef' : B.light));
+                            pdf.setFillColor(cellBg.r, cellBg.g, cellBg.b);
+                            pdf.rect(el.x + ci * colW, el.y + ri * rowH, colW, rowH, 'FD');
+                            const tc = hexToRgb(isHeader ? B.light : (el.color || B.dark));
+                            pdf.setTextColor(tc.r, tc.g, tc.b);
+                            pdf.setFontSize(el.fontSize || 13);
+                            pdf.setFont('helvetica', isHeader ? 'bold' : 'normal');
+                            pdf.text(cell, el.x + ci * colW + 8, el.y + ri * rowH + rowH / 2 + 4);
+                        });
+                    });
+                } else if (el.text) {
+                    const tc = hexToRgb(el.color || B.dark);
+                    pdf.setTextColor(tc.r, tc.g, tc.b);
+                    pdf.setFontSize(el.fontSize || 16);
+                    pdf.setFont('helvetica', el.fontWeight === '700' ? 'bold' : (el.fontWeight === '600' ? 'bold' : 'normal'));
+                    const lines = pdf.splitTextToSize(el.text, el.w);
+                    let textX = el.x;
+                    if (el.textAlign === 'center') textX = el.x + el.w / 2;
+                    else if (el.textAlign === 'right') textX = el.x + el.w;
+                    pdf.text(lines, textX, el.y + (el.fontSize || 16), { align: el.textAlign || 'left', lineHeightFactor: 1.5 });
+                }
+            });
+        });
+        pdf.save('research-slides.pdf');
+        showToast('Exported PDF');
     };
 
     /* ── Render element ── */
@@ -380,8 +443,11 @@ export const SlideMaker = () => {
                         <button onClick={resetAll} className="px-3 py-1.5 text-xs font-heading rounded-lg bg-muted hover:bg-muted/80 transition-colors flex items-center gap-1">
                             <RotateCcw className="w-3 h-3" /> Reset
                         </button>
-                        <button onClick={exportJSON} className="px-3 py-1.5 text-xs font-heading rounded-lg bg-brand-orange text-white hover:opacity-90 transition-colors flex items-center gap-1">
-                            <Download className="w-3 h-3" /> Export JSON
+                        <button onClick={exportJSON} className="px-3 py-1.5 text-xs font-heading rounded-lg bg-muted hover:bg-muted/80 transition-colors flex items-center gap-1">
+                            <Download className="w-3 h-3" /> JSON
+                        </button>
+                        <button onClick={exportPDF} className="px-3 py-1.5 text-xs font-heading rounded-lg bg-brand-orange text-white hover:opacity-90 transition-colors flex items-center gap-1">
+                            <FileText className="w-3 h-3" /> Export PDF
                         </button>
                     </div>
                 </div>

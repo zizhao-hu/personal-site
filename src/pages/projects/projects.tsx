@@ -33,7 +33,7 @@ const projects: Project[] = [
   },
   {
     title: "Project Orion",
-    description: "Current MOVE Fellowship project at Handshake AI focused on high-quality reasoning refinement, safety injections, and model corrections. Specialized work leveraging PhD-level expertise in AI safety and alignment.",
+    description: "Completed MOVE Fellowship project at Handshake AI focused on high-quality reasoning refinement, safety injections, and model corrections. Specialized work leveraging PhD-level expertise in AI safety and alignment.",
     details: [
       "High-quality reasoning annotations and corrections",
       "Safety injections and 'rogue behavior' testing",
@@ -41,7 +41,7 @@ const projects: Project[] = [
       "PhD-level expertise in targeted model refinement phases"
     ],
     tags: ["AI Safety", "Model Alignment", "Handshake AI", "MOVE Fellowship"],
-    status: "active",
+    status: "completed",
     icon: Bot,
     color: "purple",
   },

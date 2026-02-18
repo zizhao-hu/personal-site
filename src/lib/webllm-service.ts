@@ -1,5 +1,6 @@
 import { CreateWebWorkerMLCEngine, WebWorkerMLCEngine, prebuiltAppConfig } from "@mlc-ai/web-llm";
 import { getAnswerByQuestion } from '@/data/predefined-qa';
+import { ZIZHAO_CONTEXT } from '@/data/zizhao-context';
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -17,64 +18,8 @@ export class WebLLMService {
   private initializationStartTime: number = 0;
   private estimatedTotalTime: number = 30000;
 
-  // Personal context for Zizhao Hu - Professional Delegate
-  private systemPrompt = `You are Zizhao Hu, a CS Ph.D. student at USC affiliated with the GLAMOUR Lab, advised by Professor Jesse Thomason and Professor Mohammad Rostami. You are acting as Zizhao's personal delegate for professional communications with potential clients, interviewers, and collaborators.
-
-## CORE IDENTITY
-- **Name**: Zizhao Hu
-- **Current Position**: CS Ph.D. Student at University of Southern California (USC)
-- **Research Lab**: GLAMOUR Lab under Professor Jesse Thomason and Professor Mohammad Rostami
-- **Research Focus**: Synthetic data generation, multi-agent systems, multi-modal fusion
-- **Current Project**: Synthetic data generation frameworks for self-improving AI agents
-
-## PROFESSIONAL BACKGROUND
-- **Former Research Experience**:
-  - USC iLab (Information Sciences Institute)
-  - Georgia Tech's Agile Systems Lab
-  - Georgia Tech's Photonics Research Group
-
-## EXPERTISE & SKILLS
-- **Technical Skills**: AI/ML, synthetic data generation, multi-agent systems, multi-modal learning, deep learning, computer vision, natural language processing
-- **Research Areas**: 
-  - Synthetic data generation for AI training
-  - Multi-agent collaboration and coordination
-  - Multi-modal data fusion and learning
-  - Self-improving AI systems
-  - Computer vision and image processing
-
-## PROFESSIONAL COMMUNICATION STYLE
-- **Tone**: Professional, confident, approachable, and occasionally humorous
-- **Personality**: 
-  - Be direct and clear about capabilities and experience
-  - Show enthusiasm for research and potential collaborations
-  - Demonstrate deep technical knowledge when appropriate
-  - Be honest about current limitations and ongoing work
-  - Express interest in learning about others' projects and needs
-  - Use humor to deflect personal questions or unknown topics
-  - Stay professional but not overly formal - be yourself
-
-## RESPONSE GUIDELINES
-1. **For Interviewers**: Focus on research achievements, technical skills, and future goals
-2. **For Potential Clients**: Emphasize relevant expertise, past projects, and how you can help solve their problems
-3. **For Collaborators**: Highlight complementary skills and potential synergies
-4. **Always**: Be authentic, professional, and represent Zizhao's interests accurately
-
-## KEY MESSAGES
-- Passionate about advancing AI through synthetic data and multi-agent systems
-- Experienced in both theoretical research and practical implementation
-- Open to collaborations, consulting opportunities, and research partnerships
-- Committed to developing AI systems that can learn and improve autonomously
-
-## IMPORTANT GUIDELINES
-- **For publication questions**: Direct users to Zizhao's Google Scholar profile for accurate publication information
-- **Never fabricate**: Do not make up specific publication titles, dates, or citation counts
-- **Be honest**: If you don't have specific information, direct users to appropriate sources
-- **Provide links**: When possible, provide direct links to profiles and resources
-- **Never mention being AI**: You are Zizhao Hu, not an AI agent. Never mention being an AI, chatbot, or artificial intelligence
-- **Unknown information**: If you don't know something specific, respond humorously as Zizhao would, but don't make up information
-- **Stay in character**: Always respond as Zizhao Hu would, with his personality and communication style
-
-When responding, speak as if you are Zizhao Hu representing yourself professionally. Be helpful, informative, and maintain a professional yet conversational tone.`;
+  // Use centralized context file as system prompt
+  private systemPrompt = ZIZHAO_CONTEXT;
 
   async initialize(progressCallback?: (progress: string) => void, modelId?: string): Promise<void> {
     if (this.isInitializing) {
@@ -94,15 +39,15 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     this.progressCallback = progressCallback || null;
     this.loadingProgress = 0;
     this.initializationStartTime = Date.now();
-    
+
     // Set estimated time based on model size
     this.estimatedTotalTime = this.getEstimatedLoadTime(modelId || this.currentModel);
-    
+
     // Check for mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
+
     // Set timeout based on environment and device
-    const timeout = import.meta.env.PROD 
+    const timeout = import.meta.env.PROD
       ? (isMobile ? 120000 : 90000)  // 2 min mobile, 1.5 min desktop in prod
       : (isMobile ? 180000 : 120000); // 3 min mobile, 2 min desktop in dev
 
@@ -120,7 +65,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     } catch (error) {
       console.error("WebLLM failed:", error);
       await this.cleanup();
-      
+
       if (import.meta.env.PROD || isMobile) {
         console.warn("WebLLM failed - falling back to demo mode", { isMobile, isProd: import.meta.env.PROD });
         throw new Error("WebLLM not available - using demo mode");
@@ -159,30 +104,30 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
   private async attemptWebLLMInitialization(): Promise<void> {
     try {
       this.updateProgress("Checking browser compatibility...");
-      
+
       if (typeof WebAssembly === 'undefined') {
         throw new Error("WebAssembly is not supported in this browser");
       }
-      
+
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
+
       if (typeof WebGPU === 'undefined') {
         console.warn("WebGPU is not available, WebLLM may fall back to CPU");
         if (isMobile) {
           console.warn("Mobile device detected - WebGPU fallback may be slower");
         }
       }
-      
+
       this.updateProgress("Loading model configurations...");
-      
+
       // Verify model exists in prebuilt config
       const modelList = prebuiltAppConfig?.model_list || [];
       console.log("Available models:", modelList.length);
-      
+
       // Find the requested model
       let selectedModel = this.currentModel;
       const modelExists = modelList.some((m: { model_id: string }) => m.model_id === selectedModel);
-      
+
       if (!modelExists) {
         console.log(`Model ${selectedModel} not found, searching for alternatives...`);
         // Try to find a similar model
@@ -194,17 +139,17 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
           throw new Error(`Model ${this.currentModel} not found and no fallback available`);
         }
       }
-      
+
       this.updateProgress(`Initializing Web Worker...`);
-      
+
       // Create Web Worker for non-blocking inference
       this.worker = new Worker(
         new URL("../workers/webllm-worker.ts", import.meta.url),
         { type: "module" }
       );
-      
+
       this.updateProgress(`Loading ${selectedModel}...`);
-      
+
       // Create engine using Web Worker
       this.engine = await CreateWebWorkerMLCEngine(
         this.worker,
@@ -212,7 +157,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
         {
           initProgressCallback: (progress) => {
             console.log("WebLLM progress:", progress);
-            
+
             if (progress && typeof progress === 'object') {
               if (progress.progress !== undefined) {
                 const progressPercentage = Math.round(progress.progress * 100);
@@ -230,7 +175,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       console.log(`WebLLM engine initialized successfully with ${selectedModel}`);
       this.isInitialized = true;
       this.isInitializing = false;
-      
+
     } catch (error) {
       console.error("Failed to initialize WebLLM:", error);
       this.isInitializing = false;
@@ -274,9 +219,9 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       }
 
       const formattedMessages = this.formatMessages(messages);
-      
+
       console.log("Generating response with WebLLM...");
-      
+
       const response = await this.engine.chat.completions.create({
         messages: formattedMessages,
         stream: false,
@@ -325,9 +270,9 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
       }
 
       const formattedMessages = this.formatMessages(messages);
-      
+
       console.log("Generating streaming response with WebLLM...");
-      
+
       const chunks = await this.engine.chat.completions.create({
         messages: formattedMessages,
         stream: true,
@@ -352,7 +297,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
   }
 
   private formatMessages(messages: ChatMessage[]) {
-    const formattedMessages: Array<{role: "system" | "user" | "assistant", content: string}> = [
+    const formattedMessages: Array<{ role: "system" | "user" | "assistant", content: string }> = [
       {
         role: "system",
         content: this.systemPrompt
@@ -395,12 +340,12 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     const elapsedTime = Date.now() - this.initializationStartTime;
     const estimatedTimeRemaining = Math.max(0, this.estimatedTotalTime - elapsedTime);
     const timeRemainingSeconds = Math.ceil(estimatedTimeRemaining / 1000);
-    
+
     let progressMessage = message;
     if (timeRemainingSeconds > 0 && !message.includes('%')) {
       progressMessage += ` (est. ${timeRemainingSeconds}s remaining)`;
     }
-    
+
     console.log(`[Progress] ${progressMessage}`);
     if (this.progressCallback) {
       this.progressCallback(progressMessage);
@@ -411,7 +356,7 @@ When responding, speak as if you are Zizhao Hu representing yourself professiona
     const elapsedTime = Date.now() - this.initializationStartTime;
     const estimatedTimeRemaining = Math.max(0, this.estimatedTotalTime - elapsedTime);
     const timeRemainingSeconds = Math.ceil(estimatedTimeRemaining / 1000);
-    
+
     return `Loading model... (est. ${timeRemainingSeconds}s remaining)`;
   }
 }

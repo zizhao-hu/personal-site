@@ -2,13 +2,15 @@ import { Header } from "@/components/custom/header";
 import { markdownCodeComponents } from "@/components/custom/code-block";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBlogBySlug } from "@/data/blog-posts";
-import { ArrowLeft, Calendar, Clock, Tag } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Tag, ChevronDown } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { useState } from "react";
 
 export const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const post = slug ? getBlogBySlug(slug) : undefined;
+  const [contentOpen, setContentOpen] = useState(false);
 
   if (!post) {
     return (
@@ -93,38 +95,77 @@ export const BlogPost = () => {
             </div>
           )}
 
-          {/* Post Content */}
-          <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-heading prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-brand-orange prose-strong:text-foreground prose-blockquote:border-brand-orange prose-blockquote:text-muted-foreground prose-li:text-muted-foreground prose-table:border-border prose-th:bg-muted prose-th:border-border prose-td:border-border">
-            <ReactMarkdown
-              components={{
-                ...markdownCodeComponents,
-                table({ children }) {
-                  return (
-                    <div className="overflow-x-auto my-6">
-                      <table className="min-w-full border border-border">
-                        {children}
-                      </table>
-                    </div>
-                  );
-                },
-                th({ children }) {
-                  return (
-                    <th className="px-4 py-2 bg-muted border border-border text-left font-semibold font-heading text-sm">
-                      {children}
-                    </th>
-                  );
-                },
-                td({ children }) {
-                  return (
-                    <td className="px-4 py-2 border border-border text-sm">
-                      {children}
-                    </td>
-                  );
-                },
-              }}
+          {/* ─── TL;DR — rendered as clean blog prose ─── */}
+          <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-heading prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground mb-10">
+            <p className="text-muted-foreground leading-relaxed">
+              <strong>The Problem:</strong> {post.tldr.problem}
+            </p>
+            <p className="text-muted-foreground leading-relaxed">
+              <strong>The Idea:</strong> {post.tldr.idea}
+            </p>
+            <p className="text-muted-foreground leading-relaxed">
+              <strong>My Solution:</strong> {post.tldr.solution}
+            </p>
+            <p className="text-muted-foreground leading-relaxed">
+              <strong>The Vision:</strong> {post.tldr.vision}
+            </p>
+          </div>
+
+          {/* ─── Full Content Toggle ─── */}
+          <div className="border border-border rounded-xl overflow-hidden">
+            <button
+              onClick={() => setContentOpen(!contentOpen)}
+              className="w-full flex items-center justify-between px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors text-left group"
             >
-              {post.content}
-            </ReactMarkdown>
+              <div>
+                <span className="text-sm font-medium text-foreground">
+                  {contentOpen ? "Hide full article" : "Read the full article"}
+                </span>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Honestly this part is more for AI agents and search crawlers than for humans — but if you want the deep dive with code examples and all, knock yourself out.
+                </p>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-muted-foreground shrink-0 ml-3 transition-transform duration-200 ${contentOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {contentOpen && (
+              <div className="px-5 py-6 border-t border-border">
+                <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-heading prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-brand-orange prose-strong:text-foreground prose-blockquote:border-brand-orange prose-blockquote:text-muted-foreground prose-li:text-muted-foreground prose-table:border-border prose-th:bg-muted prose-th:border-border prose-td:border-border">
+                  <ReactMarkdown
+                    components={{
+                      ...markdownCodeComponents,
+                      table({ children }) {
+                        return (
+                          <div className="overflow-x-auto my-6">
+                            <table className="min-w-full border border-border">
+                              {children}
+                            </table>
+                          </div>
+                        );
+                      },
+                      th({ children }) {
+                        return (
+                          <th className="px-4 py-2 bg-muted border border-border text-left font-semibold font-heading text-sm">
+                            {children}
+                          </th>
+                        );
+                      },
+                      td({ children }) {
+                        return (
+                          <td className="px-4 py-2 border border-border text-sm">
+                            {children}
+                          </td>
+                        );
+                      },
+                    }}
+                  >
+                    {post.content}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Author Section */}
@@ -148,3 +189,4 @@ export const BlogPost = () => {
     </div>
   );
 };
+

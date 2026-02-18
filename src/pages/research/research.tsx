@@ -43,15 +43,23 @@ const publications: Publication[] = [
 const researchAreas = [
   {
     title: "LLM / VLM",
-    description: "Pretraining, supervised fine-tuning (SFT), post-training alignment, and continual learning for large-scale language and vision-language models.",
+    description: "Multi-agent systems, synthetic data generation, self-improving AI, pretraining, supervised fine-tuning (SFT), and post-training alignment for large-scale language and vision-language models.",
     icon: Users,
     color: "blue",
     highlight: true,
     path: "/research/llm-vlm",
   },
   {
+    title: "Synthetic Data",
+    description: "Synthetic data generation, model collapse dynamics, data curation methods, and safety-oriented data pipelines for self-improving AI.",
+    icon: Award,
+    color: "orange",
+    highlight: true,
+    path: "/research/synthetic-data",
+  },
+  {
     title: "Architecture",
-    description: "Static key attention, brain-inspired architectures, efficient transformers, and mixture of experts for scalable deep learning.",
+    description: "Brain-inspired neural architectures, static key attention, lateralization MLP, efficient transformers, and mixture of experts for scalable deep learning.",
     icon: Eye,
     color: "purple",
     path: "/research/architecture",
@@ -62,13 +70,6 @@ const researchAreas = [
     icon: Layers,
     color: "green",
     path: "/research/continual-learning",
-  },
-  {
-    title: "Synthetic Data",
-    description: "Synthetic data generation, model collapse dynamics, data curation methods, and safety-oriented data pipelines.",
-    icon: Award,
-    color: "orange",
-    path: "/research/synthetic-data",
   },
 ];
 
@@ -89,8 +90,8 @@ export const Research = () => {
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
               Building <strong>AI systems that improve themselves while remaining under control</strong>.
-              Working at the intersection of multi-agent collaboration, vision-language models,
-              and continual learning.
+              Focused on multi-agent systems and self-improving AI through synthetic data,
+              brain-inspired neural architectures, and continual learning.
             </p>
           </div>
 
@@ -221,7 +222,7 @@ export const Research = () => {
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-700 dark:text-gray-300">
               <p><strong>PhD Student</strong> • USC</p>
               <p><strong>Lab:</strong> GLAMOUR Lab</p>
-              <p><strong>Fellowship:</strong> MOVE @ Handshake AI</p>
+              <p><strong>Fellowship:</strong> MOVE @ Handshake AI (Alumni)</p>
               <p><strong>Advisors:</strong> J. Thomason, M. Rostami</p>
               <p><strong>Affiliation:</strong> GLAMOUR Lab, USC ISI</p>
               <p><strong>Graduation:</strong> 2027</p>

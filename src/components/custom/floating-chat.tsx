@@ -239,7 +239,7 @@ export const FloatingChat = () => {
                 />
 
                 {/* Actual content */}
-                <div className="relative z-10 border border-brand-orange/20 dark:border-brand-orange/15 rounded-2xl shadow-elevation-4 dark:shadow-elevation-4-dark overflow-hidden bg-background">
+                <div className="relative z-10 border border-brand-orange/20 dark:border-brand-orange/15 rounded-2xl shadow-elevation-4 dark:shadow-elevation-4-dark bg-background">
                   {/* Drawer Header */}
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/50">
                     <div className="flex items-center gap-2">
@@ -294,8 +294,8 @@ export const FloatingChat = () => {
                         )}
                         <div
                           className={`max-w-[85%] text-[13px] leading-relaxed ${msg.role === 'user'
-                              ? 'bg-zinc-700 dark:bg-muted text-white px-2.5 py-1.5 rounded-xl rounded-br-md'
-                              : 'text-foreground'
+                            ? 'bg-zinc-700 dark:bg-muted text-white px-2.5 py-1.5 rounded-xl rounded-br-md'
+                            : 'text-foreground'
                             }`}
                         >
                           {msg.role === 'assistant' ? (

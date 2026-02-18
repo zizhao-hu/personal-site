@@ -10,7 +10,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'elevator-pitch',
     question: "Give me your 30-second pitch — what makes you unique?",
-    answer: "I'm a PhD researcher at USC building **AI systems that improve themselves while remaining under control**. My core focus is multi-agent systems—autonomous agents that collaborate, generate their own training data, and evolve without constant human supervision. I also work on vision-language architectures and continual learning. What sets me apart is my dual focus on academic rigor and industry impact—I'm a MOVE Fellow at Handshake AI working on frontier model training and AI safety research, while publishing at top venues and reviewing for ICLR, ICML, and NeurIPS. I bridge the gap between 'this works in a paper' and 'this works in production.'",
+    answer: "I'm a PhD researcher at USC building **AI systems that improve themselves while remaining under control**. My core focus is multi-agent systems—autonomous agents that collaborate, generate their own training data, and evolve without constant human supervision. I also work on vision-language architectures and continual learning. What sets me apart is my dual focus on academic rigor and industry impact—I was a MOVE Fellow at Handshake AI where I worked on frontier model training and AI safety research, and I publish at top venues while reviewing for ICLR, ICML, and NeurIPS. I bridge the gap between 'this works in a paper' and 'this works in production.'",
     category: 'background',
     icon: 'Rocket'
   },
@@ -24,7 +24,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'investment-opportunity',
     question: "Why should investors be interested in your work?",
-    answer: "Three reasons: (1) **Timing** — We're at an inflection point where AI is shifting from demos to deployment, and the infrastructure for autonomous agents is the critical bottleneck. (2) **Dual validation** — My work is published at top academic venues AND being deployed at Handshake AI, proving both scientific rigor and commercial viability. (3) **Defensible expertise** — Multi-agent coordination and synthetic data safety are specialized skills with high barriers to entry. The market for enterprise AI agents is projected to be $100B+ by 2028, and I'm building the foundational tech. I'm open to discussing advisory roles, research partnerships, or venture opportunities.",
+    answer: "Three reasons: (1) **Timing** — We're at an inflection point where AI is shifting from demos to deployment, and the infrastructure for autonomous agents is the critical bottleneck. (2) **Dual validation** — My work is published at top academic venues AND was deployed at Handshake AI, proving both scientific rigor and commercial viability. (3) **Defensible expertise** — Multi-agent coordination and synthetic data safety are specialized skills with high barriers to entry. The market for enterprise AI agents is projected to be $100B+ by 2028, and I'm building the foundational tech. I'm open to discussing advisory roles, research partnerships, or venture opportunities.",
     category: 'collaboration',
     icon: 'TrendingUp'
   },
@@ -38,7 +38,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'current-project',
     question: "What are you building right now?",
-    answer: "I'm working on several interconnected projects: (1) **AgentForge** — A multi-agent orchestration framework where specialized agents collaborate on complex tasks with self-correction. (2) **Project Orion** — My current MOVE Fellowship project at Handshake AI, focused on high-quality reasoning refinement, safety injections, and jailbreak testing. (3) **Project Canary** (completed) — The foundational MOVE Fellowship phase where I contributed to 15,000+ tasks across 15 domains, raising approval rates from 10% to 40%. (4) **DREAM-C2L** — Open-source continual learning framework. (5) **ReasonChain** — Test-time compute scaling research. All tied to my core thesis: building AI systems that improve themselves while remaining under control.",
+    answer: "I'm working on several interconnected projects: (1) **AgentForge** — A multi-agent orchestration framework where specialized agents collaborate on complex tasks with self-correction. (2) **Project Orion** (completed) — My MOVE Fellowship project at Handshake AI, focused on high-quality reasoning refinement, safety injections, and jailbreak testing. (3) **Project Canary** (completed) — The foundational MOVE Fellowship phase where I contributed to 15,000+ tasks across 15 domains, raising approval rates from 10% to 40%. (4) **DREAM-C2L** — Open-source continual learning framework. (5) **ReasonChain** — Test-time compute scaling research. All tied to my core thesis: building AI systems that improve themselves while remaining under control.",
     category: 'research',
     icon: 'Code'
   },
@@ -52,7 +52,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'technical-skills',
     question: "What's your technical stack and expertise level?",
-    answer: "**Expert level**: Python, PyTorch, distributed training (SLURM/HPC clusters), LLM fine-tuning, multi-agent frameworks. **Proficient**: Next.js/React for research demos, MLOps (Weights & Biases, Docker), data engineering pipelines. **Research specialties**: Synthetic data generation, continual learning, multi-agent coordination, model safety/alignment. I've built systems that run on USC's CARC cluster (thousands of GPU hours) and deployed production AI at Handshake. I use 'uv' for modern Python dependency management and prioritize reproducible research. My code is available on GitHub: https://github.com/zizhao-hu",
+    answer: "**Expert level**: Python, PyTorch, distributed training (SLURM/HPC clusters), LLM fine-tuning, multi-agent frameworks. **Proficient**: Next.js/React for research demos, MLOps (Weights & Biases, Docker), data engineering pipelines. **Research specialties**: Synthetic data generation, continual learning, multi-agent coordination, model safety/alignment. I've built systems that run on USC's CARC cluster (thousands of GPU hours) and deployed production AI during my fellowship at Handshake. I use 'uv' for modern Python dependency management and prioritize reproducible research. My code is available on GitHub: https://github.com/zizhao-hu",
     category: 'background',
     icon: 'Terminal'
   },
@@ -66,7 +66,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'personal-side',
     question: "Tell me something interesting about you outside of AI",
-    answer: "Here's something most researchers don't mention: I'm a K-pop cover dancer! I perform with Spade A, USC's K-pop dance group, and I've danced at KCON. I also maintain a strict 6 AM fitness routine focused on muscle building—discipline in the gym translates to discipline in research. I'm a huge foodie (hot pot and KBBQ are my weaknesses) and I've traveled extensively between the US and China. I think the best researchers have lives outside the lab—it keeps you creative and grounded. Plus, learning choreography is surprisingly similar to debugging code: break it down, iterate, and practice until it's perfect.",
+    answer: "Here's something most researchers don't mention: I'm a K-pop cover dancer! I perform with Spade A, USC's K-pop dance group, and I've danced at KCON. I'm a massive soccer fan — Messi is the GOAT, no debate — and I play recreationally too. On the basketball side, I love watching Steph Curry. I once had a border collie, one of the smartest dogs you'll ever meet, and I miss that guy every day. I grew up in Yichang, Hubei and went to high school in Wuhan at No.1 High School Affiliated to CCNU. I maintain a 6 AM gym routine focused on muscle building, and I'm a huge hot pot and KBBQ enthusiast. I think the best researchers have lives outside the lab — it keeps you creative and grounded.",
     category: 'background',
     icon: 'Music'
   }

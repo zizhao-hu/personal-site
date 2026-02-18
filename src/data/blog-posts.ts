@@ -9,6 +9,12 @@ export interface BlogPost {
     tags: string[];
     content: string;
     coverImage?: string;
+    tldr: {
+        problem: string;
+        idea: string;
+        solution: string;
+        vision: string;
+    };
     author: {
         name: string;
         avatar: string;
@@ -26,6 +32,12 @@ export const blogPosts: BlogPost[] = [
         category: "ai",
         tags: ["AI Evaluation", "Human-AI Collaboration", "Hiring", "Future of Work"],
         coverImage: "/images/blogs/interview-dead.png",
+        tldr: {
+            problem: "We've built a sophisticated evaluation culture for AI (benchmarks like MMLU, HumanEval, SWE-bench) that actively drives model development — but we still evaluate humans with whiteboard puzzles and LeetCode trivia from the 1990s. These tests measure memorization, not real-world capability.",
+            idea: "AI evaluation works because it tests real capabilities, measures end-to-end output quality, reflects actual use cases, and evolves. Human interviews fail on every single one of these criteria. The irony: we know how to build good evaluations — we just haven't applied that knowledge to humans.",
+            solution: "Replace traditional interviews with deliverable-based collaboration interviews. Give candidates a real-world problem, let them use any AI tools they want (ChatGPT, Copilot, Cursor), and evaluate both the final artifact (60%) and their collaboration process (40%) — how they decompose problems, guide AI, catch hallucinations, and make judgment calls.",
+            vision: "Evaluation and capability co-evolve. If we start measuring what actually matters — collaboration, judgment, end-to-end delivery — we'll create a culture that produces better engineers. The interview isn't just a filter; it's a signal to the entire industry about what we value."
+        },
         author: {
             name: "Zizhao Hu",
             avatar: "/profile.jpg"
@@ -167,36 +179,13 @@ The candidate works **with AI tools** (ChatGPT, Claude, Copilot, Cursor—whatev
 
 This creates a natural evaluation structure:
 
-\`\`\`
-                    ┌─────────────────┐
-                    │  Big Picture     │
-                    │  (Architecture)  │
-                    └────────┬────────┘
-                             │
-                    ┌────────▼────────┐
-                    │  Human Decision  │
-                    │  + AI Execution  │
-                    └────────┬────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              │              │              │
-        ┌─────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐
-        │ Component  │ │ Component  │ │ Component  │
-        │     A      │ │     B      │ │     C      │
-        └─────┬─────┘ └─────┬─────┘ └─────┬─────┘
-              │              │              │
-        ┌─────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐
-        │  Human     │ │  Human     │ │  Human     │
-        │  Verifies  │ │  Verifies  │ │  Verifies  │
-        └─────┬─────┘ └─────┬─────┘ └─────┬─────┘
-              │              │              │
-              └──────────────┼──────────────┘
-                             │
-                    ┌────────▼────────┐
-                    │   Deliverable    │
-                    │  (Website/Tool)  │
-                    └─────────────────┘
-\`\`\`
+The workflow follows a top-down approach:
+
+1. **Big Picture (Architecture)** — The candidate decides the overall structure
+2. **Human Decision + AI Execution** — The candidate guides, the AI builds
+3. **Component Breakdown** — The work splits into parallel components (A, B, C…)
+4. **Human Verification** — Each component is reviewed for correctness
+5. **Final Deliverable** — Everything comes together into a working artifact (website, tool, report)
 
 The candidate starts from the **big picture**—What's the architecture? What are the key design decisions? What tradeoffs am I making?—and works down to **small details**—Is this edge case handled? Is the error message helpful? Does the animation feel right?
 
@@ -256,27 +245,11 @@ Let's walk through what this looks like in practice:
 
 **What we're watching for:**
 
-\`\`\`
-Big Picture Decisions (observed in first 15 minutes):
-├── Does the candidate sketch the architecture before coding?
-├── Do they consider the end user (non-technical restaurant staff)?
-├── Do they make reasonable technology choices?
-└── Do they scope the problem well?
+**Big Picture Decisions** (observed in first 15 minutes): Does the candidate sketch the architecture before coding? Do they consider the end user (non-technical restaurant staff)? Do they make reasonable technology choices? Do they scope the problem well?
 
-AI Collaboration (observed throughout):
-├── Are they giving the AI clear, well-structured instructions?
-├── Do they review AI-generated code or blindly paste it?
-├── Do they catch when the AI makes incorrect assumptions?
-├── Do they iterate effectively when something doesn't work?
-└── Do they know when to write code themselves vs. delegate to AI?
+**AI Collaboration** (observed throughout): Are they giving the AI clear, well-structured instructions? Do they review AI-generated code or blindly paste it? Do they catch when the AI makes incorrect assumptions? Do they iterate effectively when something doesn't work? Do they know when to write code themselves vs. delegate to AI?
 
-Detail Execution (observed in final artifact):
-├── Mobile responsiveness
-├── Error states and edge cases
-├── Accessibility considerations
-├── Data persistence approach
-└── Overall polish and usability
-\`\`\`
+**Detail Execution** (observed in final artifact): Mobile responsiveness, error states and edge cases, accessibility considerations, data persistence approach, overall polish and usability.
 
 ## Why This Matters Now
 
@@ -350,6 +323,12 @@ Let's build it.
         category: "ai",
         tags: ["Continual Learning", "Neural Networks", "Deep Learning"],
         coverImage: "/images/blogs/continual.png",
+        tldr: {
+            problem: "Neural networks suffer from catastrophic forgetting — when trained on new tasks, they lose performance on previously learned ones. This is a fundamental limitation preventing AI systems from learning continuously like humans do.",
+            idea: "The key insight is that not all memories are equally important. Difficult samples — those near decision boundaries — are more informative for maintaining performance. We can be strategic about what we remember and how we protect learned knowledge.",
+            solution: "DREAM (Difficulty-REplay-Augmented Memory) — a method that prioritizes difficult samples in replay buffers, achieving better continual learning performance with smaller memory footprints. Combined with regularization techniques like EWC to protect critical parameters.",
+            vision: "AI systems that learn like humans: continuously, efficiently, and without forgetting. This is essential for real-world deployment — a self-driving car must adapt to new road conditions without forgetting how to handle familiar ones."
+        },
         author: {
             name: "Zizhao Hu",
             avatar: "/profile.jpg"
@@ -446,11 +425,7 @@ Another approach is to dynamically modify the network architecture for each new 
 
 **Progressive Neural Networks** add new columns for each task while freezing previous columns:
 
-\`\`\`
-Task 1:  [Column 1]
-Task 2:  [Column 1 (frozen)] -> [Column 2]
-Task 3:  [Column 1 (frozen)] -> [Column 2 (frozen)] -> [Column 3]
-\`\`\`
+Each new task gets its own column (set of layers), while all previous columns are frozen. Task 2 can read from Column 1 via lateral connections, and Task 3 can read from both Column 1 and Column 2.
 
 This completely eliminates forgetting but at the cost of growing model size.
 
@@ -525,6 +500,12 @@ The most promising approaches combine multiple strategies: replay for memory con
         category: "ai",
         tags: ["Vision", "NLP", "Multi-Modal", "Transformers"],
         coverImage: "/images/blogs/multimodal.png",
+        tldr: {
+            problem: "AI systems have traditionally processed vision and language in isolation. A vision-only model can identify 'a person running' but can't explain why; a language-only model can discuss 'red cars' but has no grounding in what 'red' looks like. This disconnect limits real-world understanding.",
+            idea: "The transformer architecture's attention mechanism naturally handles sequences of any kind — whether image patches or word tokens. This opens the door to unified models that process both modalities in a shared semantic space, enabling cross-modal reasoning.",
+            solution: "Static Key Attention — a more efficient attention variant for vision transformers that pre-computes certain attention patterns, reducing computational cost while maintaining performance. This builds on the evolution from separate encoders (CLIP) to deeply fused models (BLIP, Flamingo) to fully unified transformers.",
+            vision: "AI systems with human-like multimodal understanding — systems that don't just process images and text separately but truly comprehend the world through multiple complementary channels. This leads to embodied AI, world models, and multimodal scientific reasoning."
+        },
         author: {
             name: "Zizhao Hu",
             avatar: "/profile.jpg"
@@ -622,13 +603,7 @@ The key insight: by training on millions of naturally occurring image-caption pa
 
 Models like CLIP use separate encoders for each modality, projecting into a shared embedding space:
 
-\`\`\`
-Image -> Image Encoder -> [Image Embedding]
-                                 ↓
-                          Shared Space
-                                 ↑
- Text ->  Text Encoder -> [Text Embedding]
-\`\`\`
+Images and text are processed by separate encoders and projected into a shared embedding space where similar concepts (regardless of modality) end up close together.
 
 **Pros**: Efficient retrieval (pre-compute embeddings)
 **Cons**: Limited cross-modal interaction
@@ -659,13 +634,7 @@ class CrossAttention(nn.Module):
 
 The latest generation uses a single transformer for both modalities:
 
-\`\`\`
-[CLS] [Image Patch 1] ... [Image Patch N] [SEP] [Word 1] ... [Word M] [SEP]
-                            ↓
-                    Unified Transformer
-                            ↓
-                    [Joint Representation]
-\`\`\`
+Image patches and word tokens are concatenated into a single sequence and fed through one unified transformer, producing a joint representation that captures cross-modal relationships.
 
 ## Applications
 
@@ -813,6 +782,12 @@ The goal is AI systems with human-like multimodal understanding—systems that d
         category: "ai",
         tags: ["LLM", "Research", "Machine Learning", "Science"],
         coverImage: "/images/blogs/science.png",
+        tldr: {
+            problem: "Scientific literature is growing exponentially — over 5 million new papers per year. Researchers can't keep up with reading, let alone synthesizing findings across fields. Meanwhile, LLMs are powerful but prone to hallucination, making uncritical adoption dangerous in scientific contexts.",
+            idea: "LLMs are most valuable not as oracles but as research assistants — accelerating literature review, code generation, and hypothesis exploration. The key is treating them as tools that require human verification at every step, not autonomous reasoners.",
+            solution: "A structured workflow: use LLMs for initial drafts, literature synthesis, and code scaffolding, but implement verification pipelines that cross-reference claims with primary sources. Always document AI usage transparently. The human remains essential for judgment, creativity, and ethical oversight.",
+            vision: "A future where AI and researchers form genuine collaborative partnerships — AI handles the scale problem (reading thousands of papers, generating code variants) while humans provide the creative direction, causal reasoning, and scientific judgment that LLMs fundamentally lack."
+        },
         author: {
             name: "Zizhao Hu",
             avatar: "/profile.jpg"

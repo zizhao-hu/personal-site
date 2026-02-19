@@ -2,6 +2,7 @@ import { Header } from '@/components/custom/header';
 import { useState, useRef, useCallback } from 'react';
 import { ArrowLeft, Plus, Trash2, ChevronLeft, ChevronRight, Type, AlignLeft, Square, Circle, Image, Download, Copy, RotateCcw, GripVertical, Minus, Table, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import pptxgen from 'pptxgenjs';
 import { jsPDF } from 'jspdf';
 
 /* ─── Brand ─── */
@@ -244,15 +245,139 @@ export const SlideMaker = () => {
 
     const resetAll = () => { setSlides(createTemplateSlides()); setCurrentIdx(0); setSelected(null); showToast('Reset to template'); };
 
-    /* ── Export to JSON ── */
-    const exportJSON = () => {
-        const data = JSON.stringify(slides, null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'slides-export.json';
-        a.click();
-        showToast('Exported JSON');
+    /* ── Export to PPTX ── */
+    const exportPPTX = async () => {
+        const pres = new pptxgen();
+        pres.layout = 'LAYOUT_WIDE'; // 13.33" x 7.5"
+        const PW = 13.33; // presentation width inches
+        const PH = 7.5;   // presentation height inches
+
+        const pxToInX = (px: number) => (px / SW) * PW;
+        const pxToInY = (px: number) => (px / SH) * PH;
+        const hexClean = (hex: string) => hex.replace('#', '');
+
+        slides.forEach(s => {
+            const pSlide = pres.addSlide();
+
+            // Background
+            if (isViterbiBg(s.bg)) {
+                pSlide.background = { color: hexClean(VITERBI.bg) };
+                const footerH = PH * VITERBI.footerRatio;
+                const footerY = PH - footerH;
+                const goldH = (VITERBI.goldLineH / SH) * PH;
+
+                // Gold accent line
+                pSlide.addShape(pres.ShapeType.rect, {
+                    x: 0, y: footerY, w: PW, h: goldH,
+                    fill: { color: hexClean(VITERBI.gold) },
+                    line: { width: 0 },
+                });
+                // Cardinal footer band
+                pSlide.addShape(pres.ShapeType.rect, {
+                    x: 0, y: footerY + goldH, w: PW, h: footerH - goldH,
+                    fill: { color: hexClean(VITERBI.cardinal) },
+                    line: { width: 0 },
+                });
+                // Footer text — left
+                pSlide.addText([
+                    { text: 'USC ', options: { bold: true, fontSize: 11, color: 'FFFFFF' } },
+                    { text: 'Viterbi', options: { bold: false, fontSize: 11, color: 'FFFFFF' } },
+                ], {
+                    x: 0.3, y: footerY + goldH + 0.05, w: 3, h: 0.3,
+                    valign: 'top',
+                });
+                pSlide.addText('School of Engineering', {
+                    x: 0.3, y: footerY + goldH + 0.35, w: 3, h: 0.2,
+                    fontSize: 8, color: 'FFFFFF', valign: 'top',
+                });
+                // Footer text — right
+                pSlide.addText('University of Southern California', {
+                    x: PW - 4, y: footerY + goldH + 0.15, w: 3.7, h: 0.3,
+                    fontSize: 9, color: 'FFFFFF', italic: true, align: 'right',
+                });
+                // USC shield watermark — top right
+                pSlide.addShape(pres.ShapeType.ellipse, {
+                    x: PW - 0.9, y: 0.2, w: 0.7, h: 0.7,
+                    line: { color: hexClean(VITERBI.gold), width: 1.5 },
+                    fill: { type: 'solid', color: hexClean(VITERBI.bg) },
+                });
+                pSlide.addText('USC', {
+                    x: PW - 0.9, y: 0.2, w: 0.7, h: 0.7,
+                    fontSize: 8, color: hexClean(VITERBI.gold), bold: true,
+                    align: 'center', valign: 'middle', fontFace: 'Georgia',
+                });
+            } else {
+                pSlide.background = { color: hexClean(s.bg) };
+            }
+
+            // Elements
+            s.elements.forEach(el => {
+                const x = pxToInX(el.x);
+                const y = pxToInY(el.y);
+                const w = pxToInX(el.w);
+                const h = pxToInY(el.h);
+
+                if (el.type === 'divider') {
+                    pSlide.addShape(pres.ShapeType.rect, {
+                        x, y, w, h,
+                        fill: { color: hexClean(el.bg || B.orange) },
+                        line: { width: 0 },
+                    });
+                } else if (el.type === 'box') {
+                    pSlide.addShape(pres.ShapeType.rect, {
+                        x, y, w, h,
+                        fill: { color: hexClean(el.bg || B.lgray) },
+                        rectRadius: el.borderRadius ? el.borderRadius / 100 : 0,
+                        line: { width: 0 },
+                    });
+                } else if (el.type === 'circle') {
+                    pSlide.addShape(pres.ShapeType.ellipse, {
+                        x, y, w, h,
+                        fill: { color: hexClean(el.bg || B.lgray) },
+                        line: { width: 0 },
+                    });
+                } else if (el.type === 'table' && el.rows) {
+                    const tableRows = el.rows.map((row, ri) =>
+                        row.map(cell => ({
+                            text: cell,
+                            options: {
+                                fontSize: (el.fontSize || 13) * 0.75,
+                                color: hexClean(ri === 0 ? B.light : (el.color || B.dark)),
+                                bold: ri === 0,
+                                fill: { color: hexClean(ri === 0 ? B.dark : (ri % 2 === 0 ? '#f5f4ef' : B.light)) },
+                                fontFace: ri === 0 ? 'Arial' : 'Georgia',
+                                valign: 'middle' as const,
+                            },
+                        }))
+                    );
+                    pSlide.addTable(tableRows, {
+                        x, y, w, h,
+                        border: { type: 'solid', pt: 0.5, color: hexClean(B.lgray) },
+                        colW: Array(el.rows[0]?.length || 1).fill(w / (el.rows[0]?.length || 1)),
+                    });
+                } else if (el.text) {
+                    // Text elements (title, subtitle, body, bullet, image label)
+                    const isBullet = el.type === 'bullet';
+                    const fontSizePt = ((el.fontSize || 16) * 0.75);
+                    const fontFace = (el.fontSize && el.fontSize >= 20) ? 'Arial' : 'Georgia';
+                    pSlide.addText(el.text, {
+                        x, y, w, h,
+                        fontSize: fontSizePt,
+                        fontFace,
+                        color: hexClean(el.color || B.dark),
+                        bold: el.fontWeight === '700' || el.fontWeight === '600',
+                        align: (el.textAlign || 'left') as 'left' | 'center' | 'right',
+                        valign: 'top',
+                        wrap: true,
+                        bullet: isBullet ? { type: 'bullet' } : undefined,
+                        lineSpacingMultiple: 1.5,
+                    });
+                }
+            });
+        });
+
+        await pres.writeFile({ fileName: 'research-slides.pptx' });
+        showToast('Exported PPTX');
     };
 
     /* ── Export to PDF ── */
@@ -490,8 +615,8 @@ export const SlideMaker = () => {
                         <button onClick={resetAll} className="px-3 py-1.5 text-xs font-heading rounded-lg bg-muted hover:bg-muted/80 transition-colors flex items-center gap-1">
                             <RotateCcw className="w-3 h-3" /> Reset
                         </button>
-                        <button onClick={exportJSON} className="px-3 py-1.5 text-xs font-heading rounded-lg bg-muted hover:bg-muted/80 transition-colors flex items-center gap-1">
-                            <Download className="w-3 h-3" /> JSON
+                        <button onClick={exportPPTX} className="px-3 py-1.5 text-xs font-heading rounded-lg bg-muted hover:bg-muted/80 transition-colors flex items-center gap-1">
+                            <Download className="w-3 h-3" /> PPTX
                         </button>
                         <button onClick={exportPDF} className="px-3 py-1.5 text-xs font-heading rounded-lg bg-brand-orange text-white hover:opacity-90 transition-colors flex items-center gap-1">
                             <FileText className="w-3 h-3" /> Export PDF

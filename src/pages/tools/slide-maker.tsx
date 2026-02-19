@@ -10,6 +10,19 @@ const B = {
     orange: '#d97757', blue: '#6a9bcc', green: '#788c5d', clay: '#c2968a',
 };
 
+/* ─── Viterbi Theme ─── */
+const VITERBI_BG = '__viterbi__';
+const VITERBI = {
+    cardinal: '#990000',
+    gold: '#FFCC00',
+    white: '#FFFFFF',
+    bg: '#F8F8F8',
+    footerRatio: 0.14, // footer takes 14% of slide height
+    goldLineH: 4,       // px height of gold accent line
+};
+
+const isViterbiBg = (bg: string) => bg === VITERBI_BG;
+
 /* ─── Types ─── */
 interface SlideElement {
     id: string;
@@ -253,9 +266,43 @@ export const SlideMaker = () => {
         slides.forEach((s, si) => {
             if (si > 0) pdf.addPage([SW, SH], 'landscape');
             // Background
-            const bg = hexToRgb(s.bg);
-            pdf.setFillColor(bg.r, bg.g, bg.b);
-            pdf.rect(0, 0, SW, SH, 'F');
+            if (isViterbiBg(s.bg)) {
+                // Viterbi slide background
+                const bgC = hexToRgb(VITERBI.bg);
+                pdf.setFillColor(bgC.r, bgC.g, bgC.b);
+                pdf.rect(0, 0, SW, SH, 'F');
+                // Gold accent line
+                const footerY = SH * (1 - VITERBI.footerRatio);
+                const goldC = hexToRgb(VITERBI.gold);
+                pdf.setFillColor(goldC.r, goldC.g, goldC.b);
+                pdf.rect(0, footerY, SW, VITERBI.goldLineH, 'F');
+                // Cardinal footer band
+                const cardC = hexToRgb(VITERBI.cardinal);
+                pdf.setFillColor(cardC.r, cardC.g, cardC.b);
+                pdf.rect(0, footerY + VITERBI.goldLineH, SW, SH - footerY - VITERBI.goldLineH, 'F');
+                // Footer text
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(11);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('USC', 30, footerY + VITERBI.goldLineH + 22);
+                pdf.setFont('helvetica', 'normal');
+                pdf.text(' Viterbi', 30 + pdf.getTextWidth('USC'), footerY + VITERBI.goldLineH + 22);
+                pdf.setFontSize(8);
+                pdf.text('School of Engineering', 30, footerY + VITERBI.goldLineH + 34);
+                pdf.setFontSize(9);
+                pdf.text('University of Southern California', SW - 30, footerY + VITERBI.goldLineH + 28, { align: 'right' });
+                // Gold shield watermark (simplified circle in top right)
+                pdf.setDrawColor(goldC.r, goldC.g, goldC.b);
+                pdf.setFillColor(goldC.r, goldC.g, goldC.b);
+                pdf.circle(SW - 40, 40, 18, 'S');
+                pdf.setFontSize(12);
+                pdf.setTextColor(goldC.r, goldC.g, goldC.b);
+                pdf.text('USC', SW - 52, 44);
+            } else {
+                const bg = hexToRgb(s.bg);
+                pdf.setFillColor(bg.r, bg.g, bg.b);
+                pdf.rect(0, 0, SW, SH, 'F');
+            }
             // Elements
             s.elements.forEach(el => {
                 if (el.type === 'divider') {
@@ -319,14 +366,14 @@ export const SlideMaker = () => {
         if (el.type === 'divider') {
             return (
                 <div key={el.id} style={{ ...base, backgroundColor: el.bg || B.orange, borderRadius: 2 }}
-                    onPointerDown={e => onPointerDown(e, el)} />
+                    onClick={e => e.stopPropagation()} onPointerDown={e => onPointerDown(e, el)} />
             );
         }
 
         if (el.type === 'box' || el.type === 'circle') {
             return (
                 <div key={el.id} style={{ ...base, backgroundColor: el.bg || B.lgray, borderRadius: el.borderRadius || 0 }}
-                    onPointerDown={e => onPointerDown(e, el)}>
+                    onClick={e => e.stopPropagation()} onPointerDown={e => onPointerDown(e, el)}>
                     {isSelected && (
                         <div style={{ position: 'absolute', right: -4, bottom: -4, width: 10, height: 10, background: B.orange, borderRadius: 2, cursor: 'se-resize' }}
                             onPointerDown={e => { e.stopPropagation(); setResizing({ id: el.id, ow: el.w, oh: el.h, sx: e.clientX, sy: e.clientY }); }} />
@@ -337,7 +384,7 @@ export const SlideMaker = () => {
 
         if (el.type === 'table' && el.rows) {
             return (
-                <div key={el.id} style={{ ...base, overflow: 'hidden' }} onPointerDown={e => onPointerDown(e, el)}>
+                <div key={el.id} style={{ ...base, overflow: 'hidden' }} onClick={e => e.stopPropagation()} onPointerDown={e => onPointerDown(e, el)}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: el.fontSize || 13, fontFamily: "'Lora', Georgia, serif" }}>
                         <tbody>
                             {el.rows.map((row, ri) => (
@@ -378,7 +425,7 @@ export const SlideMaker = () => {
 
         // Text elements (title, subtitle, body, bullet, image)
         return (
-            <div key={el.id} style={base} onPointerDown={e => onPointerDown(e, el)}
+            <div key={el.id} style={base} onClick={e => e.stopPropagation()} onPointerDown={e => onPointerDown(e, el)}
                 onDoubleClick={() => setEditing(el.id)}>
                 {isEditing ? (
                     <textarea value={el.text || ''} autoFocus
@@ -459,7 +506,17 @@ export const SlideMaker = () => {
                             <button key={s.id} onClick={() => { setCurrentIdx(i); setSelected(null); setEditing(null); }}
                                 className={`relative group rounded-lg border-2 transition-all ${i === currentIdx ? 'border-brand-orange shadow-md' : 'border-border hover:border-muted-foreground/30'}`}>
                                 <div className="text-[8px] font-heading text-muted-foreground px-1 pt-1 truncate">{i + 1}. {s.label}</div>
-                                <div className="aspect-video rounded-b-md" style={{ background: s.bg, position: 'relative', overflow: 'hidden' }}>
+                                <div className="aspect-video rounded-b-md" style={{ background: isViterbiBg(s.bg) ? VITERBI.bg : s.bg, position: 'relative', overflow: 'hidden' }}>
+                                    {/* Viterbi theme mini overlay */}
+                                    {isViterbiBg(s.bg) && (
+                                        <>
+                                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${VITERBI.footerRatio * 100}%`, display: 'flex', flexDirection: 'column' }}>
+                                                <div style={{ height: 1, background: VITERBI.gold }} />
+                                                <div style={{ flex: 1, background: VITERBI.cardinal }} />
+                                            </div>
+                                            <div style={{ position: 'absolute', top: 2, right: 3, width: 6, height: 6, border: `1px solid ${VITERBI.gold}`, borderRadius: '50%' }} />
+                                        </>
+                                    )}
                                     {/* Mini preview — simplified */}
                                     {s.elements.slice(0, 4).map(el => (
                                         <div key={el.id} style={{
@@ -506,8 +563,37 @@ export const SlideMaker = () => {
                         </div>
 
                         {/* Slide Canvas */}
-                        <div ref={slideRef} className="relative shadow-2xl" onClick={() => { setSelected(null); setEditing(null); }}
-                            style={{ width: '100%', maxWidth: 960, aspectRatio: '16/9', background: slide.bg, borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
+                        <div ref={slideRef} className="relative shadow-2xl" onClick={e => { if (e.target === e.currentTarget) { setSelected(null); setEditing(null); } }}
+                            style={{ width: '100%', maxWidth: 960, aspectRatio: '16/9', background: isViterbiBg(slide.bg) ? VITERBI.bg : slide.bg, borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
+                            {/* Viterbi theme background overlay */}
+                            {isViterbiBg(slide.bg) && (
+                                <>
+                                    {/* Gold shield watermark — top right */}
+                                    <div style={{ position: 'absolute', top: 16, right: 20, width: 52, height: 52, pointerEvents: 'none', zIndex: 0 }}>
+                                        <svg viewBox="0 0 60 60" width="52" height="52" style={{ opacity: 0.35 }}>
+                                            <circle cx="30" cy="30" r="27" fill="none" stroke={VITERBI.gold} strokeWidth="2.5" />
+                                            <text x="30" y="34" textAnchor="middle" fill={VITERBI.gold} fontSize="14" fontWeight="bold" fontFamily="serif">USC</text>
+                                        </svg>
+                                    </div>
+                                    {/* Footer */}
+                                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${VITERBI.footerRatio * 100}%`, display: 'flex', flexDirection: 'column', pointerEvents: 'none', zIndex: 0 }}>
+                                        {/* Gold accent line */}
+                                        <div style={{ height: VITERBI.goldLineH, background: VITERBI.gold, flexShrink: 0 }} />
+                                        {/* Cardinal band */}
+                                        <div style={{ flex: 1, background: VITERBI.cardinal, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 30px' }}>
+                                            <div style={{ color: VITERBI.white }}>
+                                                <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: 0.3 }}>
+                                                    <span style={{ fontWeight: 700 }}>USC</span> Viterbi
+                                                </div>
+                                                <div style={{ fontSize: 9, opacity: 0.9, marginTop: 1 }}>School of Engineering</div>
+                                            </div>
+                                            <div style={{ color: VITERBI.white, fontSize: 11, fontStyle: 'italic', opacity: 0.9 }}>
+                                                University of Southern California
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                             {slide.elements.map(renderElement)}
                         </div>
 
@@ -539,12 +625,21 @@ export const SlideMaker = () => {
                             <input value={slide.label} onChange={e => setSlides(p => p.map((s, i) => i === currentIdx ? { ...s, label: e.target.value } : s))}
                                 className="w-full px-2 py-1 text-xs rounded border border-border bg-background font-heading" />
                             <label className="text-[10px] font-heading text-muted-foreground uppercase block mb-1 mt-2">Slide BG</label>
-                            <div className="flex gap-1.5">
+                            <div className="flex gap-1.5 flex-wrap">
                                 {[B.light, B.dark, B.lgray, '#ffffff'].map(c => (
                                     <button key={c} onClick={() => setSlides(p => p.map((s, i) => i === currentIdx ? { ...s, bg: c } : s))}
                                         className={`w-6 h-6 rounded border-2 ${slide.bg === c ? 'border-brand-orange' : 'border-border'}`}
                                         style={{ background: c }} />
                                 ))}
+                                {/* Viterbi theme button */}
+                                <button
+                                    onClick={() => setSlides(p => p.map((s, i) => i === currentIdx ? { ...s, bg: VITERBI_BG } : s))}
+                                    className={`h-6 px-1.5 rounded border-2 text-[8px] font-heading font-bold flex items-center gap-0.5 ${slide.bg === VITERBI_BG ? 'border-brand-orange' : 'border-border'}`}
+                                    style={{ background: `linear-gradient(to bottom, ${VITERBI.bg} 60%, ${VITERBI.gold} 60%, ${VITERBI.gold} 63%, ${VITERBI.cardinal} 63%)` }}
+                                    title="USC Viterbi Theme"
+                                >
+                                    <span style={{ color: VITERBI.cardinal }}>V</span>
+                                </button>
                             </div>
                         </div>
 

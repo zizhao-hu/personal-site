@@ -1,9 +1,10 @@
 import { Header } from '@/components/custom/header';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { ArrowLeft, Plus, Trash2, ChevronLeft, ChevronRight, Type, AlignLeft, Square, Circle, Image, Download, Copy, RotateCcw, GripVertical, Minus, Table, FileText, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import pptxgen from 'pptxgenjs';
 import { jsPDF } from 'jspdf';
+import * as pdfjsLib from 'pdfjs-dist';
 
 /* ─── Brand ─── */
 const B = {
@@ -146,6 +147,27 @@ export const SlideMaker = () => {
     const [editing, setEditing] = useState<string | null>(null);
     const [toast, setToast] = useState<string | null>(null);
     const slideRef = useRef<HTMLDivElement>(null);
+    const [viterbiBgUrl, setViterbiBgUrl] = useState<string | null>(null);
+
+    /* ── Load Viterbi PDF as background image ── */
+    useEffect(() => {
+        (async () => {
+            try {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+                const pdf = await pdfjsLib.getDocument('/templates/viterbi.pdf').promise;
+                const page = await pdf.getPage(1);
+                const vp = page.getViewport({ scale: 3 });
+                const canvas = document.createElement('canvas');
+                canvas.width = vp.width;
+                canvas.height = vp.height;
+                const ctx = canvas.getContext('2d')!;
+                await page.render({ canvasContext: ctx, viewport: vp, canvas } as any).promise;
+                setViterbiBgUrl(canvas.toDataURL('image/png'));
+            } catch (err) {
+                console.warn('Failed to load Viterbi PDF background:', err);
+            }
+        })();
+    }, []);
 
     const slide = slides[currentIdx];
     const showToast = useCallback((m: string) => { setToast(m); setTimeout(() => setToast(null), 1800); }, []);
@@ -260,52 +282,10 @@ export const SlideMaker = () => {
             const pSlide = pres.addSlide();
 
             // Background
-            if (isViterbiBg(s.bg)) {
+            if (isViterbiBg(s.bg) && viterbiBgUrl) {
+                pSlide.background = { data: viterbiBgUrl };
+            } else if (isViterbiBg(s.bg)) {
                 pSlide.background = { color: hexClean(VITERBI.bg) };
-                const footerH = PH * VITERBI.footerRatio;
-                const footerY = PH - footerH;
-                const goldH = (VITERBI.goldLineH / SH) * PH;
-
-                // Gold accent line
-                pSlide.addShape(pres.ShapeType.rect, {
-                    x: 0, y: footerY, w: PW, h: goldH,
-                    fill: { color: hexClean(VITERBI.gold) },
-                    line: { width: 0 },
-                });
-                // Cardinal footer band
-                pSlide.addShape(pres.ShapeType.rect, {
-                    x: 0, y: footerY + goldH, w: PW, h: footerH - goldH,
-                    fill: { color: hexClean(VITERBI.cardinal) },
-                    line: { width: 0 },
-                });
-                // Footer text — left
-                pSlide.addText([
-                    { text: 'USC ', options: { bold: true, fontSize: 11, color: 'FFFFFF' } },
-                    { text: 'Viterbi', options: { bold: false, fontSize: 11, color: 'FFFFFF' } },
-                ], {
-                    x: 0.3, y: footerY + goldH + 0.05, w: 3, h: 0.3,
-                    valign: 'top',
-                });
-                pSlide.addText('School of Engineering', {
-                    x: 0.3, y: footerY + goldH + 0.35, w: 3, h: 0.2,
-                    fontSize: 8, color: 'FFFFFF', valign: 'top',
-                });
-                // Footer text — right
-                pSlide.addText('University of Southern California', {
-                    x: PW - 4, y: footerY + goldH + 0.15, w: 3.7, h: 0.3,
-                    fontSize: 9, color: 'FFFFFF', italic: true, align: 'right',
-                });
-                // USC shield watermark — top right
-                pSlide.addShape(pres.ShapeType.ellipse, {
-                    x: PW - 0.9, y: 0.2, w: 0.7, h: 0.7,
-                    line: { color: hexClean(VITERBI.gold), width: 1.5 },
-                    fill: { type: 'solid', color: hexClean(VITERBI.bg) },
-                });
-                pSlide.addText('USC', {
-                    x: PW - 0.9, y: 0.2, w: 0.7, h: 0.7,
-                    fontSize: 8, color: hexClean(VITERBI.gold), bold: true,
-                    align: 'center', valign: 'middle', fontFace: 'Georgia',
-                });
             } else {
                 pSlide.background = { color: hexClean(s.bg) };
             }
@@ -406,37 +386,14 @@ export const SlideMaker = () => {
             if (si > 0) pdf.addPage([SW, SH], 'landscape');
             // Background
             if (isViterbiBg(s.bg)) {
-                // Viterbi slide background
-                const bgC = hexToRgb(VITERBI.bg);
-                pdf.setFillColor(bgC.r, bgC.g, bgC.b);
-                pdf.rect(0, 0, SW, SH, 'F');
-                // Gold accent line
-                const footerY = SH * (1 - VITERBI.footerRatio);
-                const goldC = hexToRgb(VITERBI.gold);
-                pdf.setFillColor(goldC.r, goldC.g, goldC.b);
-                pdf.rect(0, footerY, SW, VITERBI.goldLineH, 'F');
-                // Cardinal footer band
-                const cardC = hexToRgb(VITERBI.cardinal);
-                pdf.setFillColor(cardC.r, cardC.g, cardC.b);
-                pdf.rect(0, footerY + VITERBI.goldLineH, SW, SH - footerY - VITERBI.goldLineH, 'F');
-                // Footer text
-                pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(11);
-                pdf.setFont('helvetica', 'bold');
-                pdf.text('USC', 30, footerY + VITERBI.goldLineH + 22);
-                pdf.setFont('helvetica', 'normal');
-                pdf.text(' Viterbi', 30 + pdf.getTextWidth('USC'), footerY + VITERBI.goldLineH + 22);
-                pdf.setFontSize(8);
-                pdf.text('School of Engineering', 30, footerY + VITERBI.goldLineH + 34);
-                pdf.setFontSize(9);
-                pdf.text('University of Southern California', SW - 30, footerY + VITERBI.goldLineH + 28, { align: 'right' });
-                // Gold shield watermark (simplified circle in top right)
-                pdf.setDrawColor(goldC.r, goldC.g, goldC.b);
-                pdf.setFillColor(goldC.r, goldC.g, goldC.b);
-                pdf.circle(SW - 40, 40, 18, 'S');
-                pdf.setFontSize(12);
-                pdf.setTextColor(goldC.r, goldC.g, goldC.b);
-                pdf.text('USC', SW - 52, 44);
+                // Use the rendered PDF background image
+                if (viterbiBgUrl) {
+                    try { pdf.addImage(viterbiBgUrl, 'PNG', 0, 0, SW, SH); } catch { /* fallback */ }
+                } else {
+                    const bgC = hexToRgb(VITERBI.bg);
+                    pdf.setFillColor(bgC.r, bgC.g, bgC.b);
+                    pdf.rect(0, 0, SW, SH, 'F');
+                }
             } else {
                 const bg = hexToRgb(s.bg);
                 pdf.setFillColor(bg.r, bg.g, bg.b);
@@ -683,15 +640,9 @@ export const SlideMaker = () => {
                                 className={`relative group rounded-lg border-2 transition-all ${i === currentIdx ? 'border-brand-orange shadow-md' : 'border-border hover:border-muted-foreground/30'}`}>
                                 <div className="text-[8px] font-heading text-muted-foreground px-1 pt-1 truncate">{i + 1}. {s.label}</div>
                                 <div className="aspect-video rounded-b-md" style={{ background: isViterbiBg(s.bg) ? VITERBI.bg : s.bg, position: 'relative', overflow: 'hidden' }}>
-                                    {/* Viterbi theme mini overlay */}
-                                    {isViterbiBg(s.bg) && (
-                                        <>
-                                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${VITERBI.footerRatio * 100}%`, display: 'flex', flexDirection: 'column' }}>
-                                                <div style={{ height: 1, background: VITERBI.gold }} />
-                                                <div style={{ flex: 1, background: VITERBI.cardinal }} />
-                                            </div>
-                                            <div style={{ position: 'absolute', top: 2, right: 3, width: 6, height: 6, border: `1px solid ${VITERBI.gold}`, borderRadius: '50%' }} />
-                                        </>
+                                    {/* Viterbi theme — use actual PDF image */}
+                                    {isViterbiBg(s.bg) && viterbiBgUrl && (
+                                        <img src={viterbiBgUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
                                     )}
                                     {/* Mini preview — simplified */}
                                     {s.elements.slice(0, 4).map(el => (
@@ -742,34 +693,9 @@ export const SlideMaker = () => {
                         {/* Slide Canvas */}
                         <div ref={slideRef} className="relative shadow-2xl" onClick={e => { if (e.target === e.currentTarget) { setSelected(null); setEditing(null); } }}
                             style={{ width: '100%', maxWidth: 960, aspectRatio: '16/9', background: isViterbiBg(slide.bg) ? VITERBI.bg : slide.bg, borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
-                            {/* Viterbi theme background overlay */}
-                            {isViterbiBg(slide.bg) && (
-                                <>
-                                    {/* Gold shield watermark — top right */}
-                                    <div style={{ position: 'absolute', top: 16, right: 20, width: 52, height: 52, pointerEvents: 'none', zIndex: 0 }}>
-                                        <svg viewBox="0 0 60 60" width="52" height="52" style={{ opacity: 0.35 }}>
-                                            <circle cx="30" cy="30" r="27" fill="none" stroke={VITERBI.gold} strokeWidth="2.5" />
-                                            <text x="30" y="34" textAnchor="middle" fill={VITERBI.gold} fontSize="14" fontWeight="bold" fontFamily="serif">USC</text>
-                                        </svg>
-                                    </div>
-                                    {/* Footer */}
-                                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${VITERBI.footerRatio * 100}%`, display: 'flex', flexDirection: 'column', pointerEvents: 'none', zIndex: 0 }}>
-                                        {/* Gold accent line */}
-                                        <div style={{ height: VITERBI.goldLineH, background: VITERBI.gold, flexShrink: 0 }} />
-                                        {/* Cardinal band */}
-                                        <div style={{ flex: 1, background: VITERBI.cardinal, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 30px' }}>
-                                            <div style={{ color: VITERBI.white }}>
-                                                <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: 0.3 }}>
-                                                    <span style={{ fontWeight: 700 }}>USC</span> Viterbi
-                                                </div>
-                                                <div style={{ fontSize: 9, opacity: 0.9, marginTop: 1 }}>School of Engineering</div>
-                                            </div>
-                                            <div style={{ color: VITERBI.white, fontSize: 11, fontStyle: 'italic', opacity: 0.9 }}>
-                                                University of Southern California
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>
+                            {/* Viterbi theme — actual PDF background */}
+                            {isViterbiBg(slide.bg) && viterbiBgUrl && (
+                                <img src={viterbiBgUrl} alt="Viterbi template" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', zIndex: 0 }} />
                             )}
                             {slide.elements.map(renderElement)}
                         </div>

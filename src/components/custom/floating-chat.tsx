@@ -355,92 +355,108 @@ export const FloatingChat = () => {
             )}
           </AnimatePresence>
 
-          {/* ─ Input Bar ─────────────────────────────────────────── */}
+          {/* ─ Input Bar / Loading State ────────────────────────── */}
           <div className="relative bg-card rounded-xl shadow-elevation-3 dark:shadow-elevation-3-dark border border-border overflow-hidden">
-            {/* Loading Overlay */}
-            {isDisabled && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="absolute inset-0 bg-brand-light/90 dark:bg-brand-dark/80 backdrop-blur-sm rounded-xl z-20 flex items-center justify-center"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground font-medium font-heading">
-                    Loading model...
-                  </span>
-                  <div className="w-16 bg-border rounded-full h-1">
-                    <motion.div
-                      className="bg-brand-orange h-1 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progressPercentage || 0}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-brand-orange font-medium font-heading">
-                    {progressPercentage || 0}%
-                  </span>
-                </div>
-              </motion.div>
-            )}
-
             {/* Top edge accent */}
             <div className="h-[2px] bg-gradient-to-r from-transparent via-brand-orange/40 to-transparent" />
 
-            {/* Single Row — Model + Input + Send */}
-            <div className="flex items-center gap-1.5 p-1.5 relative z-30">
-              <ModelSelector
-                selectedModel={selectedModel}
-                onModelSelect={handleModelSelect}
-                isLoading={isInitializing}
-                progressPercentage={progressPercentage}
-              />
-              <div className="relative group">
-                <button className="p-0.5 text-brand-orange/60 hover:text-brand-orange transition-colors">
-                  <AlertTriangle className="w-3 h-3" />
-                </button>
-                <div className="absolute left-0 bottom-full mb-1 w-44 p-1.5 bg-brand-dark text-brand-light text-[10px] rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 font-heading">
-                  Small models may produce inaccurate information.
+            {isDisabled ? (
+              /* ── Model Loading Animation ── */
+              <div className="flex flex-col items-center justify-center py-5 px-4 gap-3">
+                {/* Pulsing sparkle icon */}
+                <motion.div
+                  animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-brand-orange/10"
+                >
+                  <SparklesIcon size={16} />
+                </motion.div>
+
+                {/* Status text */}
+                <span className="text-xs text-muted-foreground font-heading tracking-wide">
+                  Loading model…
+                </span>
+
+                {/* Progress bar */}
+                <div className="w-full max-w-[200px] flex items-center gap-2">
+                  <div className="flex-1 bg-border rounded-full h-1.5 overflow-hidden">
+                    <motion.div
+                      className="bg-brand-orange h-full rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPercentage || 0}%` }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                    />
+                  </div>
+                  <span className="text-[11px] text-brand-orange font-semibold font-heading tabular-nums min-w-[32px] text-right">
+                    {progressPercentage || 0}%
+                  </span>
                 </div>
-              </div>
-              <div className="flex-1">
-                <Textarea
-                  ref={textareaRef}
-                  placeholder="Ask me anything..."
-                  className="min-h-[28px] max-h-[60px] py-1.5 px-2.5 resize-none rounded-lg text-xs border-0 bg-muted focus:ring-1 focus:ring-brand-orange/50 font-sans"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      event.preventDefault();
-                      handleSubmit();
-                    }
-                  }}
-                  rows={1}
-                  disabled={isDisabled}
+
+                {/* Shimmer accent */}
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-px"
+                  style={{ background: "linear-gradient(90deg, transparent 0%, var(--brand-orange) 50%, transparent 100%)" }}
+                  animate={{ opacity: [0.15, 0.5, 0.15] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 />
               </div>
+            ) : (
+              /* ── Chat Input ── */
+              <div className="flex items-center gap-1.5 p-1.5 relative z-30">
+                <ModelSelector
+                  selectedModel={selectedModel}
+                  onModelSelect={handleModelSelect}
+                  isLoading={isInitializing}
+                  progressPercentage={progressPercentage}
+                />
+                <div className="relative group">
+                  <button className="p-0.5 text-brand-orange/60 hover:text-brand-orange transition-colors">
+                    <AlertTriangle className="w-3 h-3" />
+                  </button>
+                  <div className="absolute left-0 bottom-full mb-1 w-44 p-1.5 bg-brand-dark text-brand-light text-[10px] rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 font-heading">
+                    Small models may produce inaccurate information.
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <Textarea
+                    ref={textareaRef}
+                    placeholder="Ask me anything..."
+                    className="min-h-[28px] max-h-[60px] py-1.5 px-2.5 resize-none rounded-lg text-xs border-0 bg-muted focus:ring-1 focus:ring-brand-orange/50 font-sans"
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        handleSubmit();
+                      }
+                    }}
+                    rows={1}
+                  />
+                </div>
 
-              {/* Chat toggle when messages exist */}
-              {hasMessages && !drawerOpen && (
+                {/* Chat toggle when messages exist */}
+                {hasMessages && !drawerOpen && (
+                  <button
+                    onClick={() => setDrawerOpen(true)}
+                    className="relative p-1.5 rounded-lg text-brand-orange hover:bg-brand-orange/10 transition-colors"
+                    title="Show chat"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-brand-orange text-white text-[8px] rounded-full flex items-center justify-center font-heading">
+                      {messages.length}
+                    </span>
+                  </button>
+                )}
+
                 <button
-                  onClick={() => setDrawerOpen(true)}
-                  className="relative p-1.5 rounded-lg text-brand-orange hover:bg-brand-orange/10 transition-colors"
-                  title="Show chat"
+                  className="rounded-lg h-7 w-7 flex-shrink-0 bg-brand-orange hover:bg-brand-orange/85 text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                  onClick={handleSubmit}
+                  disabled={!question.trim() || isLoading || isStreaming}
                 >
-                  <MessageSquare className="w-4 h-4" />
-                  <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-brand-orange text-white text-[8px] rounded-full flex items-center justify-center font-heading">
-                    {messages.length}
-                  </span>
+                  <ArrowUpIcon size={12} />
                 </button>
-              )}
-
-              <button
-                className="rounded-lg h-7 w-7 flex-shrink-0 bg-brand-orange hover:bg-brand-orange/85 text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none"
-                onClick={handleSubmit}
-                disabled={!question.trim() || isDisabled || isLoading || isStreaming}
-              >
-                <ArrowUpIcon size={12} />
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

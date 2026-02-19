@@ -1,6 +1,6 @@
 import { Header } from '@/components/custom/header';
 import { useState, useRef, useCallback } from 'react';
-import { ArrowLeft, Plus, Trash2, ChevronLeft, ChevronRight, Type, AlignLeft, Square, Circle, Image, Download, Copy, RotateCcw, GripVertical, Minus, Table, FileText } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, ChevronLeft, ChevronRight, Type, AlignLeft, Square, Circle, Image, Download, Copy, RotateCcw, GripVertical, Minus, Table, FileText, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import pptxgen from 'pptxgenjs';
 import { jsPDF } from 'jspdf';
@@ -355,8 +355,13 @@ export const SlideMaker = () => {
                         border: { type: 'solid', pt: 0.5, color: hexClean(B.lgray) },
                         colW: Array(el.rows[0]?.length || 1).fill(w / (el.rows[0]?.length || 1)),
                     });
+                } else if (el.type === 'image' && el.src) {
+                    pSlide.addImage({
+                        data: el.src, x, y, w, h,
+                        sizing: { type: 'contain', w, h },
+                    });
                 } else if (el.text) {
-                    // Text elements (title, subtitle, body, bullet, image label)
+                    // Text elements (title, subtitle, body, bullet)
                     const isBullet = el.type === 'bullet';
                     const fontSizePt = ((el.fontSize || 16) * 0.75);
                     const fontFace = (el.fontSize && el.fontSize >= 20) ? 'Arial' : 'Georgia';
@@ -376,7 +381,16 @@ export const SlideMaker = () => {
             });
         });
 
-        await pres.writeFile({ fileName: 'research-slides.pptx' });
+        const out = await pres.write({ outputType: 'blob' }) as Blob;
+        const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'research-slides.pptx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
         showToast('Exported PPTX');
     };
 
@@ -459,6 +473,8 @@ export const SlideMaker = () => {
                             pdf.text(cell, el.x + ci * colW + 8, el.y + ri * rowH + rowH / 2 + 4);
                         });
                     });
+                } else if (el.type === 'image' && el.src) {
+                    try { pdf.addImage(el.src, 'PNG', el.x, el.y, el.w, el.h); } catch { /* skip if image fails */ }
                 } else if (el.text) {
                     const tc = hexToRgb(el.color || B.dark);
                     pdf.setTextColor(tc.r, tc.g, tc.b);
@@ -548,7 +564,42 @@ export const SlideMaker = () => {
             );
         }
 
-        // Text elements (title, subtitle, body, bullet, image)
+        // Image element with drop zone
+        if (el.type === 'image') {
+            return (
+                <div key={el.id} style={{ ...base, backgroundColor: el.bg || '#ddd', borderRadius: el.borderRadius || 4, overflow: 'hidden' }}
+                    onClick={e => e.stopPropagation()} onPointerDown={e => onPointerDown(e, el)}
+                    onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={e => {
+                        e.preventDefault(); e.stopPropagation();
+                        const file = e.dataTransfer.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            reader.onload = ev => updateElement(el.id, { src: ev.target?.result as string });
+                            reader.readAsDataURL(file);
+                        }
+                    }}>
+                    {el.src ? (
+                        <img src={el.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />
+                    ) : (
+                        <div style={{
+                            width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
+                            alignItems: 'center', justifyContent: 'center', color: el.color || B.mid,
+                            fontSize: el.fontSize || 14, textAlign: 'center', gap: 4,
+                        }}>
+                            <Upload style={{ width: 20, height: 20, opacity: 0.5 }} />
+                            <span>{el.text || 'Drop image here'}</span>
+                        </div>
+                    )}
+                    {isSelected && (
+                        <div style={{ position: 'absolute', right: -4, bottom: -4, width: 10, height: 10, background: B.orange, borderRadius: 2, cursor: 'se-resize' }}
+                            onPointerDown={e => { e.stopPropagation(); setResizing({ id: el.id, ow: el.w, oh: el.h, sx: e.clientX, sy: e.clientY }); }} />
+                    )}
+                </div>
+            );
+        }
+
+        // Text elements (title, subtitle, body, bullet)
         return (
             <div key={el.id} style={base} onClick={e => e.stopPropagation()} onPointerDown={e => onPointerDown(e, el)}
                 onDoubleClick={() => setEditing(el.id)}>
@@ -652,7 +703,8 @@ export const SlideMaker = () => {
                                             borderRadius: el.borderRadius ? el.borderRadius * 0.13 : 0,
                                             overflow: 'hidden',
                                         }}>
-                                            {el.text && <div style={{ fontSize: 2, color: el.color || B.dark, lineHeight: 1.2 }}>{el.text.slice(0, 20)}</div>}
+                                            {el.src && <img src={el.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />}
+                                            {el.text && !el.src && <div style={{ fontSize: 2, color: el.color || B.dark, lineHeight: 1.2 }}>{el.text.slice(0, 20)}</div>}
                                         </div>
                                     ))}
                                 </div>
@@ -784,9 +836,36 @@ export const SlideMaker = () => {
                                 {selectedEl.fontSize !== undefined && (
                                     <div className="mb-2">
                                         <label className="text-[10px] font-heading text-muted-foreground block mb-0.5">Font Size</label>
-                                        <input type="number" value={selectedEl.fontSize}
-                                            onChange={e => updateElement(selectedEl.id, { fontSize: +e.target.value })}
+                                        <input type="number" min={1} step={1}
+                                            value={selectedEl.fontSize}
+                                            onChange={e => {
+                                                const v = parseInt(e.target.value, 10);
+                                                if (!isNaN(v) && v > 0) updateElement(selectedEl.id, { fontSize: v });
+                                            }}
                                             className="w-full px-2 py-1 text-xs rounded border border-border bg-background" />
+                                    </div>
+                                )}
+
+                                {/* Image upload for image elements */}
+                                {selectedEl.type === 'image' && (
+                                    <div className="mb-2">
+                                        <label className="text-[10px] font-heading text-muted-foreground block mb-0.5">Image</label>
+                                        {selectedEl.src && (
+                                            <img src={selectedEl.src} alt="preview" className="w-full rounded border border-border mb-1" style={{ maxHeight: 80, objectFit: 'contain' }} />
+                                        )}
+                                        <label className="flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-heading rounded border border-dashed border-border hover:border-brand-orange text-muted-foreground hover:text-brand-orange cursor-pointer transition-colors">
+                                            <Upload className="w-3 h-3" />
+                                            {selectedEl.src ? 'Replace Image' : 'Upload Image'}
+                                            <input type="file" accept="image/*" className="hidden"
+                                                onChange={e => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = ev => updateElement(selectedEl.id, { src: ev.target?.result as string });
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }} />
+                                        </label>
                                     </div>
                                 )}
 

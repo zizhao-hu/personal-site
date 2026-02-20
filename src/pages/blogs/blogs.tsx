@@ -1,7 +1,7 @@
 import { Header } from "../../components/custom/header";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, Calendar, Tag, ArrowRight, LayoutGrid, List, ChevronRight } from "lucide-react";
+import { Clock, Calendar, Tag, LayoutGrid, List, ChevronRight } from "lucide-react";
 import { blogPosts } from "../../data/blog-posts";
 
 const categories = [
@@ -78,8 +78,8 @@ export const Blogs = () => {
                         key={cat.id}
                         onClick={() => setActiveCategory(cat.id)}
                         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-all duration-150 ${activeCategory === cat.id
-                            ? "bg-brand-orange/10 text-brand-orange font-medium"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                          ? "bg-brand-orange/10 text-brand-orange font-medium"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                           }`}
                       >
                         <span className="font-heading">{cat.label}</span>
@@ -116,8 +116,8 @@ export const Blogs = () => {
                         key={tag}
                         onClick={() => toggleTag(tag)}
                         className={`px-2 py-0.5 text-[10px] rounded-full transition-all duration-150 font-heading ${selectedTags.includes(tag)
-                            ? "bg-brand-orange text-white shadow-sm"
-                            : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                          ? "bg-brand-orange text-white shadow-sm"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                           }`}
                       >
                         {tag}
@@ -165,8 +165,8 @@ export const Blogs = () => {
                       key={category.id}
                       onClick={() => setActiveCategory(category.id)}
                       className={`relative px-3 py-2 text-xs font-heading whitespace-nowrap transition-colors ${activeCategory === category.id
-                          ? "text-brand-orange"
-                          : "text-muted-foreground hover:text-foreground"
+                        ? "text-brand-orange"
+                        : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                       {category.label}
@@ -207,8 +207,8 @@ export const Blogs = () => {
                       key={tag}
                       onClick={() => toggleTag(tag)}
                       className={`px-2 py-0.5 text-[10px] rounded-full transition-all font-heading ${selectedTags.includes(tag)
-                          ? "bg-brand-orange text-white"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        ? "bg-brand-orange text-white"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
                         }`}
                     >
                       {tag}

@@ -361,44 +361,27 @@ export const FloatingChat = () => {
             <div className="h-[2px] bg-gradient-to-r from-transparent via-brand-orange/40 to-transparent" />
 
             {isDisabled ? (
-              /* ── Model Loading Animation ── */
-              <div className="flex flex-col items-center justify-center py-5 px-4 gap-3">
-                {/* Pulsing sparkle icon */}
+              /* ── Compact Model Loading Bar ── */
+              <div className="flex items-center gap-2.5 px-3 py-2">
                 <motion.div
-                  animate={{ scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-brand-orange/10"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-5 h-5 flex items-center justify-center rounded-full bg-brand-orange/10 flex-shrink-0 text-brand-orange"
                 >
-                  <SparklesIcon size={16} />
+                  <SparklesIcon size={10} />
                 </motion.div>
-
-                {/* Status text */}
-                <span className="text-xs text-muted-foreground font-heading tracking-wide">
-                  Loading model…
-                </span>
-
-                {/* Progress bar */}
-                <div className="w-full max-w-[200px] flex items-center gap-2">
-                  <div className="flex-1 bg-border rounded-full h-1.5 overflow-hidden">
-                    <motion.div
-                      className="bg-brand-orange h-full rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progressPercentage || 0}%` }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
-                    />
-                  </div>
-                  <span className="text-[11px] text-brand-orange font-semibold font-heading tabular-nums min-w-[32px] text-right">
-                    {progressPercentage || 0}%
-                  </span>
+                <span className="text-[11px] text-muted-foreground font-heading whitespace-nowrap">Loading…</span>
+                <div className="flex-1 bg-border rounded-full h-1 overflow-hidden min-w-[60px]">
+                  <motion.div
+                    className="bg-brand-orange h-full rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercentage || 0}%` }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  />
                 </div>
-
-                {/* Shimmer accent */}
-                <motion.div
-                  className="absolute bottom-0 left-0 right-0 h-px"
-                  style={{ background: "linear-gradient(90deg, transparent 0%, var(--brand-orange) 50%, transparent 100%)" }}
-                  animate={{ opacity: [0.15, 0.5, 0.15] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                />
+                <span className="text-[10px] text-brand-orange font-semibold font-heading tabular-nums min-w-[28px] text-right">
+                  {progressPercentage || 0}%
+                </span>
               </div>
             ) : (
               /* ── Chat Input ── */

@@ -24,8 +24,8 @@
     --secondary-foreground: 60 4% 8%;
     --muted: 45 19% 90%;
     /* #e8e6dc */
-    --muted-foreground: 48 5% 67%;
-    /* #b0aea5 */
+    --muted-foreground: 48 5% 40%;
+    /* #6b6966 — readable gray */
     --accent: 17 60% 60%;
     /* #d97757 — brand orange */
     --accent-foreground: 48 33% 97%;
@@ -70,8 +70,8 @@
     --secondary: 60 3% 15%;
     --secondary-foreground: 48 33% 97%;
     --muted: 60 3% 15%;
-    --muted-foreground: 48 5% 67%;
-    /* #b0aea5 */
+    --muted-foreground: 48 5% 75%;
+    /* #c2c0b8 — readable on dark */
     --accent: 17 60% 60%;
     /* brand orange */
     --accent-foreground: 48 33% 97%;

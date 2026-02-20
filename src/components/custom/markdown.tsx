@@ -104,6 +104,43 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         </h6>
       );
     },
+    table: ({ node, children, ...props }: any) => {
+      return (
+        <div className="overflow-x-auto my-6 rounded-lg border border-border shadow-sm">
+          <table className="min-w-full divide-y divide-border" {...props}>
+            {children}
+          </table>
+        </div>
+      );
+    },
+    thead: ({ node, children, ...props }: any) => {
+      return (
+        <thead className="bg-muted/70" {...props}>
+          {children}
+        </thead>
+      );
+    },
+    tbody: ({ node, children, ...props }: any) => {
+      return (
+        <tbody className="divide-y divide-border [&>tr:nth-child(even)]:bg-muted/30 [&>tr:hover]:bg-muted/50" {...props}>
+          {children}
+        </tbody>
+      );
+    },
+    th: ({ node, children, ...props }: any) => {
+      return (
+        <th className="px-4 py-2.5 text-left text-xs font-semibold font-heading text-foreground uppercase tracking-wider border-b border-border" {...props}>
+          {children}
+        </th>
+      );
+    },
+    td: ({ node, children, ...props }: any) => {
+      return (
+        <td className="px-4 py-2.5 text-sm whitespace-normal" {...props}>
+          {children}
+        </td>
+      );
+    },
   };
 
   return (

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getBlogBySlug } from "@/data/blog-posts";
 import { ArrowLeft, Calendar, Clock, Tag, ChevronDown, List } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 // Extract headings from markdown content
@@ -197,6 +198,7 @@ export const BlogPost = () => {
                   <div className="px-5 py-6 border-t border-border" ref={contentRef}>
                     <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-heading prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-brand-orange prose-strong:text-foreground prose-blockquote:border-brand-orange prose-blockquote:text-muted-foreground prose-li:text-muted-foreground prose-table:border-border prose-th:bg-muted prose-th:border-border prose-td:border-border">
                       <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
                         components={{
                           ...markdownCodeComponents,
                           // Generate IDs for headings so TOC links work
@@ -217,23 +219,37 @@ export const BlogPost = () => {
                           },
                           table({ children }) {
                             return (
-                              <div className="overflow-x-auto my-6">
-                                <table className="min-w-full border border-border">
+                              <div className="overflow-x-auto my-6 rounded-lg border border-border shadow-sm">
+                                <table className="min-w-full divide-y divide-border">
                                   {children}
                                 </table>
                               </div>
                             );
                           },
+                          thead({ children }) {
+                            return (
+                              <thead className="bg-muted/70">
+                                {children}
+                              </thead>
+                            );
+                          },
+                          tbody({ children }) {
+                            return (
+                              <tbody className="divide-y divide-border [&>tr:nth-child(even)]:bg-muted/30 [&>tr:hover]:bg-muted/50 transition-colors">
+                                {children}
+                              </tbody>
+                            );
+                          },
                           th({ children }) {
                             return (
-                              <th className="px-4 py-2 bg-muted border border-border text-left font-semibold font-heading text-sm">
+                              <th className="px-4 py-2.5 text-left text-xs font-semibold font-heading text-foreground uppercase tracking-wider border-b border-border">
                                 {children}
                               </th>
                             );
                           },
                           td({ children }) {
                             return (
-                              <td className="px-4 py-2 border border-border text-sm">
+                              <td className="px-4 py-2.5 text-sm text-muted-foreground whitespace-normal">
                                 {children}
                               </td>
                             );

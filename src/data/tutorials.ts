@@ -1640,6 +1640,165 @@ Now that you understand the architecture:
 *This tutorial is part of the ML Fundamentals series. Understanding transformers is essential for working with modern LLMs.*
     `
     }
+  {
+    id: "4",
+    slug: "antigravity-fast-prototyping",
+    title: "Antigravity: Fast Prototype, Fast Mistake, Fast Fix",
+    description: "Use the Antigravity AI coding agent to prototype at SpaceX speed — iterate rapidly, embrace failures, and fix forward. Includes setup with the Auto Accept extension for maximum velocity.",
+    difficulty: "beginner",
+    estimatedTime: "15 min",
+    topics: ["Antigravity", "AI Coding", "Rapid Prototyping", "Developer Tools"],
+    series: "Developer Workflow",
+    prerequisites: ["VS Code or Cursor installed", "Basic programming knowledge"],
+    content: `
+# Antigravity: Fast Prototype, Fast Mistake, Fast Fix
+
+> "If things are not failing, you are not innovating enough." — [Elon Musk](https://en.wikipedia.org/wiki/Elon_Musk)
+
+## The SpaceX Philosophy Applied to Software
+
+[SpaceX](https://en.wikipedia.org/wiki/SpaceX) builds rockets differently than NASA. Instead of spending years perfecting blueprints, they **build, launch, explode, learn, rebuild**. [Starship](https://en.wikipedia.org/wiki/SpaceX_Starship) has gone through rapid unscheduled disassemblies (explosions) — and each one taught more than a year of simulation.
+
+This same philosophy applies to software development with AI agents:
+
+| Traditional Development | SpaceX / Antigravity Way |
+|------------------------|-------------------------|
+| Plan for weeks | Prototype in minutes |
+| Avoid all errors | Embrace errors as data |
+| Ship when "perfect" | Ship when functional, iterate |
+| Debug cautiously | Fix forward aggressively |
+| Write every line manually | Let AI generate, you curate |
+
+## What is Antigravity?
+
+Antigravity is an agentic AI coding assistant built into your editor. Unlike autocomplete tools that suggest the next line, Antigravity:
+
+- **Reads your entire codebase** — understands project structure, dependencies, and patterns
+- **Executes multi-step plans** — creates files, edits code, runs commands, fixes errors
+- **Iterates autonomously** — when a build fails, it reads the error and fixes it
+- **Learns from context** — remembers your preferences, style, and project conventions
+
+The key insight: **Antigravity doesn't need to be perfect on the first try.** It needs to be fast enough that the cycle of *generate ? test ? fix ? test* is faster than manually writing code.
+
+## Setup: Maximum Velocity Mode
+
+### Step 1: Install the Auto Accept Extension
+
+The biggest bottleneck in agentic coding is the approval loop — every file edit, every command requires you to click "Accept." For maximum prototyping speed, install the **Antigravity Auto Accept** extension:
+
+**[Antigravity Auto Accept](https://open-vsx.org/extension/pesosz/antigravity-auto-accept)** by pesosz
+
+This extension automatically accepts Antigravity's proposed changes, letting the agent work at full speed. You review the *results*, not every individual step.
+
+> **Credit**: Thanks to VincentHH for the recommendation — "Tried everything. This extension worked for me."
+
+### Step 2: Set Up Your Workflow
+
+\\\`\\\`\\\`
+Recommended workflow with Auto Accept enabled:
+
+1. Describe what you want in plain language
+2. Let Antigravity generate the full implementation
+3. Review the result (not each step)
+4. If wrong ? describe the fix ? let it iterate
+5. If right ? commit and move on
+\\\`\\\`\\\`
+
+### Step 3: Create a Workflow File
+
+Antigravity supports workflow files that define repeatable processes. Create one in your project:
+
+\\\`\\\`\\\`markdown
+<!-- .agent/workflows/rapid-prototype.md -->
+---
+description: Rapid prototyping workflow
+---
+
+1. Create the component/feature in a single file first
+2. Get it working (ignore styling)
+// turbo
+3. Run the dev server to verify
+4. Add styling and polish
+// turbo
+5. Run tests
+6. Commit with descriptive message
+\\\`\\\`\\\`
+
+The \\\`// turbo\\\` annotations tell Antigravity to auto-run those steps without asking for permission.
+
+## The Fast Mistake Philosophy
+
+The key mental shift:
+
+### Old Way: Prevent Mistakes
+- Spend 30 minutes thinking about the perfect architecture
+- Write code carefully, line by line
+- Test only when "done"
+- Find bugs after investing hours
+
+### New Way: Embrace Mistakes
+- Describe the feature in 2 sentences
+- Let Antigravity generate a working prototype in 2 minutes
+- Test immediately
+- Find issues in minutes, not hours
+- Fix forward — describe the problem, let AI fix it
+
+### Why This Works
+
+The cost of a mistake has fundamentally changed:
+
+| Era | Cost of a Mistake | Fix Time |
+|-----|-------------------|----------|
+| Manual coding | Hours of debugging | Hours |
+| With AI autocomplete | Less debugging, still manual | 30+ minutes |
+| With Antigravity | AI reads the error and fixes it | 1-2 minutes |
+| With Auto Accept | Fully autonomous fix cycle | Seconds |
+
+When mistakes are cheap and fixes are fast, the optimal strategy is to **try more things**, not to think longer.
+
+## Real-World Example
+
+Here's how a rapid prototyping session looks:
+
+**Prompt**: "Build a dashboard page with a chart showing user signups over time, a stats card row, and a recent activity feed"
+
+**What happens**:
+1. Antigravity creates the page component (~30 seconds)
+2. Adds chart library import, generates mock data (~15 seconds)
+3. Builds the stats cards and activity feed (~20 seconds)
+4. Starts the dev server to verify (~10 seconds)
+5. Finds a build error (missing dependency) ? installs it ? rebuilds (~15 seconds)
+6. **Total time: ~90 seconds for a working dashboard**
+
+The equivalent manual workflow takes 30-60 minutes. Even if Antigravity's first attempt needs 3 rounds of fixes, you're still 10x faster.
+
+## When NOT to Use Auto Accept
+
+Auto Accept is for prototyping, not production deployments:
+
+- ? Running \\\`rm -rf\\\` or destructive commands
+- ? Pushing to production branches
+- ? Modifying authentication or security code
+- ? Database migrations
+- ? Creating new components
+- ? Building UI prototypes
+- ? Writing tests
+- ? Refactoring existing code
+- ? Adding features to development branches
+
+## Coming Soon
+
+This tutorial will be expanded with:
+- Video walkthroughs of real prototyping sessions
+- Advanced workflow configurations
+- Team collaboration patterns with Antigravity
+- Benchmarks: manual vs. AI-assisted development speed
+
+---
+
+*This is the first tutorial in the Developer Workflow series. Antigravity is designed to make the "fast prototype, fast mistake, fast fix" cycle as frictionless as possible.*
+    `
+  },
 ];
 
 export function getTutorialBySlug(slug: string): Tutorial | undefined {

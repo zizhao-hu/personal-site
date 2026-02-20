@@ -318,17 +318,17 @@ In the next tutorial, we'll build a complete React chat interface with WebLLM.
 *This tutorial is part of the WebLLM Fundamentals series.*
     `
     },
-    {
-        id: "2",
-        slug: "llm-from-scratch-preparation",
-        title: "Train Your LLM from Scratch — Stage 0: Preparation",
-        description: "Set up the environment, build a tokenizer, and create the data pipeline for training a language model from scratch.",
-        difficulty: "advanced",
-        estimatedTime: "35 min",
-        topics: ["LLM Training", "PyTorch", "Tokenization", "Data Pipeline"],
-        series: "Train Your LLM from Scratch",
-        prerequisites: ["Python proficiency", "PyTorch basics", "Understanding of transformer architecture"],
-        content: `
+  {
+    id: "2",
+    slug: "llm-from-scratch",
+    title: "Train Your LLM from Scratch",
+    description: "A comprehensive guide to training a language model from scratch � from data preparation and tokenization through pretraining, instruction tuning, and reasoning with RLHF/DPO.",
+    difficulty: "advanced",
+    estimatedTime: "2 hours",
+    topics: ["LLM Training", "PyTorch", "Pretraining", "SFT", "LoRA", "RLHF", "DPO"],
+    series: "Train Your LLM from Scratch",
+    prerequisites: ["Python proficiency", "PyTorch basics", "Understanding of transformer architecture"],
+    content: `
 # Stage 0: Preparation
 
 Before writing a single training loop, you need three things: an environment that won't crash mid-run, a tokenizer that can represent your data, and a data pipeline that feeds batches efficiently. Skip any of these and you'll waste GPU hours debugging.
@@ -493,19 +493,8 @@ config = {
 ---
 
 *Next: Stage 1 — Pretraining, where we build the model and write the training loop.*
-    `
-  },
-    {
-        id: "4",
-        slug: "llm-from-scratch-pretraining",
-        title: "Train Your LLM from Scratch — Stage 1: Pretraining",
-        description: "Build the GPT model architecture, implement the training loop with mixed precision, and validate with perplexity.",
-        difficulty: "advanced",
-        estimatedTime: "45 min",
-        topics: ["LLM Training", "PyTorch", "Pretraining", "Mixed Precision"],
-        series: "Train Your LLM from Scratch",
-        prerequisites: ["Completion of Stage 0: Preparation"],
-        content: `
+
+---
 # Stage 1: Pretraining
 
 Pretraining is where a language model learns to predict the next token. This is the most compute-intensive phase — you're teaching the model the statistical patterns of language from raw text.
@@ -763,19 +752,8 @@ def generate(model, tokenizer, prompt, max_new_tokens=100, temperature=0.8):
 ---
 
 *Next: Stage 2 — Instruction Tuning, where we teach the model to follow instructions.*
-    `
-  },
-    {
-        id: "5",
-        slug: "llm-from-scratch-instruction-tuning",
-        title: "Train Your LLM from Scratch — Stage 2: Instruction Tuning",
-        description: "Fine-tune your pretrained model to follow instructions using SFT, chat templates, and evaluation on benchmarks.",
-        difficulty: "advanced",
-        estimatedTime: "40 min",
-        topics: ["LLM Training", "SFT", "Instruction Tuning", "LoRA"],
-        series: "Train Your LLM from Scratch",
-        prerequisites: ["Completion of Stage 1: Pretraining"],
-        content: `
+
+---
 # Stage 2: Instruction Tuning
 
 A pretrained model can complete text, but it can't follow instructions. Instruction tuning (SFT — Supervised Fine-Tuning) teaches the model to respond helpfully to user requests. This is the step that turns a "text completer" into a "chatbot."
@@ -965,19 +943,8 @@ test_prompts = [
 ---
 
 *Next: Stage 3 — Reasoning, where we teach the model to think step by step.*
-    `
-  },
-    {
-        id: "6",
-        slug: "llm-from-scratch-reasoning",
-        title: "Train Your LLM from Scratch — Stage 3: Reasoning",
-        description: "Add chain-of-thought reasoning, implement RLHF/DPO alignment, and evaluate on reasoning benchmarks.",
-        difficulty: "advanced",
-        estimatedTime: "45 min",
-        topics: ["LLM Training", "RLHF", "DPO", "Chain-of-Thought", "Reasoning"],
-        series: "Train Your LLM from Scratch",
-        prerequisites: ["Completion of Stage 2: Instruction Tuning"],
-        content: `
+
+---
 # Stage 3: Reasoning & Alignment
 
 An instruction-tuned model follows commands, but it doesn't *think*. This stage teaches the model to reason step-by-step and aligns its behavior with human preferences using RLHF or DPO.

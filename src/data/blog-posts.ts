@@ -1102,7 +1102,143 @@ The most effective researchers will be those who learn to collaborate with AI wh
 
 *Interested in AI for science? Check out my research on multi-agent systems and synthetic data generation at [Google Scholar](https://scholar.google.com/citations?user=A8J42tQAAAAJ).*
     `
-    }
+    },
+    {
+        id: "6",
+        slug: "history-repeats-education",
+        title: "The Lesson of History Is That Nobody Learns — And Education Is the Only Fix",
+        excerpt: "From the Great Depression to trade wars to rising nationalism, the pattern repeats every century. The root cause isn't economics or politics — it's that the majority of people never learned why it happened the first time.",
+        date: "2026-02-20",
+        readingTime: "12 min",
+        category: "economy",
+        tags: ["History", "Economics", "Education", "Trade Wars", "Great Depression"],
+        coverImage: "/images/blogs/history-repeats.jpg",
+        tldr: {
+            problem: "History follows a disturbing cycle: economic crisis → protectionism → nationalism → conflict. The Great Depression led to WWII through a chain of six missed opportunities. Today's trade wars, rising nationalism, and economic anxiety mirror the 1930s almost exactly.",
+            idea: "The real failure isn't economic — it's educational. The majority of the population in every generation lacks the historical literacy to recognize the patterns they're repeating. Leaders exploit this ignorance, and populations willingly follow because they don't know the script.",
+            solution: "Universal, mandatory education in economic history, critical thinking, and media literacy — not as electives, but as core requirements on par with reading and math. Every citizen should be able to identify protectionist rhetoric, understand currency manipulation, and recognize the playbook of authoritarian rise.",
+            vision: "A world where 'those who cannot remember the past' is no longer a prophecy but a solved problem. Where every voter can trace the line from Smoot-Hawley to the rise of fascism, and recognize when their own leaders are walking the same path."
+        },
+        author: {
+            name: "Zizhao Hu",
+            avatar: "/profile.jpg"
+        },
+        content: `
+# The Lesson of History Is That Nobody Learns — And Education Is the Only Fix
+
+> "The lesson of history is that people never learn from history." — [Georg Wilhelm Friedrich Hegel](https://en.wikipedia.org/wiki/Georg_Wilhelm_Friedrich_Hegel)
+
+A [remarkable video essay](https://www.youtube.com/watch?v=kQjUUV_x5o8) recently traced the chain of events from the [Great Depression](https://en.wikipedia.org/wiki/Great_Depression) to [World War II](https://en.wikipedia.org/wiki/World_War_II), showing how six missed turning points made the deadliest conflict in human history **inevitable**. Watching it, the most disturbing realization isn't what happened — it's that **every single pattern is repeating right now**.
+
+## The Pattern: Six Steps from Crisis to Catastrophe
+
+The path from economic crisis to global war follows a chillingly predictable sequence:
+
+### Step 1: The Gold Standard Trap
+In the 1920s, nations were chained to the [gold standard](https://en.wikipedia.org/wiki/Gold_standard) — a rigid monetary system that prevented governments from responding flexibly to economic shocks. When the [1929 crash](https://en.wikipedia.org/wiki/Wall_Street_Crash_of_1929) came, central banks couldn't expand the money supply because every dollar had to be backed by gold.
+
+**Modern parallel**: Today's equivalent isn't gold — it's [austerity ideology](https://en.wikipedia.org/wiki/Austerity) and rigid monetary policy. When the [2008 financial crisis](https://en.wikipedia.org/wiki/2007%E2%80%932008_financial_crisis) hit, European nations that couldn't control their own currency (the [Eurozone](https://en.wikipedia.org/wiki/Eurozone)) suffered the most, just as gold-standard nations did in 1929.
+
+### Step 2: Tariff Wars
+The [Smoot-Hawley Tariff Act](https://en.wikipedia.org/wiki/Smoot%E2%80%93Hawley_Tariff_Act) of 1930 raised tariffs on over 20,000 imported goods. The intent was to "protect American jobs." The result was [retaliatory tariffs](https://en.wikipedia.org/wiki/Trade_war) from every trading partner, collapsing global trade by **66%** between 1929 and 1934.
+
+**Modern parallel**: The [US-China trade war](https://en.wikipedia.org/wiki/China%E2%80%93United_States_trade_war), tariffs on allies, threats of 60%+ tariffs — the rhetoric and the policy tools are almost identical. The same "protect our workers" language. The same predictable retaliation.
+
+### Step 3: Currency Devaluation Race
+When tariffs failed, nations turned to [competitive devaluation](https://en.wikipedia.org/wiki/Currency_war) — deliberately weakening their currencies to make exports cheaper. This is a zero-sum game: when everyone devalues, nobody gains, but everyone's savings lose value.
+
+**Modern parallel**: [Quantitative easing](https://en.wikipedia.org/wiki/Quantitative_easing), currency manipulation accusations, and the ongoing tension over the [Chinese yuan](https://en.wikipedia.org/wiki/Renminbi)'s exchange rate are the modern forms of the same race to the bottom.
+
+### Step 4: Domestic Scapegoating
+As economies collapsed, populations demanded answers. **Politicians provided scapegoats instead of solutions.** In Germany, it was the Jews. In Japan, it was Western imperialism. In America, it was immigrants and foreign goods.
+
+**Modern parallel**: The rise of [populism](https://en.wikipedia.org/wiki/Populism) and [nativism](https://en.wikipedia.org/wiki/Nativism_(politics)) worldwide, blaming immigrants, minorities, or foreign nations for domestic economic pain — this is the identical playbook.
+
+### Step 5: Authoritarian Rise
+Desperate populations elected (or tolerated) authoritarian leaders who promised simple solutions to complex problems. [Hitler](https://en.wikipedia.org/wiki/Adolf_Hitler) didn't seize power through a coup — he was **elected** by people who were hungry, scared, and looking for strength.
+
+> "Hitler didn't create Germany's problems. Germany's problems created Hitler."
+
+**Modern parallel**: The global surge in [authoritarian governance](https://en.wikipedia.org/wiki/Authoritarianism), democratic backsliding in [multiple countries](https://en.wikipedia.org/wiki/Democratic_backsliding), and the appeal of "strongman" leaders who promise to cut through complexity.
+
+### Step 6: Military Expansion as Economic Policy
+The final step: when domestic policy fails, redirect public anger outward. Germany's [rearmament](https://en.wikipedia.org/wiki/Remilitarization_of_the_Rhineland) solved unemployment. Japan's [invasion of Manchuria](https://en.wikipedia.org/wiki/Japanese_invasion_of_Manchuria) secured raw materials. War became an economic strategy.
+
+## Why the Cycle Repeats: The Education Deficit
+
+Here's the question that matters: **Why do populations keep falling for the same sequence?**
+
+The answer isn't that people are stupid. It's that **they don't know the history**. Consider these statistics:
+
+| Fact | Implication |
+|------|------------|
+| Only ~30% of Americans can identify the century of the [Civil War](https://en.wikipedia.org/wiki/American_Civil_War) | Basic historical timeline knowledge is absent |
+| Economic literacy is [not required](https://en.wikipedia.org/wiki/Financial_literacy) for graduation in most countries | Voters can't evaluate trade policy |
+| [Media literacy](https://en.wikipedia.org/wiki/Media_literacy) is taught in fewer than 20% of schools | Propaganda techniques go unrecognized |
+| History courses focus on memorizing dates, not recognizing **patterns** | The structural lesson is never extracted |
+
+The [Marshal Foch](https://en.wikipedia.org/wiki/Ferdinand_Foch) prediction is haunting: after the [Treaty of Versailles](https://en.wikipedia.org/wiki/Treaty_of_Versailles), he said *"This is not peace. It is an armistice for twenty years."* He was off by just 65 days. He could see the pattern because he understood history structurally, not as a series of disconnected events.
+
+## The Solution: Mandatory Historical Pattern Education
+
+If the disease is historical amnesia, the cure is **universal, compulsory education** — not the kind we have now, but a fundamentally redesigned curriculum:
+
+### 1. Pattern Recognition Over Date Memorization
+Stop teaching "In 1929, the stock market crashed." Start teaching "Here is a five-step sequence that converts economic anxiety into authoritarian rule, and here are the seven times it has happened."
+
+### 2. Economic History as a Core Requirement
+Every voting citizen should understand:
+- How [tariffs](https://en.wikipedia.org/wiki/Tariff) actually work (and their second-order effects)
+- What [currency manipulation](https://en.wikipedia.org/wiki/Currency_manipulation) means and who it hurts
+- Why [protectionism](https://en.wikipedia.org/wiki/Protectionism) feels intuitive but is historically catastrophic
+- The difference between [nominal and real wages](https://en.wikipedia.org/wiki/Real_wages)
+
+### 3. Propaganda & Media Literacy
+Every student should be able to:
+- Identify [logical fallacies](https://en.wikipedia.org/wiki/List_of_fallacies) in political speech
+- Recognize [scapegoating](https://en.wikipedia.org/wiki/Scapegoating) rhetoric
+- Distinguish between correlation and causation in economic claims
+- Evaluate sources for [bias](https://en.wikipedia.org/wiki/Media_bias) and reliability
+
+### 4. Comparative History
+Teach the **same pattern across multiple civilizations**:
+
+| Civilization | Crisis | Scapegoat | Outcome |
+|-------------|--------|-----------|---------|
+| [Weimar Germany](https://en.wikipedia.org/wiki/Weimar_Republic) | Hyperinflation | Jewish population | Holocaust, WWII |
+| [Imperial Japan](https://en.wikipedia.org/wiki/Empire_of_Japan) | Resource scarcity | Western powers | Pacific War |
+| [Roman Republic](https://en.wikipedia.org/wiki/Roman_Republic) | Land inequality | Foreign "enemies" | Dictatorship under Caesar |
+| [Pre-revolution France](https://en.wikipedia.org/wiki/French_Revolution) | Fiscal crisis | Aristocracy | Reign of Terror |
+
+When students see the **same pattern** in Rome, France, Germany, Japan, and modern democracies, it stops being "history" and starts being a **warning system**.
+
+## The Cost of Inaction
+
+[Marshal Foch](https://en.wikipedia.org/wiki/Ferdinand_Foch) saw WWII coming 20 years early because he understood the structural forces at play. Today, historians and economists are raising the same alarms:
+
+- Trade wars escalating
+- Democratic institutions weakening
+- Populations losing trust in experts
+- Authoritarian leaders gaining popularity
+- Economic anxiety channeled into nationalism
+
+The difference between now and the 1930s? We have **the entire body of human knowledge** accessible on every smartphone. The information exists. The education to use it does not.
+
+## What You Can Do
+
+1. **Study the pattern yourself**: Read [*The Rise and Fall of the Third Reich*](https://en.wikipedia.org/wiki/The_Rise_and_Fall_of_the_Third_Reich) by William Shirer, or [*The Great Crash 1929*](https://en.wikipedia.org/wiki/The_Great_Crash,_1929) by John Kenneth Galbraith
+2. **Demand better curricula**: Advocate for economic history and media literacy in your local school system
+3. **Share the pattern**: When you see the sequence playing out in real-time, name it. "This is Step 2. Here's what Step 3 looks like."
+4. **Watch the source**: The [video that inspired this post](https://www.youtube.com/watch?v=kQjUUV_x5o8) traces the complete chain from economic crisis to war
+
+> "Those who cannot remember the past are condemned to repeat it." — [George Santayana](https://en.wikipedia.org/wiki/George_Santayana)
+
+The question is whether *this* generation will be the first to actually learn the lesson, or whether we'll prove Hegel right one more time.
+
+---
+
+*This essay was inspired by the Chinese-language video essay [從經濟危機到世界大戰，一共有幾步？](https://www.youtube.com/watch?v=kQjUUV_x5o8) which brilliantly traces the chain from economic crisis to WWII.*
+    `n    }
 ];
 
 export function getBlogBySlug(slug: string): BlogPost | undefined {

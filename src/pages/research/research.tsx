@@ -42,8 +42,8 @@ const publications: Publication[] = [
 
 const researchAreas = [
   {
-    title: "LLM / VLM",
-    description: "Multi-agent systems, synthetic data generation, self-improving AI, pretraining, supervised fine-tuning (SFT), and post-training alignment for large-scale language and vision-language models.",
+    title: "LLM / VLM / VLA",
+    description: "Multi-agent interaction, self-improving AI systems, and vision-language-action models. Primary focus on how LLM/VLM/VLA agents collaborate, generate synthetic experience, and continuously improve through interaction loops.",
     icon: Users,
     color: "blue",
     highlight: true,
@@ -59,7 +59,7 @@ const researchAreas = [
   },
   {
     title: "Architecture",
-    description: "Brain-inspired neural architectures, static key attention, lateralization MLP, efficient transformers, and mixture of experts for scalable deep learning.",
+    description: "Multimodal architectures for unified perception-language-action, recurrency in transformers, state-space models, brain-inspired designs, and efficient attention mechanisms for scalable multi-modal inference.",
     icon: Eye,
     color: "purple",
     path: "/research/architecture",

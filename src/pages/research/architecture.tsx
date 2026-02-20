@@ -1,5 +1,5 @@
 import { Header } from "@/components/custom/header";
-import { ExternalLink, FileText, Calendar, Cpu, Zap } from "lucide-react";
+import { ExternalLink, FileText, Calendar, Cpu, Zap, Layers, Repeat, Eye } from "lucide-react";
 
 const publications = [
     {
@@ -23,6 +23,16 @@ const publications = [
 
 const keyTopics = [
     {
+        title: "Multimodal Architecture",
+        description: "Unified architectures for jointly processing vision, language, and action. Research on early vs. late fusion, cross-modal attention, and designing backbones that natively handle images, text, audio, and control signals in a single forward pass.",
+        icon: Eye,
+    },
+    {
+        title: "Recurrency in Transformers",
+        description: "Reintroducing recurrent computation into transformer architectures for improved reasoning, state tracking, and long-horizon planning. Exploring recurrent attention layers, state-space models (Mamba/S4), and hybrid architectures that combine the parallelism of transformers with the sequential modeling strength of RNNs.",
+        icon: Repeat,
+    },
+    {
         title: "Static Key Attention",
         description: "Rethinking the attention mechanism by pre-computing certain attention patterns. Static keys reduce the computational cost of self-attention while maintaining model performance, enabling more efficient vision transformers.",
         icon: Zap,
@@ -40,7 +50,7 @@ const keyTopics = [
     {
         title: "Mixture of Experts (MoE)",
         description: "Scaling model capacity without proportionally scaling compute. Research on expert routing, load balancing, and specialized expert architectures for conditional computation in large-scale models.",
-        icon: Cpu,
+        icon: Layers,
     },
 ];
 
@@ -62,11 +72,11 @@ export const ArchitectureResearch = () => {
                             Architecture
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
-                            Novel neural network architectures that push the boundaries of efficiency and capability.
-                            My work explores <strong>static key attention mechanisms</strong>,
-                            <strong> brain-inspired lateralization</strong>, <strong>mixture of experts</strong>,
-                            and <strong>efficient transformer variants</strong>—making deep learning more powerful
-                            while reducing computational overhead.
+                            Novel neural network architectures for multimodal AI systems.
+                            My work explores <strong>multimodal architectures</strong> for unified perception-language-action,
+                            <strong> recurrency in transformers</strong> for improved reasoning and state tracking,
+                            <strong> brain-inspired designs</strong>, and <strong>efficient attention mechanisms</strong>—building
+                            the architectural foundations that enable scalable multi-agent and self-improving systems.
                         </p>
                     </div>
 
@@ -107,8 +117,8 @@ export const ArchitectureResearch = () => {
                                 <div
                                     key={index}
                                     className={`p-3 rounded-lg border ${pub.highlight
-                                            ? "border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/20"
-                                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
+                                        ? "border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/20"
+                                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
                                         }`}
                                 >
                                     {pub.highlight && (

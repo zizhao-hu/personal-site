@@ -1,5 +1,5 @@
 import { Header } from "@/components/custom/header";
-import { ExternalLink, FileText, Calendar, BookOpen, Sparkles, Settings, RefreshCw } from "lucide-react";
+import { ExternalLink, FileText, Calendar, BookOpen, Sparkles, RefreshCw, Users, Bot, Orbit } from "lucide-react";
 
 const publications = [
     {
@@ -15,24 +15,34 @@ const publications = [
 
 const keyTopics = [
     {
-        title: "Pretraining",
-        description: "Large-scale pretraining of language and vision-language models from scratch. Research on data mixing strategies, tokenization, training stability, scaling laws, and contrastive objectives that produce strong foundation models across modalities.",
-        icon: BookOpen,
+        title: "Multi-Agent Interaction",
+        description: "How multiple LLM/VLM agents collaborate, debate, verify, and refine each other's outputs. Research on agent orchestration, role specialization, emergent communication protocols, and multi-agent self-play for improving reasoning and task decomposition.",
+        icon: Users,
     },
     {
-        title: "Supervised Fine-Tuning (SFT)",
-        description: "Adapting pretrained models to follow instructions and perform domain-specific tasks through curated demonstration data. Investigating efficient fine-tuning methods (LoRA, QLoRA), data quality vs. quantity trade-offs, and multi-task instruction tuning.",
+        title: "Self-Improving AI",
+        description: "Systems that generate their own training signal through synthetic data, self-reflection, and iterative refinement. Investigating feedback loops where agents evaluate their own outputs, generate preference pairs, and continuously improve without human annotation.",
+        icon: RefreshCw,
+    },
+    {
+        title: "Vision-Language-Action (VLA)",
+        description: "Unified models that perceive (vision), reason (language), and act (control). Research on grounding language in embodied environments, action prediction from multimodal inputs, and bridging the sim-to-real gap for robotic and interactive agents.",
+        icon: Bot,
+    },
+    {
+        title: "Pretraining & Post-Training",
+        description: "Full model lifecycle from large-scale pretraining, through supervised fine-tuning (SFT), to post-training alignment with RLHF/DPO. Focus on how each stage contributes to multi-agent capability and self-improvement potential.",
         icon: Sparkles,
     },
     {
-        title: "Post-Training",
-        description: "Alignment and preference optimization after SFT—including RLHF, DPO, and iterative self-play. Research on reward modeling, safety tuning, red-teaming, and how post-training shapes model behavior, helpfulness, and refusal boundaries.",
-        icon: Settings,
+        title: "Agent Orchestration Frameworks",
+        description: "Building scalable frameworks for multi-agent pipelines — task routing, tool use, memory systems, and self-correction loops. How to design agent architectures that are reliable, composable, and can scale from single tasks to complex workflows.",
+        icon: Orbit,
     },
     {
-        title: "Continual Learning",
-        description: "Enabling LLMs and VLMs to learn new knowledge and capabilities over time without catastrophic forgetting. Developing replay-free and parameter-efficient continual learning methods tailored for large-scale generative models.",
-        icon: RefreshCw,
+        title: "Continual Learning for Agents",
+        description: "Enabling LLM/VLM/VLA agents to learn new knowledge, skills, and domains over time without catastrophic forgetting. Developing replay-free and parameter-efficient continual learning methods tailored for large-scale agentic systems.",
+        icon: BookOpen,
     },
 ];
 
@@ -51,14 +61,14 @@ export const LlmVlmResearch = () => {
                             </div>
                         </div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                            LLM / VLM
+                            LLM / VLM / VLA
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
-                            Large Language Models and Vision-Language Models are at the core of modern AI.
-                            My work in this area spans the full model lifecycle—from <strong>pretraining</strong> foundation
-                            models, through <strong>supervised fine-tuning (SFT)</strong>, to <strong>post-training</strong> alignment
-                            and safety—while also investigating how to enable <strong>continual learning</strong> in
-                            large-scale generative systems.
+                            My primary research focus is on <strong>multi-agent interaction</strong> and{" "}
+                            <strong>self-improving AI</strong> across language, vision-language, and vision-language-action
+                            models. I study how multiple agents collaborate, generate synthetic experience, and
+                            continuously refine each other—creating systems that get smarter through interaction
+                            rather than just larger datasets.
                         </p>
                     </div>
 

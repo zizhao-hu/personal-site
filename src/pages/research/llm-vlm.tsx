@@ -1,5 +1,5 @@
 import { Header } from "@/components/custom/header";
-import { ExternalLink, FileText, Calendar, BookOpen, Sparkles, RefreshCw, Users, Bot, Orbit } from "lucide-react";
+import { ExternalLink, FileText, Calendar, BookOpen, Sparkles, RefreshCw, Users, Bot, Orbit, HardDrive } from "lucide-react";
 
 const publications = [
     {
@@ -40,9 +40,14 @@ const keyTopics = [
         icon: Orbit,
     },
     {
-        title: "Continual Learning for Agents",
-        description: "Enabling LLM/VLM/VLA agents to learn new knowledge, skills, and domains over time without catastrophic forgetting. Developing replay-free and parameter-efficient continual learning methods tailored for large-scale agentic systems.",
+        title: "Continual Learning",
+        description: "Enabling LLM/VLM/VLA agents to learn new knowledge, skills, and domains over time without catastrophic forgetting. Developing replay-free and parameter-efficient continual learning methods so deployed agents can adapt and grow rather than remain frozen.",
         icon: BookOpen,
+    },
+    {
+        title: "Efficient Model Memory",
+        description: "How models store, compress, retrieve, and forget information efficiently. Research on KV-cache optimization, memory-augmented architectures, retrieval-augmented generation, episodic memory for agents, and parameter-efficient representations that maximize knowledge per byte of VRAM.",
+        icon: HardDrive,
     },
 ];
 
@@ -64,11 +69,12 @@ export const LlmVlmResearch = () => {
                             LLM / VLM / VLA
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
-                            My primary research focus is on <strong>multi-agent interaction</strong> and{" "}
-                            <strong>self-improving AI</strong> across language, vision-language, and vision-language-action
-                            models. I study how multiple agents collaborate, generate synthetic experience, and
-                            continuously refine each other—creating systems that get smarter through interaction
-                            rather than just larger datasets.
+                            My primary research focus is on <strong>multi-agent interaction</strong>,{" "}
+                            <strong>self-improving AI</strong>, <strong>continual learning</strong>, and{" "}
+                            <strong>efficient model memory</strong> across language, vision-language, and vision-language-action
+                            models. I study how multiple agents collaborate, generate synthetic experience, maintain knowledge
+                            over time, and manage memory efficiently—creating systems that get smarter through interaction
+                            and can operate within real-world hardware constraints.
                         </p>
                     </div>
 

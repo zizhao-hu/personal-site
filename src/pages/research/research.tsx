@@ -43,7 +43,7 @@ const publications: Publication[] = [
 const researchAreas = [
   {
     title: "LLM / VLM / VLA",
-    description: "Multi-agent interaction, self-improving AI systems, and vision-language-action models. Primary focus on how LLM/VLM/VLA agents collaborate, generate synthetic experience, and continuously improve through interaction loops.",
+    description: "Multi-agent interaction, self-improving AI, continual learning, and efficient model memory. Primary focus on how LLM/VLM/VLA agents collaborate, self-improve through generate-validate loops, and maintain knowledge efficiently over time.",
     icon: Users,
     color: "blue",
     highlight: true,
@@ -59,7 +59,7 @@ const researchAreas = [
   },
   {
     title: "Architecture",
-    description: "Multimodal architectures for unified perception-language-action, recurrency in transformers, state-space models, brain-inspired designs, and efficient attention mechanisms for scalable multi-modal inference.",
+    description: "Transformer memory mechanisms, efficient architectures, multimodal architectures, and scalable designs. Research on how models store, retrieve, and reason over information at scale.",
     icon: Eye,
     color: "purple",
     path: "/research/architecture",

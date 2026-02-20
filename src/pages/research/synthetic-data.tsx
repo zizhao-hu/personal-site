@@ -1,5 +1,5 @@
 import { Header } from "@/components/custom/header";
-import { ExternalLink, FileText, Calendar, Database, ShieldAlert } from "lucide-react";
+import { ExternalLink, FileText, Calendar, Database, ShieldAlert, RefreshCw } from "lucide-react";
 
 const publications = [
     {
@@ -14,6 +14,11 @@ const publications = [
 ];
 
 const keyTopics = [
+    {
+        title: "Generate-Validate Loop",
+        description: "Self-improving data pipelines where models generate candidate outputs, then validate them against criteria (correctness, safety, diversity) before accepting them as training data. This closed-loop approach produces higher-quality data than one-shot generation and enables models to bootstrap their own improvement without human annotation.",
+        icon: RefreshCw,
+    },
     {
         title: "Synthetic Data Generation",
         description: "Creating high-quality synthetic training data using generative models. Developing pipelines that produce diverse, balanced datasets without the privacy concerns or biases of web-scraped data, while ensuring the generated data is genuinely useful for model training.",
@@ -55,9 +60,10 @@ export const SyntheticDataResearch = () => {
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
                             High-quality data is the foundation of modern AI. My research investigates
+                            <strong> generate-validate loops</strong> for self-improving data pipelines,
                             <strong> synthetic data generation</strong>, <strong>model collapse dynamics</strong>,
-                            <strong> data curation methods</strong>, and <strong>safety-oriented data pipelines</strong>—ensuring
-                            AI systems can be trained at scale without degrading quality or introducing harmful biases.
+                            <strong> data curation methods</strong>, and <strong>safety-oriented data pipelines</strong>—enabling
+                            AI systems to bootstrap their own improvement while maintaining quality and safety.
                         </p>
                     </div>
 
@@ -98,8 +104,8 @@ export const SyntheticDataResearch = () => {
                                 <div
                                     key={index}
                                     className={`p-3 rounded-lg border ${pub.highlight
-                                            ? "border-orange-200 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-900/20"
-                                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
+                                        ? "border-orange-200 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-900/20"
+                                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
                                         }`}
                                 >
                                     {pub.highlight && (

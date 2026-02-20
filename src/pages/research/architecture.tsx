@@ -1,5 +1,5 @@
 import { Header } from "@/components/custom/header";
-import { ExternalLink, FileText, Calendar, Cpu, Zap, Layers, Repeat, Eye } from "lucide-react";
+import { ExternalLink, FileText, Calendar, Cpu, Zap, Eye, Maximize } from "lucide-react";
 
 const publications = [
     {
@@ -23,34 +23,24 @@ const publications = [
 
 const keyTopics = [
     {
-        title: "Multimodal Architecture",
-        description: "Unified architectures for jointly processing vision, language, and action. Research on early vs. late fusion, cross-modal attention, and designing backbones that natively handle images, text, audio, and control signals in a single forward pass.",
-        icon: Eye,
-    },
-    {
-        title: "Recurrency in Transformers",
-        description: "Reintroducing recurrent computation into transformer architectures for improved reasoning, state tracking, and long-horizon planning. Exploring recurrent attention layers, state-space models (Mamba/S4), and hybrid architectures that combine the parallelism of transformers with the sequential modeling strength of RNNs.",
-        icon: Repeat,
-    },
-    {
-        title: "Static Key Attention",
-        description: "Rethinking the attention mechanism by pre-computing certain attention patterns. Static keys reduce the computational cost of self-attention while maintaining model performance, enabling more efficient vision transformers.",
-        icon: Zap,
-    },
-    {
-        title: "Brain-Inspired Architectures",
-        description: "Drawing inspiration from the lateralization of biological brains to design asymmetric neural network architectures. The Lateralization MLP introduces hemisphere-specific processing for diffusion models.",
+        title: "Transformer Memory Mechanisms",
+        description: "How transformers store, retrieve, and reason over information. Research on KV-cache architectures, recurrent memory layers, state-space models (Mamba/S4), memory-augmented attention, and hybrid designs that give transformers explicit long-term memory without quadratic cost.",
         icon: Cpu,
     },
     {
-        title: "Efficient Transformers",
-        description: "Developing attention variants and architectural modifications that reduce the quadratic cost of self-attention. Exploring sparse attention, linear attention, and hybrid approaches for scalable deep learning.",
+        title: "Efficient Architecture",
+        description: "Reducing compute and memory costs without sacrificing capability. Static key attention, sparse attention patterns, linear attention variants, weight sharing, knowledge distillation, and quantization-aware architecture design for deployment on constrained hardware.",
         icon: Zap,
     },
     {
-        title: "Mixture of Experts (MoE)",
-        description: "Scaling model capacity without proportionally scaling compute. Research on expert routing, load balancing, and specialized expert architectures for conditional computation in large-scale models.",
-        icon: Layers,
+        title: "Multimodal Architecture",
+        description: "Unified backbones that natively process vision, language, audio, and action in a single model. Research on early vs. late fusion strategies, cross-modal attention, modality-specific tokenization, and architectures that scale gracefully across input types.",
+        icon: Eye,
+    },
+    {
+        title: "Scalable Architecture",
+        description: "Designs that scale from small research models to production systems. Mixture of Experts (MoE) for conditional computation, expert routing and load balancing, pipeline and tensor parallelism-friendly architectures, and brain-inspired lateralization for asymmetric processing.",
+        icon: Maximize,
     },
 ];
 
@@ -72,11 +62,11 @@ export const ArchitectureResearch = () => {
                             Architecture
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
-                            Novel neural network architectures for multimodal AI systems.
-                            My work explores <strong>multimodal architectures</strong> for unified perception-language-action,
-                            <strong> recurrency in transformers</strong> for improved reasoning and state tracking,
-                            <strong> brain-inspired designs</strong>, and <strong>efficient attention mechanisms</strong>—building
-                            the architectural foundations that enable scalable multi-agent and self-improving systems.
+                            Building the architectural foundations for scalable, memory-efficient AI systems.
+                            My work focuses on <strong>transformer memory mechanisms</strong> for long-range reasoning,
+                            <strong> efficient architectures</strong> that maximize capability per FLOP,
+                            <strong> multimodal designs</strong> for unified perception-language-action, and
+                            <strong> scalable architectures</strong> that grow from research to production.
                         </p>
                     </div>
 

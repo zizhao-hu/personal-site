@@ -31,7 +31,7 @@ export const blogPosts: BlogPost[] = [
         readingTime: "10 min",
         category: "ai",
         tags: ["AI Safety", "Copyright", "LLM Memorization", "Data Extraction"],
-        coverImage: "/images/blogs/extraction.png",
+        coverImage: "/images/blogs/extraction.jpg",
         tldr: {
             problem: "Despite industry efforts like dataset deduplication, synthetic data augmentation, and refusal training, large language models still memorize and can regurgitate copyrighted training data verbatim. Researchers extracted up to 96% of Harry Potter and the Sorcerer's Stone word-for-word from Claude 3 Opus using simple, direct prompts.",
             idea: "Memorization isn't a bug — it's a fundamental byproduct of next-token prediction at scale. The larger the model and the more prevalent the text in training data, the more faithfully it can reproduce it. Current mitigations (refusal training, deduplication) are surface-level patches on a structural issue.",
@@ -116,7 +116,7 @@ The preprint is available on arXiv for community replication and benchmarking of
         readingTime: "14 min",
         category: "ai",
         tags: ["AI Evaluation", "Human-AI Collaboration", "Hiring", "Future of Work"],
-        coverImage: "/images/blogs/interview-dead.png",
+        coverImage: "/images/blogs/interview-dead.jpg",
         tldr: {
             problem: "We've built a sophisticated evaluation culture for AI (benchmarks like MMLU, HumanEval, SWE-bench) that actively drives model development — but we still evaluate humans with whiteboard puzzles and LeetCode trivia from the 1990s. These tests measure memorization, not real-world capability.",
             idea: "AI evaluation works because it tests real capabilities, measures end-to-end output quality, reflects actual use cases, and evolves. Human interviews fail on every single one of these criteria. The irony: we know how to build good evaluations — we just haven't applied that knowledge to humans.",

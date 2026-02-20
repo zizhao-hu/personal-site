@@ -1799,6 +1799,355 @@ This tutorial will be expanded with:
 *This is the first tutorial in the Developer Workflow series. Antigravity is designed to make the "fast prototype, fast mistake, fast fix" cycle as frictionless as possible.*
     `
   },
+  {
+    id: "5",
+    slug: "cs-vocabulary-for-vibe-coders",
+    title: "The CS Vocabulary You Need for Vibe Coding",
+    description: "Every term, concept, and piece of jargon you need to understand what AI is doing and to express what you want — no code required. Organized by domain: OS, networking, web dev, hardware, Linux, clusters, AI/ML, databases, security, and more.",
+    difficulty: "beginner",
+    estimatedTime: "40 min",
+    topics: ["Computer Science", "Vocabulary", "Vibe Coding", "Developer Fundamentals"],
+    series: "Developer Workflow",
+    prerequisites: ["Curiosity", "An AI coding assistant"],
+    content: `
+# The CS Vocabulary You Need for Vibe Coding
+
+> You don't need to write code anymore. But you DO need to speak the language.
+
+Vibe coding means letting AI write the code while you direct the vision. But to direct effectively, you need to understand the **vocabulary** — the terms AI uses in its explanations, the concepts behind error messages, and the jargon that lets you describe what you actually want.
+
+This is not a coding tutorial. There are **zero code examples**. This is a reference dictionary organized by domain, designed so you can look up any term you encounter while working with an AI coding agent.
+
+---
+
+## Operating Systems (OS)
+
+The operating system is the software layer between your hardware and your applications. When AI mentions "processes" or "memory," this is what it's talking about.
+
+| Term | What It Means |
+|------|--------------|
+| **Process** | A running instance of a program. Your browser is a process. Your code editor is a process. Each has its own memory space. |
+| **Thread** | A lightweight unit of execution within a process. A single process can have multiple threads running simultaneously (like a browser rendering a page while downloading a file). |
+| **Kernel** | The core of the OS. It manages hardware resources, memory, and process scheduling. You almost never interact with it directly, but errors that mention "kernel panic" mean something went very wrong at this level. |
+| **File System** | How your OS organizes files on disk. Common types: NTFS (Windows), ext4 (Linux), APFS (Mac). When AI says "write to the file system," it means saving a file. |
+| **PATH** | An environment variable that tells your OS where to find executable programs. When you type "python" in a terminal, the OS searches your PATH to find where Python is installed. |
+| **Environment Variable** | A named value stored by the OS that programs can read. API keys, configuration settings, and system paths are commonly stored this way. Example: \`HOME\`, \`PATH\`, \`NODE_ENV\`. |
+| **stdin / stdout / stderr** | The three standard streams. stdin = input going INTO a program. stdout = normal output coming OUT. stderr = error output. When AI says "pipe stdout," it means redirect the output somewhere. |
+| **Daemon** | A background process that runs continuously without user interaction. Web servers, database servers, and system services are daemons. |
+| **Symlink (Symbolic Link)** | A shortcut/alias that points to another file or directory. Unlike a copy, it references the original — if the original moves, the symlink breaks. |
+| **Permission** | Who can read, write, or execute a file. On Linux/Mac, you see things like \`rwxr-xr-x\` — this encodes owner/group/others permissions. \`chmod\` changes permissions. |
+| **Shell** | The program that interprets your text commands. Bash, Zsh, PowerShell, and Fish are all shells. When AI says "run this in your shell," it means open a terminal and type it. |
+
+---
+
+## Networking
+
+Every web application communicates over a network. These terms come up constantly when building anything that talks to the internet.
+
+| Term | What It Means |
+|------|--------------|
+| **IP Address** | A unique numerical address for a device on a network. IPv4 looks like \`192.168.1.1\`. IPv6 looks like \`2001:0db8:85a3::8a2e:0370:7334\`. |
+| **Port** | A number (0-65535) that identifies a specific service on a machine. Web servers commonly use port 80 (HTTP) or 443 (HTTPS). Your dev server might run on port 3000 or 5173. |
+| **DNS** | Domain Name System — translates human-readable domain names (google.com) into IP addresses. When someone says "DNS isn't resolving," it means the name-to-address lookup is failing. |
+| **HTTP / HTTPS** | Hypertext Transfer Protocol. The language browsers and servers use to communicate. HTTPS is the encrypted version (the S stands for Secure). |
+| **Request / Response** | The fundamental pattern of web communication. A client sends a **request** (e.g., "give me this page"), and the server sends back a **response** (e.g., the HTML content). |
+| **GET / POST / PUT / DELETE** | HTTP methods (verbs). GET = retrieve data. POST = send/create data. PUT = update data. DELETE = remove data. These map to CRUD operations (Create, Read, Update, Delete). |
+| **API** | Application Programming Interface — a defined way for programs to communicate with each other. When AI says "call the API," it means send a structured request to a service and get data back. |
+| **REST** | Representational State Transfer — an architectural style for APIs. REST APIs use HTTP methods and URL paths to organize resources (e.g., GET /users/123 retrieves user 123). |
+| **GraphQL** | An alternative to REST where you specify exactly what data you want in your query, and the server returns only that. |
+| **WebSocket** | A protocol for real-time, two-way communication between client and server. Unlike HTTP (request-response), WebSockets keep a connection open for continuous data flow. Used for chat, live updates, gaming. |
+| **CORS** | Cross-Origin Resource Sharing — a browser security feature that blocks requests from one domain to another unless the server explicitly allows it. The most common source of "why won't my API call work" frustration. |
+| **SSL / TLS** | Secure Sockets Layer / Transport Layer Security — encryption protocols that make HTTPS work. When AI mentions "SSL certificate," it's about proving a server's identity and encrypting traffic. |
+| **Latency** | The time delay between sending a request and receiving a response. Low latency = fast. High latency = slow. Measured in milliseconds (ms). |
+| **Bandwidth** | The maximum rate of data transfer. Think of it as the width of a pipe — latency is how long water takes to travel through, bandwidth is how much water can flow at once. |
+| **CDN** | Content Delivery Network — a global network of servers that cache your content close to users. If your website's images load fast worldwide, it's probably using a CDN (e.g., Cloudflare, AWS CloudFront). |
+| **Load Balancer** | A system that distributes incoming traffic across multiple servers so no single server gets overwhelmed. |
+| **Proxy / Reverse Proxy** | A proxy sits between client and server. A forward proxy acts on behalf of the client (like a VPN). A reverse proxy acts on behalf of the server (like Nginx routing requests to different backend services). |
+| **TCP / UDP** | Transport protocols. TCP = reliable, ordered delivery (used for web, email). UDP = fast, no guarantees (used for video streaming, gaming). |
+
+---
+
+## Web Development
+
+The vocabulary of building things people interact with in a browser.
+
+| Term | What It Means |
+|------|--------------|
+| **Frontend** | The part users see and interact with — HTML, CSS, JavaScript running in the browser. |
+| **Backend** | The server-side logic, databases, and APIs that power the frontend. Users don't see this directly. |
+| **Full-Stack** | Working on both frontend and backend. |
+| **HTML** | HyperText Markup Language — the structure of web pages. Tags like \`<div>\`, \`<h1>\`, \`<p>\` define what's on the page. |
+| **CSS** | Cascading Style Sheets — controls how HTML looks. Colors, fonts, layout, animations. |
+| **JavaScript (JS)** | The programming language of the web. Runs in browsers and (via Node.js) on servers. |
+| **TypeScript (TS)** | JavaScript with type annotations. Catches errors before code runs. When AI generates \`.tsx\` files, that's TypeScript + JSX. |
+| **JSX / TSX** | A syntax extension that lets you write HTML-like code inside JavaScript/TypeScript. Used by React. |
+| **DOM** | Document Object Model — the browser's internal representation of a web page as a tree of objects. When AI says "manipulate the DOM," it means change what's displayed on the page. |
+| **Component** | A reusable, self-contained piece of UI. A button, a card, a navigation bar — each is typically a component. Modern web dev is component-based. |
+| **State** | Data that changes over time and affects what's displayed. A counter value, whether a menu is open, the current user — all state. |
+| **Props** | Properties passed from a parent component to a child component. How components communicate in React/Vue/etc. |
+| **Hook** | A React concept — functions that let components use state and lifecycle features. \`useState\`, \`useEffect\`, \`useRef\` are the common ones. |
+| **Routing** | Mapping URLs to different pages/views. When you go to /about, the router shows the About page. |
+| **SPA** | Single Page Application — a web app that loads once and dynamically updates content without full page reloads. React, Vue, Angular apps are SPAs. |
+| **SSR / SSG** | Server-Side Rendering / Static Site Generation. SSR generates HTML on the server for each request. SSG generates all HTML at build time. Both improve SEO and initial load speed compared to pure SPAs. |
+| **Hydration** | The process where a server-rendered HTML page becomes interactive by attaching JavaScript event handlers on the client side. |
+| **Build Tool** | Software that transforms your source code into optimized production files. Vite, Webpack, esbuild, Turbopack are build tools. |
+| **Bundle** | The final JavaScript/CSS files that get sent to the browser, created by the build tool. "Bundle size" matters because bigger bundles = slower load. |
+| **Minification** | Removing whitespace, comments, and shortening variable names to make code files smaller. |
+| **Tree Shaking** | Removing unused code from the final bundle. If you import one function from a library, tree shaking ensures the rest of the library isn't included. |
+| **Hot Module Replacement (HMR)** | Updating code in the browser instantly during development without a full page reload. When AI says "the dev server supports HMR," your changes appear instantly. |
+| **Responsive Design** | Making layouts adapt to different screen sizes (phone, tablet, desktop). |
+| **Viewport** | The visible area of a web page in the browser. Mobile viewports are smaller than desktop viewports. |
+| **Semantic HTML** | Using HTML tags that convey meaning (e.g., \`<nav>\`, \`<article>\`, \`<header>\`) instead of generic \`<div>\` for everything. Important for accessibility and SEO. |
+| **Accessibility (a11y)** | Making web content usable by people with disabilities — screen readers, keyboard navigation, color contrast, ARIA attributes. |
+
+---
+
+## Databases
+
+Where data lives permanently. Every app with user accounts, posts, or any persistent data uses a database.
+
+| Term | What It Means |
+|------|--------------|
+| **SQL** | Structured Query Language — the language for querying relational databases. SELECT, INSERT, UPDATE, DELETE are the core operations. |
+| **NoSQL** | Databases that don't use traditional SQL tables. Document stores (MongoDB), key-value stores (Redis), graph databases (Neo4j). |
+| **Schema** | The structure definition of your data — what fields exist, their types, and relationships. |
+| **Migration** | A versioned change to your database schema. Like git commits, but for database structure. "Run migrations" = apply pending schema changes. |
+| **ORM** | Object-Relational Mapping — a library that lets you interact with databases using your programming language's objects instead of raw SQL. Prisma, SQLAlchemy, TypeORM are ORMs. |
+| **Primary Key** | A unique identifier for each record in a table. Usually an auto-incrementing ID or a UUID. |
+| **Foreign Key** | A field that references the primary key of another table, creating a relationship between them. |
+| **Index** | A data structure that speeds up database lookups, like the index in a book. Without an index, the database scans every row (slow). |
+| **Query** | A request for data from a database. "The query is slow" = the database lookup takes too long. |
+| **Transaction** | A group of database operations that either ALL succeed or ALL fail. No partial changes. Critical for financial operations. |
+| **CRUD** | Create, Read, Update, Delete — the four basic database operations. Most applications are fundamentally CRUD apps with nice UIs. |
+| **Redis** | An in-memory data store used for caching, session management, and real-time features. Extremely fast because data lives in RAM, not disk. |
+| **Connection Pool** | A cache of database connections that are reused rather than creating new ones for each request. Improves performance. |
+
+---
+
+## Hardware & Performance
+
+Understanding what your code actually runs on helps you understand performance issues and constraints.
+
+| Term | What It Means |
+|------|--------------|
+| **CPU** | Central Processing Unit — the "brain" that executes instructions. Clock speed (GHz) and core count determine raw computation power. |
+| **GPU** | Graphics Processing Unit — originally for rendering graphics, now essential for AI/ML because it can do thousands of parallel computations simultaneously. NVIDIA GPUs (CUDA) dominate AI training. |
+| **RAM** | Random Access Memory — fast, temporary storage that programs use while running. When your computer "runs out of memory," it's running out of RAM. |
+| **VRAM** | Video RAM — memory on the GPU. AI models need to fit in VRAM to run efficiently. "OOM" (Out Of Memory) errors during model inference usually mean insufficient VRAM. |
+| **Storage (SSD/HDD)** | Permanent data storage. SSDs (Solid State Drives) are fast. HDDs (Hard Disk Drives) are slow but cheap. NVMe SSDs are the fastest. |
+| **Cache** | Fast, small storage that keeps frequently accessed data close to the processor. L1/L2/L3 caches are on the CPU. Caching is a universal pattern — keep copies of expensive-to-compute things for fast retrieval. |
+| **Bottleneck** | The slowest component that limits overall system performance. Could be CPU, GPU, memory, disk, or network. |
+| **Throughput** | How much work a system can do per unit of time. Requests per second, tokens per second, frames per second. |
+| **Concurrency** | Doing multiple things at once (or appearing to). A web server handling 1000 simultaneous connections uses concurrency. |
+| **Parallelism** | Actually executing multiple computations simultaneously on different CPU/GPU cores. Related to but different from concurrency. |
+
+---
+
+## Linux & Command Line
+
+Most servers run Linux. Most AI development happens on Linux. These terms come up constantly.
+
+| Term | What It Means |
+|------|--------------|
+| **Terminal / Console** | A text-based interface for running commands. On Mac: Terminal. On Windows: PowerShell or WSL. On Linux: any terminal emulator. |
+| **Bash** | The most common Linux shell. When AI writes shell scripts, they're usually Bash scripts. |
+| **sudo** | "Super User Do" — run a command with administrator/root privileges. Required for installing system software, changing system files, etc. |
+| **apt / yum / brew** | Package managers for installing software. apt (Debian/Ubuntu), yum (CentOS/RHEL), brew (macOS). Like app stores for command-line tools. |
+| **SSH** | Secure Shell — a protocol for remotely connecting to and controlling another computer via an encrypted connection. "SSH into the server" = connect to a remote machine's terminal. |
+| **SCP / rsync** | Tools for copying files between machines. SCP is simpler, rsync is smarter (only copies changes). |
+| **grep** | Search for text patterns in files. "Grep for that error message" = search your codebase for a specific string. |
+| **pipe ( \\| )** | Sends the output of one command as input to another. \`cat file.txt \\| grep "error"\` reads a file and filters for lines containing "error." |
+| **curl / wget** | Command-line tools for making HTTP requests and downloading files. "Curl the endpoint" = send a request to a URL from the terminal. |
+| **cron** | A scheduler that runs commands at specified intervals. "Set up a cron job" = schedule a task to run automatically (daily backup, hourly data sync, etc.). |
+| **systemd** | The init system that manages services on modern Linux. \`systemctl start nginx\` starts the Nginx web server; \`systemctl enable\` makes it start on boot. |
+| **container** | A lightweight, isolated environment for running applications. Docker containers package your app with all its dependencies so it runs the same everywhere. |
+| **Docker** | The most popular containerization platform. A Dockerfile defines how to build a container image. Docker Compose manages multi-container applications. |
+| **Volume** | Persistent storage for containers. Without a volume, data inside a container disappears when the container stops. |
+| **WSL** | Windows Subsystem for Linux — lets you run a real Linux environment inside Windows. Essential for Windows developers working with Linux-native tools. |
+
+---
+
+## Clusters & Infrastructure
+
+When one machine isn't enough, you need clusters. This is how AI training, big websites, and cloud services work.
+
+| Term | What It Means |
+|------|--------------|
+| **Cluster** | A group of computers working together as a single system. Used for distributed computing, AI training, and high-availability services. |
+| **Node** | A single machine in a cluster. A 4-node cluster = 4 connected computers. |
+| **Cloud** | Renting someone else's computers. AWS, Google Cloud, Azure provide servers, storage, and services you pay for by usage. |
+| **Instance** | A single virtual machine in the cloud. "Spin up an instance" = create a new virtual server. |
+| **VM (Virtual Machine)** | A software emulation of a computer that runs on physical hardware. Multiple VMs can run on one physical server. |
+| **Kubernetes (K8s)** | An orchestration system for managing containers at scale. Automatically handles deployment, scaling, load balancing, and failure recovery. |
+| **SLURM** | A job scheduler for HPC (High Performance Computing) clusters. Common in academic research and AI training. You submit jobs and SLURM allocates GPU/CPU resources. |
+| **HPC** | High Performance Computing — powerful computing clusters used for scientific research, simulations, and large-scale model training. |
+| **Distributed Training** | Training an AI model across multiple GPUs or machines simultaneously. Techniques: data parallelism (split data), model parallelism (split model), pipeline parallelism (split layers). |
+| **CI/CD** | Continuous Integration / Continuous Deployment — automated pipelines that build, test, and deploy your code when you push changes. GitHub Actions, GitLab CI, Jenkins are CI/CD tools. |
+| **Serverless** | Cloud functions that run on demand without managing servers. AWS Lambda, Vercel Functions, Cloudflare Workers. You pay per execution, not per server-hour. |
+| **Microservice** | An architectural pattern where an application is split into small, independent services that communicate via APIs. Opposite of a "monolith" (one big application). |
+| **Scaling (Horizontal vs. Vertical)** | Vertical = bigger machine (more RAM, faster CPU). Horizontal = more machines. Horizontal scaling is usually preferred because it has no upper limit. |
+| **Auto-scaling** | Automatically adding or removing servers based on demand. Handle traffic spikes without manual intervention. |
+
+---
+
+## Version Control (Git)
+
+How developers track changes, collaborate, and avoid disasters.
+
+| Term | What It Means |
+|------|--------------|
+| **Repository (Repo)** | A project folder tracked by Git. Contains all files and their complete history of changes. |
+| **Commit** | A saved snapshot of your changes with a description. Like a checkpoint in a video game. |
+| **Branch** | A parallel version of your code. Create a branch to work on a feature without affecting the main code. |
+| **Merge** | Combining changes from one branch into another. "Merge your feature branch into main." |
+| **Pull Request (PR)** | A request to merge your branch into another. Other developers review your changes before merging. Also called Merge Request (MR) on GitLab. |
+| **Conflict** | When two branches modify the same lines differently. Git can't auto-merge, so you have to manually choose which version to keep. |
+| **Clone** | Copy a remote repository to your local machine. |
+| **Fork** | Create your own copy of someone else's repository on GitHub, so you can modify it independently. |
+| **Stash** | Temporarily save uncommitted changes without committing them. Useful when you need to switch branches quickly. |
+| **.gitignore** | A file that tells Git which files to NOT track. Node_modules, .env files, build outputs, and large datasets should be in .gitignore. |
+| **HEAD** | Points to the current commit you're working on. "Detached HEAD" means you're looking at a specific past commit, not a branch tip. |
+| **Rebase** | Rewriting commit history by moving your branch's starting point. Makes history cleaner but can be dangerous if misused. |
+
+---
+
+## AI & Machine Learning
+
+The vocabulary of the tools that are writing your code.
+
+| Term | What It Means |
+|------|--------------|
+| **Model** | A trained neural network — the "brain" that generates text, images, or predictions. GPT-4, Claude, Llama are language models. |
+| **LLM** | Large Language Model — a model trained on massive text datasets to understand and generate language. The AI writing your code is an LLM. |
+| **VLM** | Vision-Language Model — an LLM that can also process images. Can "see" screenshots, diagrams, or photos and reason about them. |
+| **Token** | The basic unit of text that models process. Roughly 3/4 of a word. "Hello world" ˜ 2 tokens. Context limits are measured in tokens. |
+| **Context Window** | How much text a model can "see" at once. GPT-4 has a 128K context window. Larger = can read more of your codebase simultaneously. |
+| **Inference** | Running a trained model to get outputs. When AI generates code for you, that's inference. |
+| **Training** | The process of teaching a model by showing it data. Pretraining = learning from massive datasets. Fine-tuning = specializing on specific tasks. |
+| **Fine-tuning** | Training an existing model further on domain-specific data to improve its performance on a particular task. |
+| **Prompt** | The text input you give to an AI model. Prompt engineering = crafting inputs that produce better outputs. |
+| **Temperature** | A parameter that controls randomness in AI outputs. Low temperature (0.0) = deterministic, focused. High temperature (1.0+) = creative, random. |
+| **Hallucination** | When an AI generates plausible-sounding but factually incorrect information. It "hallucinates" functions that don't exist, APIs with wrong signatures, or made-up facts. |
+| **Embedding** | A numerical representation of text/images in a high-dimensional space. Similar concepts have similar embeddings. Used for search, recommendations, and clustering. |
+| **Vector Database** | A database optimized for storing and searching embeddings. Pinecone, Weaviate, Chroma are vector databases. Used for semantic search and RAG. |
+| **RAG** | Retrieval-Augmented Generation — giving an AI access to external data (documents, codebase, web) so it can ground its answers in facts rather than relying solely on training data. |
+| **Agent** | An AI system that can take actions — run code, browse the web, call APIs, edit files — not just generate text. Antigravity is an agent. |
+| **MoE** | Mixture of Experts — an architecture where only a subset of the model's parameters are active for each input. Makes models efficient despite having many total parameters. |
+| **RLHF** | Reinforcement Learning from Human Feedback — training an AI to align with human preferences by having humans rank outputs in order of quality. |
+| **Overfitting** | When a model memorizes training data instead of learning general patterns. It performs well on training data but poorly on new data. |
+| **Epoch** | One complete pass through the entire training dataset. Training takes multiple epochs. |
+| **Loss** | A number that measures how wrong the model's predictions are. Training aims to minimize loss. Lower = better. |
+| **Batch Size** | How many examples the model processes at once during training. Larger batch sizes use more memory but can train faster. |
+| **Learning Rate** | How big of steps the model takes during training. Too high = overshoots and doesn't learn. Too low = learns too slowly. |
+| **Gradient** | The direction and magnitude of change needed to reduce loss. "Gradient descent" = iteratively adjusting model parameters in the direction that reduces error. |
+| **Transformer** | The neural network architecture behind modern LLMs. Key innovation: the attention mechanism, which lets the model weigh which parts of the input are relevant to each output. |
+| **Attention** | A mechanism that lets models focus on relevant parts of the input when producing output. "Self-attention" = each word attends to every other word in the sequence. |
+| **Diffusion Model** | An AI architecture for generating images by learning to gradually remove noise. Stable Diffusion, DALL-E, and Midjourney use this approach. |
+| **LoRA** | Low-Rank Adaptation — a technique for fine-tuning large models efficiently by only training a small number of additional parameters instead of the full model. |
+| **Quantization** | Reducing model precision (e.g., from 32-bit to 4-bit numbers) to use less memory and run faster, with minimal quality loss. "4-bit quantized" models run on consumer GPUs. |
+
+---
+
+## Statistics & Math Concepts
+
+You don't need to do the math, but understanding these terms helps you interpret AI outputs and model performance.
+
+| Term | What It Means |
+|------|--------------|
+| **Mean / Average** | Sum of values divided by count. The most basic summary statistic. |
+| **Variance / Standard Deviation** | How spread out values are from the mean. Low variance = consistent. High variance = unpredictable. |
+| **Distribution** | The pattern of how values are spread. Normal distribution (bell curve) is the most common. |
+| **Correlation** | How strongly two variables move together. Correlation does NOT imply causation — ice cream sales and drowning deaths are correlated (both increase in summer). |
+| **Regression** | Predicting a continuous number (price, temperature) from input features. Linear regression draws a best-fit line through data. |
+| **Classification** | Predicting a category (spam/not spam, cat/dog) from input features. |
+| **Precision / Recall** | Precision = of all items you identified as positive, what fraction actually were? Recall = of all actual positives, what fraction did you catch? There's usually a trade-off. |
+| **Accuracy** | The percentage of correct predictions. Can be misleading — if 99% of emails aren't spam, a model that predicts "not spam" for everything has 99% accuracy but is useless. |
+| **F1 Score** | The harmonic mean of precision and recall. A balanced metric when both matter. |
+| **Perplexity** | How "surprised" a language model is by text. Lower perplexity = the model predicts the text well. Used to evaluate language models. |
+| **Dimensionality** | The number of features/variables in a dataset. A 768-dimensional embedding has 768 numbers describing each item. |
+| **p-value** | The probability of seeing your result by random chance. p < 0.05 is traditionally considered "statistically significant." |
+
+---
+
+## Physics & Systems Thinking
+
+Concepts borrowed from physics that appear in computing and AI.
+
+| Term | What It Means |
+|------|--------------|
+| **Entropy** | A measure of disorder or information content. In information theory: high entropy = unpredictable, lots of information. In machine learning: used in loss functions and decision trees. |
+| **Signal vs. Noise** | Signal = the useful information you want. Noise = random, irrelevant variation that obscures the signal. Better models have higher signal-to-noise ratios. |
+| **Equilibrium** | A stable state where opposing forces balance out. In training, reaching equilibrium means the model has converged and isn't improving further. |
+| **Convergence** | When a training process stabilizes and stops improving significantly. "The model has converged" = further training won't help much. |
+| **Feedback Loop** | Output of a system feeds back as input. Positive feedback loops amplify (exponential growth/collapse). Negative feedback loops stabilize (thermostats, PID controllers). AI self-improvement is a positive feedback loop. |
+| **Latent Space** | A compressed, learned representation where similar items are close together. Diffusion models generate images by navigating latent space. |
+| **Decay** | Gradual reduction of a value over time. Learning rate decay = lowering the learning rate as training progresses for finer adjustments. Weight decay = regularization that prevents overfitting. |
+| **Annealing** | Inspired by metallurgy — gradually reducing temperature (randomness) during optimization to first explore broadly, then fine-tune locally. Simulated annealing is a search algorithm based on this principle. |
+
+---
+
+## Security
+
+Terms you'll encounter when building anything that handles user data or connects to the internet.
+
+| Term | What It Means |
+|------|--------------|
+| **Authentication (AuthN)** | Verifying WHO you are. Username/password, OAuth, biometrics. "Are you who you claim to be?" |
+| **Authorization (AuthZ)** | Verifying WHAT you can do. After authentication, does this user have permission to access this resource? |
+| **OAuth** | An authorization framework that lets third-party apps access your data without your password. "Sign in with Google/GitHub" uses OAuth. |
+| **JWT** | JSON Web Token — a compact, self-contained token for securely transmitting information. Commonly used for authentication. Contains encoded (not encrypted) user info. |
+| **Hashing** | Converting data into a fixed-length string that can't be reversed. Passwords are stored as hashes, not plaintext. SHA-256, bcrypt are hashing algorithms. |
+| **Encryption** | Making data unreadable without a key. Unlike hashing, encryption is reversible with the right key. AES, RSA are encryption algorithms. |
+| **CSRF** | Cross-Site Request Forgery — tricking a user's browser into making unwanted requests to a site they're logged into. CSRF tokens prevent this. |
+| **XSS** | Cross-Site Scripting — injecting malicious scripts into web pages viewed by other users. Input sanitization prevents this. |
+| **SQL Injection** | Inserting malicious SQL into input fields to manipulate a database. Parameterized queries prevent this. |
+| **API Key** | A secret string that authenticates your app to a service. NEVER commit API keys to git. Use environment variables. |
+| **.env File** | A file storing environment variables (API keys, database URLs) that should NEVER be committed to version control. |
+| **Rate Limiting** | Restricting how many requests a user/IP can make in a time period. Prevents abuse and ensures fair usage. |
+
+---
+
+## DevOps & Deployment
+
+Getting your code from your laptop to users.
+
+| Term | What It Means |
+|------|--------------|
+| **Deploy** | Making your application available to users. "Deploy to production" = push your latest code to the live server. |
+| **Production (Prod)** | The live environment that real users interact with. "Don't test in production" = don't experiment where real users will be affected. |
+| **Staging** | A pre-production environment that mirrors production. Test here before deploying to prod. |
+| **Rollback** | Reverting to a previous version when a deployment goes wrong. "Roll back to the last known good version." |
+| **Downtime** | When your service is unavailable. "99.9% uptime" = less than 8.76 hours of downtime per year. |
+| **Monitoring** | Tracking your application's health, performance, and errors in real time. Datadog, Grafana, New Relic are monitoring tools. |
+| **Logging** | Recording events and errors for debugging. Structured logging (JSON format) makes logs searchable. |
+| **Nginx** | A popular web server and reverse proxy. Often sits in front of your application, handling SSL, routing, and static files. |
+| **PM2** | A process manager for Node.js applications. Keeps your app running, restarts on crash, handles clustering. |
+| **Blue-Green Deployment** | Running two identical production environments. Deploy to the inactive one (green), test it, then switch traffic from the active one (blue) to green. Instant rollback by switching back. |
+
+---
+
+## Package Management & Dependencies
+
+How modern software is built from thousands of smaller pieces.
+
+| Term | What It Means |
+|------|--------------|
+| **Package / Library / Module** | Reusable code someone else wrote that you can use in your project. React, Express, NumPy are packages. |
+| **Dependency** | A package your project requires to function. Your project "depends on" React means React is a dependency. |
+| **npm / yarn / pnpm** | Package managers for JavaScript/Node.js projects. \`npm install\` downloads all dependencies listed in package.json. |
+| **pip** | Package manager for Python. \`pip install torch\` installs PyTorch. |
+| **package.json** | The manifest file for Node.js projects. Lists dependencies, scripts, and project metadata. |
+| **node_modules** | The folder where npm installs all your dependencies. Can contain thousands of packages. NEVER commit to git. |
+| **Lock File** | Pins exact dependency versions (package-lock.json, yarn.lock). Ensures everyone gets the same versions. |
+| **Semantic Versioning** | Version numbers in the format MAJOR.MINOR.PATCH (e.g., 2.1.3). MAJOR = breaking changes, MINOR = new features, PATCH = bug fixes. |
+| **Breaking Change** | A change that makes existing code stop working. Major version bumps signal breaking changes. |
+| **Monorepo** | A single repository containing multiple related projects. Managed with tools like Turborepo, Nx, or Lerna. |
+
+---
+
+*This reference is part of the Developer Workflow series. Bookmark it — you'll come back to this more often than you think. And remember: you don't need to memorize everything here. You just need to recognize the terms when AI uses them, and know enough to ask the right follow-up questions.*
+    `
+  },
 ];
 
 export function getTutorialBySlug(slug: string): Tutorial | undefined {

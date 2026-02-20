@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Clock, Calendar, Tag, LayoutGrid, List, ChevronRight } from "lucide-react";
 import { blogPosts } from "../../data/blog-posts";
+import { tagPillClass, tagBadgeClass } from "../../lib/tag-colors";
 
 const categories = [
   { id: "all", label: "All Posts", count: blogPosts.length },
@@ -115,10 +116,7 @@ export const Blogs = () => {
                       <button
                         key={tag}
                         onClick={() => toggleTag(tag)}
-                        className={`px-2 py-0.5 text-[10px] rounded-full transition-all duration-150 font-heading ${selectedTags.includes(tag)
-                          ? "bg-brand-orange text-white shadow-sm"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-                          }`}
+                        className={`px-2 py-0.5 text-[10px] rounded-full transition-all duration-150 font-heading ${tagPillClass(tag, selectedTags.includes(tag))}`}
                       >
                         {tag}
                         <span className="ml-1 opacity-60">{tagCounts[tag]}</span>
@@ -206,10 +204,7 @@ export const Blogs = () => {
                     <button
                       key={tag}
                       onClick={() => toggleTag(tag)}
-                      className={`px-2 py-0.5 text-[10px] rounded-full transition-all font-heading ${selectedTags.includes(tag)
-                        ? "bg-brand-orange text-white"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                        }`}
+                      className={`px-2 py-0.5 text-[10px] rounded-full transition-all font-heading ${tagPillClass(tag, selectedTags.includes(tag))}`}
                     >
                       {tag}
                     </button>
@@ -272,7 +267,7 @@ export const Blogs = () => {
                           {post.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground rounded font-heading"
+                              className={`px-1.5 py-0.5 text-[10px] rounded font-heading ${tagBadgeClass(tag)}`}
                             >
                               {tag}
                             </span>
@@ -325,7 +320,7 @@ export const Blogs = () => {
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {post.tags.slice(0, 3).map((tag) => (
-                          <span key={tag} className="px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground rounded font-heading">
+                          <span key={tag} className={`px-1.5 py-0.5 text-[10px] rounded font-heading ${tagBadgeClass(tag)}`}>
                             {tag}
                           </span>
                         ))}

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Clock, BookOpen, Code, ChevronRight, LayoutGrid, List } from "lucide-react";
 import { tutorials } from "../../data/tutorials";
+import { tagPillClass } from "../../lib/tag-colors";
 
 const difficultyConfig = {
   beginner: {
@@ -93,8 +94,8 @@ export const Tutorials = () => {
                         key={filter.id}
                         onClick={() => setActiveFilter(filter.id)}
                         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-all duration-150 ${activeFilter === filter.id
-                            ? "bg-brand-orange/10 text-brand-orange font-medium"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                          ? "bg-brand-orange/10 text-brand-orange font-medium"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                           }`}
                       >
                         <span className="flex items-center gap-2 font-heading">
@@ -125,8 +126,8 @@ export const Tutorials = () => {
                         <button
                           onClick={() => setActiveSeries(null)}
                           className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-all duration-150 ${!activeSeries
-                              ? "bg-brand-orange/10 text-brand-orange font-medium"
-                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                            ? "bg-brand-orange/10 text-brand-orange font-medium"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                             }`}
                         >
                           <span className="font-heading">All</span>
@@ -138,8 +139,8 @@ export const Tutorials = () => {
                               key={series}
                               onClick={() => setActiveSeries(activeSeries === series ? null : series)}
                               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-all duration-150 ${activeSeries === series
-                                  ? "bg-brand-orange/10 text-brand-orange font-medium"
-                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                ? "bg-brand-orange/10 text-brand-orange font-medium"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                                 }`}
                             >
                               <span className="flex items-center gap-2 font-heading">
@@ -179,10 +180,7 @@ export const Tutorials = () => {
                       <button
                         key={topic}
                         onClick={() => toggleTopic(topic)}
-                        className={`px-2 py-0.5 text-[10px] rounded-full transition-all duration-150 font-heading ${selectedTopics.includes(topic)
-                            ? "bg-brand-orange text-white shadow-sm"
-                            : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-                          }`}
+                        className={`px-2 py-0.5 text-[10px] rounded-full transition-all duration-150 font-heading ${tagPillClass(topic, selectedTopics.includes(topic))}`}
                       >
                         {topic}
                         <span className="ml-1 opacity-60">{topicCounts[topic]}</span>
@@ -227,8 +225,8 @@ export const Tutorials = () => {
                       key={filter.id}
                       onClick={() => setActiveFilter(filter.id)}
                       className={`relative px-3 py-2 text-xs font-heading whitespace-nowrap transition-colors ${activeFilter === filter.id
-                          ? "text-brand-orange"
-                          : "text-muted-foreground hover:text-foreground"
+                        ? "text-brand-orange"
+                        : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                       {filter.label}

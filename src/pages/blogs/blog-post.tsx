@@ -2,7 +2,7 @@ import { Header } from "@/components/custom/header";
 import { markdownCodeComponents } from "@/components/custom/code-block";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBlogBySlug } from "@/data/blog-posts";
-import { ArrowLeft, Calendar, Clock, Tag, ChevronDown, List } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Tag, ChevronDown, List, ExternalLink } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -252,6 +252,20 @@ export const BlogPost = () => {
                               <td className="px-4 py-2.5 text-sm text-muted-foreground whitespace-normal">
                                 {children}
                               </td>
+                            );
+                          },
+                          a({ href, children }) {
+                            const isExternal = href?.startsWith('http');
+                            return (
+                              <a
+                                href={href}
+                                target={isExternal ? "_blank" : undefined}
+                                rel={isExternal ? "noopener noreferrer" : undefined}
+                                className="text-brand-orange hover:text-brand-orange/80 underline decoration-brand-orange/30 hover:decoration-brand-orange transition-colors inline-flex items-center gap-0.5"
+                              >
+                                {children}
+                                {isExternal && <ExternalLink className="w-3 h-3 inline-block" />}
+                              </a>
                             );
                           },
                         }}

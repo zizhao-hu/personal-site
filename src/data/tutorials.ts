@@ -1141,6 +1141,132 @@ Solve step by step. Put your final numerical answer after "#### ".<|im_end|>
     return accuracy
 \`\`\`
 
+
+---
+
+# Inference & Efficiency Metrics
+
+These metrics measure how well an AI model runs on hardware and its responsiveness in production.
+
+## Throughput (Tokens Per Second)
+
+[Throughput](https://en.wikipedia.org/wiki/Throughput) measures the total volume of output tokens a model generates every second. High TPS is critical for high-traffic applications and [batch processing](https://en.wikipedia.org/wiki/Batch_processing).
+
+For a given model, throughput depends on:
+- **Hardware**: GPU type ([A100](https://www.nvidia.com/en-us/data-center/a100/), [H100](https://www.nvidia.com/en-us/data-center/h100/)), number of GPUs, interconnect bandwidth
+- **Batch size**: Larger batches improve throughput but increase latency
+- **Quantization**: [INT8/INT4 quantization](https://huggingface.co/docs/optimum/concept_guides/quantization) reduces memory and increases speed at the cost of some quality
+- **Serving framework**: [vLLM](https://github.com/vllm-project/vllm), [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM), and [SGLang](https://github.com/sgl-project/sglang) provide optimized inference kernels
+
+| Model Size | Typical TPS (A100) | Typical TPS (H100) |
+|-----------|-------------------|-------------------|
+| 7B | 40-80 | 80-150 |
+| 13B | 25-50 | 50-100 |
+| 70B | 8-15 | 20-40 |
+
+## Time to First Token (TTFT)
+
+[TTFT](https://en.wikipedia.org/wiki/Latency_(engineering)) is the delay between a user sending a prompt and seeing the very first character of the response. Sub-200ms is the standard for a "snappy" user experience.
+
+TTFT is dominated by the **prefill phase** — where the model processes all input tokens in parallel through [KV-cache](https://arxiv.org/abs/2211.05102) computation. Techniques to reduce TTFT:
+
+- **[Speculative decoding](https://arxiv.org/abs/2302.01318)**: Use a small draft model to propose tokens, verified by the large model
+- **Prefix caching**: Cache the KV states of common system prompts
+- **[Chunked prefill](https://arxiv.org/abs/2309.17453)**: Break long prompts into chunks to overlap with decode
+
+## Context Window
+
+The [context window](https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)#Context_window) is the "short-term memory" of the model, measured in tokens. A larger window allows the AI to process entire books or massive codebases in a single pass.
+
+| Model | Context Length | ~Pages of Text |
+|-------|--------------|----------------|
+| GPT-4o | 128K | ~300 pages |
+| Claude 3.5 | 200K | ~500 pages |
+| Gemini 1.5 Pro | 2M | ~5,000 pages |
+
+Key techniques for extending context:
+- **[RoPE scaling](https://arxiv.org/abs/2104.09864)**: Rotary Position Embeddings with frequency scaling
+- **[Ring Attention](https://arxiv.org/abs/2310.01889)**: Distributes long sequences across GPUs
+- **[Sliding Window Attention](https://arxiv.org/abs/2004.05150)**: Used by [Mistral](https://mistral.ai/) to limit attention to local windows
+
+## GPU & Memory Utilization
+
+Tracks how much hardware resources ([VRAM](https://en.wikipedia.org/wiki/Video_random-access_memory)) the model consumes. Lower utilization per query allows for more simultaneous users.
+
+Key optimization techniques:
+- **[FlashAttention-2](https://arxiv.org/abs/2307.08691)**: Reduces memory from O(n^2) to O(n) for attention computation
+- **[PagedAttention](https://arxiv.org/abs/2309.06180)**: Used by vLLM, manages KV-cache memory like OS virtual memory pages
+- **[Continuous batching](https://www.anyscale.com/blog/continuous-batching-llm-inference)**: Dynamically adds/removes requests from running batches
+- **Model parallelism**: [Tensor](https://arxiv.org/abs/1909.08053), [pipeline](https://arxiv.org/abs/1811.06965), and [expert parallelism](https://arxiv.org/abs/2101.03961) for large models
+
+---
+
+# Quality & Intelligence Metrics
+
+These quantify how "smart" or accurate a model's outputs are.
+
+## Perplexity
+
+[Perplexity](https://en.wikipedia.org/wiki/Perplexity) is a mathematical measure of how "surprised" a model is by new data. Lower is better, indicating the model has a stronger internal grasp of language patterns.
+
+Perplexity = exp(average cross-entropy loss). A perplexity of 10 means the model is, on average, "10-way uncertain" about each next token.
+
+| Stage | Typical Perplexity |
+|-------|--------------------|
+| Early pretraining | 100-1000+ |
+| Converged pretraining | 5-15 |
+| Domain-specific fine-tune | 3-8 |
+
+**Important caveat**: Perplexity only measures [next-token prediction](https://en.wikipedia.org/wiki/Language_model) quality on a held-out set. A model with great perplexity can still produce bad instruction-following results.
+
+## Accuracy & F1 Score
+
+Standard metrics for classification and extraction tasks:
+
+- **[Accuracy](https://en.wikipedia.org/wiki/Accuracy_and_precision)**: Percentage of correct predictions overall
+- **[Precision](https://en.wikipedia.org/wiki/Precision_and_recall)**: Of items flagged as positive, how many actually are? (Reduces false positives)
+- **[Recall](https://en.wikipedia.org/wiki/Precision_and_recall)**: Of all actual positives, how many did we find? (Reduces false negatives)
+- **[F1 Score](https://en.wikipedia.org/wiki/F-score)**: The harmonic mean of precision and recall — the "gold standard" for balancing both
+
+For LLM benchmarks, the most commonly referenced evaluations include:
+- **[MMLU](https://arxiv.org/abs/2009.03300)**: 57 subjects ranging from STEM to humanities
+- **[HumanEval](https://arxiv.org/abs/2107.03374)**: Code generation benchmark
+- **[GSM8K](https://arxiv.org/abs/2110.14168)**: Grade school math reasoning
+- **[HellaSwag](https://arxiv.org/abs/1905.07830)**: Commonsense reasoning
+
+## Elo Rating (Human Preference)
+
+[Elo rating](https://en.wikipedia.org/wiki/Elo_rating_system), borrowed from chess, is used by the [LMSYS Chatbot Arena](https://chat.lmsys.org/) to rank models based on blind side-by-side human testing. Users see two anonymous model outputs and pick the better one.
+
+This is arguably the most reliable quality signal because:
+- It captures **holistic quality** (helpfulness, safety, style, accuracy)
+- It's **resistant to benchmark gaming** — models can't overfit to specific test sets
+- It reflects **real user preferences**, not proxy metrics
+
+## Hallucination Rate
+
+The [hallucination](https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence)) rate measures how frequently a model generates factually incorrect or unsupported information. This is one of the biggest challenges in deploying LLMs.
+
+Two types of hallucination:
+- **Intrinsic**: Contradicts the provided source material
+- **Extrinsic**: Generates information not supported by any source
+
+Mitigation strategies:
+- **[Retrieval-Augmented Generation (RAG)](https://arxiv.org/abs/2005.11401)**: Ground responses in retrieved documents
+- **[Chain-of-thought prompting](https://arxiv.org/abs/2201.11903)**: Force step-by-step reasoning
+- **Citation training**: Train models to cite sources (as done in this tutorial's markdown!)
+- **Confidence calibration**: Train models to say "I don't know" when uncertain
+
+## Scaling Laws
+
+Both efficiency and quality metrics improve with scale, but in predictable ways described by [scaling laws](https://arxiv.org/abs/2001.08361):
+
+- **Compute-optimal training** ([Chinchilla scaling](https://arxiv.org/abs/2203.15556)): The optimal model size and data size grow proportionally with compute budget
+- **Inference scaling**: Techniques like [test-time compute](https://arxiv.org/abs/2408.03314) allow models to "think longer" on harder problems, trading latency for quality
+- **Data scaling**: [Textbooks Are All You Need](https://arxiv.org/abs/2306.11644) showed that high-quality data can substitute for raw scale
+
+
+
 ## The Full Training Pipeline
 
 | Stage | What | Data | Epochs | LR | Result |

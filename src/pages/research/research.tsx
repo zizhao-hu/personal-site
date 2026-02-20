@@ -66,7 +66,7 @@ const researchAreas = [
   },
   {
     title: "Continual Learning",
-    description: "Catastrophic forgetting mitigation, difficulty-aware replay, curriculum strategies, and evaluation frameworks for lifelong learning.",
+    description: "Continual learning for LLM/VLM agents, efficient model memory, catastrophic forgetting mitigation, difficulty-aware replay, and curriculum strategies for deployed AI systems that need to adapt over time.",
     icon: Layers,
     color: "green",
     path: "/research/continual-learning",

@@ -1,7 +1,17 @@
 import { Header } from "@/components/custom/header";
-import { ExternalLink, FileText, Calendar, Layers, RefreshCw } from "lucide-react";
+import { ExternalLink, FileText, Calendar, Layers, RefreshCw, HardDrive, Bot, BookOpen } from "lucide-react";
 
 const keyTopics = [
+    {
+        title: "Continual Learning for LLM/VLM Agents",
+        description: "Adapting continual learning to large-scale language and vision-language models. Research on how deployed agents can absorb new knowledge, learn from user interactions, and adapt to domain shifts without full retraining — enabling AI systems that grow smarter over their lifetime.",
+        icon: Bot,
+    },
+    {
+        title: "Efficient Model Memory",
+        description: "How models store, compress, retrieve, and forget information efficiently. Research on KV-cache optimization, memory-augmented architectures, retrieval-augmented generation, episodic memory for agents, and parameter-efficient representations that maximize knowledge per byte of VRAM.",
+        icon: HardDrive,
+    },
     {
         title: "Catastrophic Forgetting Mitigation",
         description: "Developing methods that enable neural networks to learn new tasks without destroying performance on previously learned ones. Combining replay-based, regularization-based, and architecture-based strategies for robust knowledge retention.",
@@ -15,11 +25,11 @@ const keyTopics = [
     {
         title: "Curriculum Continual Learning",
         description: "Ordering training tasks and samples intelligently to maximize positive transfer and minimize interference. Research on how task sequencing and difficulty progression affect continual learning outcomes.",
-        icon: Layers,
+        icon: BookOpen,
     },
     {
         title: "Evaluation & Benchmarking",
-        description: "Developing comprehensive evaluation frameworks for continual learning that go beyond simple accuracy metrics. Measuring forward transfer, backward transfer, forgetting rates, and computational efficiency.",
+        description: "Developing comprehensive evaluation frameworks for continual learning that go beyond simple accuracy metrics. Measuring forward transfer, backward transfer, forgetting rates, and computational efficiency across both classical and LLM settings.",
         icon: RefreshCw,
     },
 ];
@@ -42,11 +52,12 @@ export const ContinualLearningResearch = () => {
                             Continual Learning
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
-                            Enabling AI systems to learn continuously without catastrophic forgetting.
-                            My research develops methods for <strong>lifelong learning</strong>,
-                            <strong> difficulty-aware replay</strong>, <strong>curriculum strategies</strong>,
-                            and <strong>evaluation frameworks</strong> that allow models to evolve with new data
-                            while preserving prior knowledge—a critical step toward truly adaptive AI.
+                            Enabling deployed AI agents to learn continuously without catastrophic forgetting.
+                            My research develops methods for <strong>continual learning in LLM/VLM agents</strong>,
+                            <strong> efficient model memory</strong>, <strong>difficulty-aware replay</strong>,
+                            and <strong>curriculum strategies</strong> that allow agentic systems to evolve with new data
+                            and interactions while preserving prior knowledge—essential for any AI system
+                            that operates in the real world.
                         </p>
                     </div>
 

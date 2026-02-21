@@ -87,7 +87,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     cloudEmit.isVisible = false;
     cloudEmit.position.y = E_R + 80; // Cloud altitude (~10km scaled)
     const cloudPS = new ParticleSystem('cloudPS', 200, scene);
-    cloudPS.particleTexture = new Texture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12P4/x8AAwAB/6F3cgAAAABJRU5ErkJggg==', scene);
+    cloudPS.particleTexture = new Texture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12P4/x8AAwAB/6F3cgAAAABJRU5ErkJggg==', scene, true, false);
     cloudPS.emitter = cloudEmit;
     cloudPS.minEmitBox = new Vector3(-300, -20, -300);
     cloudPS.maxEmitBox = new Vector3(300, 20, 300);

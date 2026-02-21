@@ -10,10 +10,8 @@ export interface SimState {
     fuel: number; thrust: number; missionTime: number; throttle: number;
 }
 
-// Proportional scale: 1 unit ≈ 1 meter near ground
-// Earth radius 6371km → 6000 units. Moon radius 1737km → 1640 units (ratio 0.273 preserved)
-// Earth-Moon distance 384,400km → 90000 (~15x Earth radius, compressed from real 60x)
-const E_R = 10000, M_R = 2700, EM_DIST = 120000;
+// Proportional scale: E_R=10000, Moon/Earth radius ratio = 0.273 (real), distance compressed 12×
+const E_R = 10000, M_R = 2730, EM_DIST = 120000;
 const lerp = (a: number, b: number, t: number) => a + (b - a) * Math.min(1, Math.max(0, t));
 
 let engine: Engine | null = null, scene: Scene | null = null;
@@ -133,9 +131,10 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     // Earth center = (0, 0), Moon center = moonRoot.position
     let px = 0, py = E_R + 28 + 35.5; // Start on pad
     let vx = 0, vy = 0; // Velocity in scene units/s
-    const GM_E = 800000; // Gravitational parameter for Earth (tuned for scene scale)
-    const GM_M = 60000;  // Gravitational parameter for Moon
-    const THRUST_MAG = 25; // Max thrust acceleration (scene units/s²)
+    // GM = surface_gravity × radius². Surface g ≈ 20 → ship TWR ≈ 1.2 (realistic)
+    const GM_E = 2_000_000_000; // Earth: g_surface = GM/R² = 20 units/s²
+    const GM_M = 24_700_000;    // Moon: GM_E/81 (real mass ratio)
+    const THRUST_MAG = 24;      // Max thrust ≈ 1.2× Earth surface gravity
     let heading = 0; // Ship heading angle (radians, 0 = up, + = clockwise)
     let inMoonSOI = false; // Whether ship is in Moon's sphere of influence
 
@@ -507,13 +506,13 @@ function buildEarth(scene: Scene) {
     // Latitude offset: rotate around X/Z to move 26°N point to pole
     earth.rotation.x = -(Math.PI / 2 - (25.997 * Math.PI) / 180); // Tilt so 26°N becomes pole
     earth.rotation.y = (97.157 * Math.PI) / 180; // Rotate longitude so -97°W faces up
-    // Atmosphere
-    const atmo = MeshBuilder.CreateSphere('atmo', { diameter: E_R * 2 + 80, segments: 48 }, scene);
+    // Atmosphere (proportional: ~1.5% of Earth diameter, visible glow)
+    const atmo = MeshBuilder.CreateSphere('atmo', { diameter: E_R * 2 + 300, segments: 48 }, scene);
     const aM = new StandardMaterial('aM', scene); aM.diffuseColor = new Color3(0.3, 0.55, 0.95);
     aM.emissiveColor = new Color3(0.08, 0.15, 0.4); aM.alpha = 0.10; aM.backFaceCulling = false;
     atmo.material = aM;
-    // Clouds
-    const clouds = MeshBuilder.CreateSphere('clouds', { diameter: E_R * 2 + 20, segments: 48 }, scene);
+    // Clouds (proportional: ~0.75% of Earth diameter)
+    const clouds = MeshBuilder.CreateSphere('clouds', { diameter: E_R * 2 + 150, segments: 48 }, scene);
     const cM = new StandardMaterial('cM', scene); cM.diffuseColor = Color3.White();
     cM.emissiveColor = new Color3(0.25, 0.25, 0.25); cM.alpha = 0.15; cM.backFaceCulling = false;
     clouds.material = cM;

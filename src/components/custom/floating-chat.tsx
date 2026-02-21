@@ -54,6 +54,19 @@ export const FloatingChat = () => {
 
       setIsInitializing(true);
 
+      // Skip WebLLM on GPU-heavy pages (e.g. 3D sims) to avoid GPU OOM
+      const isGPUHeavyPage = window.location.pathname.includes('starship-sim');
+      if (isGPUHeavyPage) {
+        try {
+          await mockLLMService.initialize();
+          setUseMockService(true);
+        } catch {
+          console.error("Failed to initialize mock service");
+        }
+        setIsInitializing(false);
+        return;
+      }
+
       try {
         const importResult = await testWebLLMImport();
         if (!importResult.success) throw new Error("WebLLM import failed");

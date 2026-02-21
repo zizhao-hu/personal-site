@@ -61,14 +61,24 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     // ── ENGINE FIRE: emissive nozzle glow + particles ──
     const engineLight = new PointLight('engLight', new Vector3(0, padTop - 5, 0), scene);
     engineLight.diffuse = new Color3(1, 0.6, 0.15);
-    engineLight.intensity = 0; engineLight.range = 80;
+    engineLight.intensity = 0; engineLight.range = 200;
 
-    // Main exhaust plume
-    const exEmit = MeshBuilder.CreateBox('exE', { size: 5 }, scene);
+    // Main exhaust plume — long shooting flame
+    const exEmit = MeshBuilder.CreateBox('exE', { size: 6 }, scene);
     exEmit.parent = shipRoot; exEmit.position.y = -37; exEmit.isVisible = false;
-    const shipExhaust = makeExhaust(scene, exEmit, 6000, 3, 8, 25, 55, new Color4(1, 0.65, 0.1, 1), new Color4(1, 0.3, 0.05, 0.8));
-    // Bright blue-white core (Mach diamonds)
-    const shipCore = makeExhaust(scene, exEmit, 2000, 0.5, 2.5, 35, 65, new Color4(0.7, 0.8, 1, 1), new Color4(1, 1, 0.85, 0.95));
+    const shipExhaust = makeExhaust(scene, exEmit, 8000, 4, 12, 80, 160, 0.5, 2.5, new Color4(1, 0.6, 0.08, 1), new Color4(1, 0.35, 0.02, 0.7));
+    // Bright blue-white Mach diamond core — tight, fast, bright
+    const shipCore = makeExhaust(scene, exEmit, 3000, 1, 4, 120, 200, 0.15, 0.6, new Color4(0.6, 0.75, 1, 1), new Color4(1, 1, 0.9, 0.9));
+
+    // Glowing exhaust cone mesh (translucent, visible during thrust)
+    const exhaustCone = MeshBuilder.CreateCylinder('exCone', { diameterTop: 8, diameterBottom: 1, height: 60, tessellation: 16 }, scene);
+    const coneMat = new StandardMaterial('coneMat', scene);
+    coneMat.diffuseColor = new Color3(1, 0.5, 0.1);
+    coneMat.emissiveColor = new Color3(0.6, 0.25, 0.02);
+    coneMat.alpha = 0; // Start invisible
+    coneMat.backFaceCulling = false;
+    exhaustCone.material = coneMat;
+    exhaustCone.parent = shipRoot; exhaustCone.position.y = -67; // 30m below engines
 
     // Launch smoke/steam (water deluge)
     const smokeEmit = MeshBuilder.CreateBox('smE', { size: 8 }, scene);
@@ -78,7 +88,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     // Booster exhaust (for return burns)
     const bExEmit = MeshBuilder.CreateBox('bExE', { size: 4 }, scene);
     bExEmit.parent = ship.booster; bExEmit.position.y = -35.5; bExEmit.isVisible = false;
-    const boosterExhaust = makeExhaust(scene, bExEmit, 3000, 2, 5, 20, 45, new Color4(1, 0.65, 0.1, 1), new Color4(1, 0.3, 0.05, 0.8));
+    const boosterExhaust = makeExhaust(scene, bExEmit, 4000, 3, 10, 60, 120, 0.4, 2.0, new Color4(1, 0.6, 0.08, 1), new Color4(1, 0.35, 0.02, 0.7));
 
     createStarfield(scene);
 
@@ -166,27 +176,39 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             // ── ENGINE FIRE (visible from nozzles!) ──
             if (state.throttle > 3) {
                 shipExhaust.start(); shipCore.start();
-                shipExhaust.emitRate = state.throttle * 20;
-                shipExhaust.minSize = 2 + state.throttle * 0.06;
-                shipExhaust.maxSize = 6 + state.throttle * 0.1;
-                shipCore.emitRate = state.throttle * 8;
-                engineLight.intensity = state.throttle * 0.03;
-                engineLight.position.y = shipRoot.position.y - 35;
+                shipExhaust.emitRate = state.throttle * 40;
+                shipExhaust.minSize = 4 + state.throttle * 0.1;
+                shipExhaust.maxSize = 12 + state.throttle * 0.2;
+                shipCore.emitRate = state.throttle * 15;
+                shipCore.minSize = 1 + state.throttle * 0.03;
+                shipCore.maxSize = 4 + state.throttle * 0.06;
+                engineLight.intensity = state.throttle * 0.08;
+                engineLight.position.y = shipRoot.position.y - 45;
                 // Engine bell glow
                 ship.engineGlow.emissiveColor = new Color3(
-                    0.8 * state.throttle / 100, 0.3 * state.throttle / 100, 0.05
+                    0.9 * state.throttle / 100, 0.4 * state.throttle / 100, 0.08
                 );
+                // Exhaust cone glow - long visible flame
+                coneMat.alpha = lerp(coneMat.alpha, 0.15 + state.throttle * 0.004, dt * 8);
+                coneMat.emissiveColor = new Color3(
+                    0.6 + state.throttle * 0.004, 0.25 + state.throttle * 0.001, 0.02
+                );
+                // Scale exhaust cone with throttle
+                const coneScale = 0.5 + state.throttle * 0.01;
+                exhaustCone.scaling.set(coneScale, coneScale * 1.5, coneScale);
             } else {
                 shipExhaust.stop(); shipCore.stop();
                 engineLight.intensity = 0;
                 ship.engineGlow.emissiveColor = Color3.Black();
+                coneMat.alpha = lerp(coneMat.alpha, 0, dt * 5);
             }
 
             // Landing burn reignition flash
             if (state.phase === 'landing-burn' && t > 175 && t < 177) {
-                shipExhaust.emitRate = 3000; shipExhaust.maxSize = 15;
-                shipCore.emitRate = 1200;
-                engineLight.intensity = 5;
+                shipExhaust.emitRate = 5000; shipExhaust.maxSize = 20;
+                shipCore.emitRate = 2000;
+                engineLight.intensity = 8;
+                coneMat.alpha = 0.5;
             }
 
             // ── LAUNCH SMOKE (water deluge) ──
@@ -543,14 +565,19 @@ function buildRover(scene: Scene) {
 }
 
 // ═══ PARTICLES ═══
-function makeExhaust(sc: Scene, em: Mesh, count: number, minS: number, maxS: number, minP: number, maxP: number, c1: Color4, c2: Color4): ParticleSystem {
+function makeExhaust(sc: Scene, em: Mesh, count: number, minS: number, maxS: number, minP: number, maxP: number, minLife: number, maxLife: number, c1: Color4, c2: Color4): ParticleSystem {
     const ps = new ParticleSystem('ex', count, sc);
-    ps.createPointEmitter(new Vector3(-2, -1, -2), new Vector3(2, -1, 2));
-    ps.color1 = c1; ps.color2 = c2; ps.colorDead = new Color4(0.3, 0.2, 0.1, 0);
-    ps.minSize = minS; ps.maxSize = maxS; ps.minLifeTime = 0.2; ps.maxLifeTime = 1.0;
+    ps.createConeEmitter(3, Math.PI / 8); // Cone shape for column effect
+    ps.color1 = c1; ps.color2 = c2; ps.colorDead = new Color4(0.2, 0.1, 0.05, 0);
+    ps.minSize = minS; ps.maxSize = maxS;
+    ps.minLifeTime = minLife; ps.maxLifeTime = maxLife;
     ps.emitRate = 0; ps.blendMode = ParticleSystem.BLENDMODE_ADD;
-    ps.minEmitPower = minP; ps.maxEmitPower = maxP; ps.updateSpeed = 0.02;
-    ps.gravity = new Vector3(0, -6, 0); ps.emitter = em; ps.start(); return ps;
+    ps.minEmitPower = minP; ps.maxEmitPower = maxP;
+    ps.updateSpeed = 0.015;
+    ps.gravity = new Vector3(0, -4, 0);
+    ps.direction1 = new Vector3(-0.3, -1, -0.3);
+    ps.direction2 = new Vector3(0.3, -1, 0.3);
+    ps.emitter = em; ps.start(); return ps;
 }
 
 function makeSmokePS(scene: Scene, emitter: Mesh): ParticleSystem {

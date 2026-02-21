@@ -107,6 +107,20 @@ const projects: Project[] = [
     color: "green",
   },
   {
+    title: "Project Orion",
+    description: "Advanced MOVE Fellowship phase (Nov 2025) — specialized refinement of frontier AI models. Focused on high-quality reasoning chains, safety injections, and red-teaming through jailbreak testing. One-month intensive following Project Canary.",
+    details: [
+      "High-quality reasoning refinement and chain-of-thought improvement",
+      "Safety injection tasks: embedding guardrails into model behavior",
+      "Red-teaming and jailbreak testing for frontier models",
+      "Built on Canary foundations with deeper specialization in CS domain"
+    ],
+    tags: ["AI Safety", "Reasoning", "Red-Teaming", "Handshake AI", "MOVE Fellowship"],
+    status: "completed",
+    icon: Sparkles,
+    color: "orange",
+  },
+  {
     title: "EdgeLLM: Sovereign AI on Device",
     description: "Exploring efficient small language models that run entirely on-device. Privacy-preserving AI that never sends data to the cloud—your AI assistant that respects your data sovereignty.",
     details: [

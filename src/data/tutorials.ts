@@ -322,7 +322,7 @@ In the next tutorial, we'll build a complete React chat interface with WebLLM.
     id: "2",
     slug: "llm-from-scratch",
     title: "Train Your LLM from Scratch",
-    description: "A comprehensive guide to training a language model from scratch — from data preparation and tokenization through pretraining, instruction tuning, and reasoning with RLHF/DPO.",
+    description: "A comprehensive guide to training a language model from scratch ï¿½ from data preparation and tokenization through pretraining, instruction tuning, and reasoning with RLHF/DPO.",
     difficulty: "advanced",
     estimatedTime: "2 hours",
     topics: ["LLM Training", "PyTorch", "Pretraining", "SFT", "LoRA", "RLHF", "DPO"],
@@ -1168,7 +1168,7 @@ For a given model, throughput depends on:
 
 [TTFT](https://en.wikipedia.org/wiki/Latency_(engineering)) is the delay between a user sending a prompt and seeing the very first character of the response. Sub-200ms is the standard for a "snappy" user experience.
 
-TTFT is dominated by the **prefill phase** — where the model processes all input tokens in parallel through [KV-cache](https://arxiv.org/abs/2211.05102) computation. Techniques to reduce TTFT:
+TTFT is dominated by the **prefill phase** ï¿½ where the model processes all input tokens in parallel through [KV-cache](https://arxiv.org/abs/2211.05102) computation. Techniques to reduce TTFT:
 
 - **[Speculative decoding](https://arxiv.org/abs/2302.01318)**: Use a small draft model to propose tokens, verified by the large model
 - **Prefix caching**: Cache the KV states of common system prompts
@@ -1226,7 +1226,7 @@ Standard metrics for classification and extraction tasks:
 - **[Accuracy](https://en.wikipedia.org/wiki/Accuracy_and_precision)**: Percentage of correct predictions overall
 - **[Precision](https://en.wikipedia.org/wiki/Precision_and_recall)**: Of items flagged as positive, how many actually are? (Reduces false positives)
 - **[Recall](https://en.wikipedia.org/wiki/Precision_and_recall)**: Of all actual positives, how many did we find? (Reduces false negatives)
-- **[F1 Score](https://en.wikipedia.org/wiki/F-score)**: The harmonic mean of precision and recall — the "gold standard" for balancing both
+- **[F1 Score](https://en.wikipedia.org/wiki/F-score)**: The harmonic mean of precision and recall ï¿½ the "gold standard" for balancing both
 
 For LLM benchmarks, the most commonly referenced evaluations include:
 - **[MMLU](https://arxiv.org/abs/2009.03300)**: 57 subjects ranging from STEM to humanities
@@ -1240,7 +1240,7 @@ For LLM benchmarks, the most commonly referenced evaluations include:
 
 This is arguably the most reliable quality signal because:
 - It captures **holistic quality** (helpfulness, safety, style, accuracy)
-- It's **resistant to benchmark gaming** — models can't overfit to specific test sets
+- It's **resistant to benchmark gaming** ï¿½ models can't overfit to specific test sets
 - It reflects **real user preferences**, not proxy metrics
 
 ## Hallucination Rate
@@ -1639,12 +1639,12 @@ Now that you understand the architecture:
 
 *This tutorial is part of the ML Fundamentals series. Understanding transformers is essential for working with modern LLMs.*
     `
-    }
+    },
   {
     id: "4",
     slug: "antigravity-fast-prototyping",
     title: "Antigravity: Fast Prototype, Fast Mistake, Fast Fix",
-    description: "Use the Antigravity AI coding agent to prototype at SpaceX speed — iterate rapidly, embrace failures, and fix forward. Includes setup with the Auto Accept extension for maximum velocity.",
+    description: "Use the Antigravity AI coding agent to prototype at SpaceX speed ï¿½ iterate rapidly, embrace failures, and fix forward. Includes setup with the Auto Accept extension for maximum velocity.",
     difficulty: "beginner",
     estimatedTime: "15 min",
     topics: ["Antigravity", "AI Coding", "Rapid Prototyping", "Developer Tools"],
@@ -1653,11 +1653,11 @@ Now that you understand the architecture:
     content: `
 # Antigravity: Fast Prototype, Fast Mistake, Fast Fix
 
-> "If things are not failing, you are not innovating enough." — [Elon Musk](https://en.wikipedia.org/wiki/Elon_Musk)
+> "If things are not failing, you are not innovating enough." ï¿½ [Elon Musk](https://en.wikipedia.org/wiki/Elon_Musk)
 
 ## The SpaceX Philosophy Applied to Software
 
-[SpaceX](https://en.wikipedia.org/wiki/SpaceX) builds rockets differently than NASA. Instead of spending years perfecting blueprints, they **build, launch, explode, learn, rebuild**. [Starship](https://en.wikipedia.org/wiki/SpaceX_Starship) has gone through rapid unscheduled disassemblies (explosions) — and each one taught more than a year of simulation.
+[SpaceX](https://en.wikipedia.org/wiki/SpaceX) builds rockets differently than NASA. Instead of spending years perfecting blueprints, they **build, launch, explode, learn, rebuild**. [Starship](https://en.wikipedia.org/wiki/SpaceX_Starship) has gone through rapid unscheduled disassemblies (explosions) ï¿½ and each one taught more than a year of simulation.
 
 This same philosophy applies to software development with AI agents:
 
@@ -1673,10 +1673,10 @@ This same philosophy applies to software development with AI agents:
 
 Antigravity is an agentic AI coding assistant built into your editor. Unlike autocomplete tools that suggest the next line, Antigravity:
 
-- **Reads your entire codebase** — understands project structure, dependencies, and patterns
-- **Executes multi-step plans** — creates files, edits code, runs commands, fixes errors
-- **Iterates autonomously** — when a build fails, it reads the error and fixes it
-- **Learns from context** — remembers your preferences, style, and project conventions
+- **Reads your entire codebase** ï¿½ understands project structure, dependencies, and patterns
+- **Executes multi-step plans** ï¿½ creates files, edits code, runs commands, fixes errors
+- **Iterates autonomously** ï¿½ when a build fails, it reads the error and fixes it
+- **Learns from context** ï¿½ remembers your preferences, style, and project conventions
 
 The key insight: **Antigravity doesn't need to be perfect on the first try.** It needs to be fast enough that the cycle of *generate ? test ? fix ? test* is faster than manually writing code.
 
@@ -1684,13 +1684,13 @@ The key insight: **Antigravity doesn't need to be perfect on the first try.** It
 
 ### Step 1: Install the Auto Accept Extension
 
-The biggest bottleneck in agentic coding is the approval loop — every file edit, every command requires you to click "Accept." For maximum prototyping speed, install the **Antigravity Auto Accept** extension:
+The biggest bottleneck in agentic coding is the approval loop ï¿½ every file edit, every command requires you to click "Accept." For maximum prototyping speed, install the **Antigravity Auto Accept** extension:
 
 **[Antigravity Auto Accept](https://open-vsx.org/extension/pesosz/antigravity-auto-accept)** by pesosz
 
 This extension automatically accepts Antigravity's proposed changes, letting the agent work at full speed. You review the *results*, not every individual step.
 
-> **Credit**: Thanks to VincentHH for the recommendation — "Tried everything. This extension worked for me."
+> **Credit**: Thanks to VincentHH for the recommendation ï¿½ "Tried everything. This extension worked for me."
 
 ### Step 2: Set Up Your Workflow
 
@@ -1741,7 +1741,7 @@ The key mental shift:
 - Let Antigravity generate a working prototype in 2 minutes
 - Test immediately
 - Find issues in minutes, not hours
-- Fix forward — describe the problem, let AI fix it
+- Fix forward ï¿½ describe the problem, let AI fix it
 
 ### Why This Works
 
@@ -1803,7 +1803,7 @@ This tutorial will be expanded with:
     id: "5",
     slug: "cs-vocabulary-for-vibe-coders",
     title: "The CS Vocabulary You Need for Vibe Coding",
-    description: "Every term, concept, and piece of jargon you need to understand what AI is doing and to express what you want — no code required. Organized by domain: OS, networking, web dev, hardware, Linux, clusters, AI/ML, databases, security, and more.",
+    description: "Every term, concept, and piece of jargon you need to understand what AI is doing and to express what you want ï¿½ no code required. Organized by domain: OS, networking, web dev, hardware, Linux, clusters, AI/ML, databases, security, and more.",
     difficulty: "beginner",
     estimatedTime: "40 min",
     topics: ["Computer Science", "Vocabulary", "Vibe Coding", "Developer Fundamentals"],
@@ -1814,7 +1814,7 @@ This tutorial will be expanded with:
 
 > You don't need to write code anymore. But you DO need to speak the language.
 
-Vibe coding means letting AI write the code while you direct the vision. But to direct effectively, you need to understand the **vocabulary** — the terms AI uses in its explanations, the concepts behind error messages, and the jargon that lets you describe what you actually want.
+Vibe coding means letting AI write the code while you direct the vision. But to direct effectively, you need to understand the **vocabulary** ï¿½ the terms AI uses in its explanations, the concepts behind error messages, and the jargon that lets you describe what you actually want.
 
 This is not a coding tutorial. There are **zero code examples**. This is a reference dictionary organized by domain, designed so you can look up any term you encounter while working with an AI coding agent.
 
@@ -1834,8 +1834,8 @@ The operating system is the software layer between your hardware and your applic
 | **Environment Variable** | A named value stored by the OS that programs can read. API keys, configuration settings, and system paths are commonly stored this way. Example: \`HOME\`, \`PATH\`, \`NODE_ENV\`. |
 | **stdin / stdout / stderr** | The three standard streams. stdin = input going INTO a program. stdout = normal output coming OUT. stderr = error output. When AI says "pipe stdout," it means redirect the output somewhere. |
 | **Daemon** | A background process that runs continuously without user interaction. Web servers, database servers, and system services are daemons. |
-| **Symlink (Symbolic Link)** | A shortcut/alias that points to another file or directory. Unlike a copy, it references the original — if the original moves, the symlink breaks. |
-| **Permission** | Who can read, write, or execute a file. On Linux/Mac, you see things like \`rwxr-xr-x\` — this encodes owner/group/others permissions. \`chmod\` changes permissions. |
+| **Symlink (Symbolic Link)** | A shortcut/alias that points to another file or directory. Unlike a copy, it references the original ï¿½ if the original moves, the symlink breaks. |
+| **Permission** | Who can read, write, or execute a file. On Linux/Mac, you see things like \`rwxr-xr-x\` ï¿½ this encodes owner/group/others permissions. \`chmod\` changes permissions. |
 | **Shell** | The program that interprets your text commands. Bash, Zsh, PowerShell, and Fish are all shells. When AI says "run this in your shell," it means open a terminal and type it. |
 
 ---
@@ -1848,19 +1848,19 @@ Every web application communicates over a network. These terms come up constantl
 |------|--------------|
 | **IP Address** | A unique numerical address for a device on a network. IPv4 looks like \`192.168.1.1\`. IPv6 looks like \`2001:0db8:85a3::8a2e:0370:7334\`. |
 | **Port** | A number (0-65535) that identifies a specific service on a machine. Web servers commonly use port 80 (HTTP) or 443 (HTTPS). Your dev server might run on port 3000 or 5173. |
-| **DNS** | Domain Name System — translates human-readable domain names (google.com) into IP addresses. When someone says "DNS isn't resolving," it means the name-to-address lookup is failing. |
+| **DNS** | Domain Name System ï¿½ translates human-readable domain names (google.com) into IP addresses. When someone says "DNS isn't resolving," it means the name-to-address lookup is failing. |
 | **HTTP / HTTPS** | Hypertext Transfer Protocol. The language browsers and servers use to communicate. HTTPS is the encrypted version (the S stands for Secure). |
 | **Request / Response** | The fundamental pattern of web communication. A client sends a **request** (e.g., "give me this page"), and the server sends back a **response** (e.g., the HTML content). |
 | **GET / POST / PUT / DELETE** | HTTP methods (verbs). GET = retrieve data. POST = send/create data. PUT = update data. DELETE = remove data. These map to CRUD operations (Create, Read, Update, Delete). |
-| **API** | Application Programming Interface — a defined way for programs to communicate with each other. When AI says "call the API," it means send a structured request to a service and get data back. |
-| **REST** | Representational State Transfer — an architectural style for APIs. REST APIs use HTTP methods and URL paths to organize resources (e.g., GET /users/123 retrieves user 123). |
+| **API** | Application Programming Interface ï¿½ a defined way for programs to communicate with each other. When AI says "call the API," it means send a structured request to a service and get data back. |
+| **REST** | Representational State Transfer ï¿½ an architectural style for APIs. REST APIs use HTTP methods and URL paths to organize resources (e.g., GET /users/123 retrieves user 123). |
 | **GraphQL** | An alternative to REST where you specify exactly what data you want in your query, and the server returns only that. |
 | **WebSocket** | A protocol for real-time, two-way communication between client and server. Unlike HTTP (request-response), WebSockets keep a connection open for continuous data flow. Used for chat, live updates, gaming. |
-| **CORS** | Cross-Origin Resource Sharing — a browser security feature that blocks requests from one domain to another unless the server explicitly allows it. The most common source of "why won't my API call work" frustration. |
-| **SSL / TLS** | Secure Sockets Layer / Transport Layer Security — encryption protocols that make HTTPS work. When AI mentions "SSL certificate," it's about proving a server's identity and encrypting traffic. |
+| **CORS** | Cross-Origin Resource Sharing ï¿½ a browser security feature that blocks requests from one domain to another unless the server explicitly allows it. The most common source of "why won't my API call work" frustration. |
+| **SSL / TLS** | Secure Sockets Layer / Transport Layer Security ï¿½ encryption protocols that make HTTPS work. When AI mentions "SSL certificate," it's about proving a server's identity and encrypting traffic. |
 | **Latency** | The time delay between sending a request and receiving a response. Low latency = fast. High latency = slow. Measured in milliseconds (ms). |
-| **Bandwidth** | The maximum rate of data transfer. Think of it as the width of a pipe — latency is how long water takes to travel through, bandwidth is how much water can flow at once. |
-| **CDN** | Content Delivery Network — a global network of servers that cache your content close to users. If your website's images load fast worldwide, it's probably using a CDN (e.g., Cloudflare, AWS CloudFront). |
+| **Bandwidth** | The maximum rate of data transfer. Think of it as the width of a pipe ï¿½ latency is how long water takes to travel through, bandwidth is how much water can flow at once. |
+| **CDN** | Content Delivery Network ï¿½ a global network of servers that cache your content close to users. If your website's images load fast worldwide, it's probably using a CDN (e.g., Cloudflare, AWS CloudFront). |
 | **Load Balancer** | A system that distributes incoming traffic across multiple servers so no single server gets overwhelmed. |
 | **Proxy / Reverse Proxy** | A proxy sits between client and server. A forward proxy acts on behalf of the client (like a VPN). A reverse proxy acts on behalf of the server (like Nginx routing requests to different backend services). |
 | **TCP / UDP** | Transport protocols. TCP = reliable, ordered delivery (used for web, email). UDP = fast, no guarantees (used for video streaming, gaming). |
@@ -1873,21 +1873,21 @@ The vocabulary of building things people interact with in a browser.
 
 | Term | What It Means |
 |------|--------------|
-| **Frontend** | The part users see and interact with — HTML, CSS, JavaScript running in the browser. |
+| **Frontend** | The part users see and interact with ï¿½ HTML, CSS, JavaScript running in the browser. |
 | **Backend** | The server-side logic, databases, and APIs that power the frontend. Users don't see this directly. |
 | **Full-Stack** | Working on both frontend and backend. |
-| **HTML** | HyperText Markup Language — the structure of web pages. Tags like \`<div>\`, \`<h1>\`, \`<p>\` define what's on the page. |
-| **CSS** | Cascading Style Sheets — controls how HTML looks. Colors, fonts, layout, animations. |
+| **HTML** | HyperText Markup Language ï¿½ the structure of web pages. Tags like \`<div>\`, \`<h1>\`, \`<p>\` define what's on the page. |
+| **CSS** | Cascading Style Sheets ï¿½ controls how HTML looks. Colors, fonts, layout, animations. |
 | **JavaScript (JS)** | The programming language of the web. Runs in browsers and (via Node.js) on servers. |
 | **TypeScript (TS)** | JavaScript with type annotations. Catches errors before code runs. When AI generates \`.tsx\` files, that's TypeScript + JSX. |
 | **JSX / TSX** | A syntax extension that lets you write HTML-like code inside JavaScript/TypeScript. Used by React. |
-| **DOM** | Document Object Model — the browser's internal representation of a web page as a tree of objects. When AI says "manipulate the DOM," it means change what's displayed on the page. |
-| **Component** | A reusable, self-contained piece of UI. A button, a card, a navigation bar — each is typically a component. Modern web dev is component-based. |
-| **State** | Data that changes over time and affects what's displayed. A counter value, whether a menu is open, the current user — all state. |
+| **DOM** | Document Object Model ï¿½ the browser's internal representation of a web page as a tree of objects. When AI says "manipulate the DOM," it means change what's displayed on the page. |
+| **Component** | A reusable, self-contained piece of UI. A button, a card, a navigation bar ï¿½ each is typically a component. Modern web dev is component-based. |
+| **State** | Data that changes over time and affects what's displayed. A counter value, whether a menu is open, the current user ï¿½ all state. |
 | **Props** | Properties passed from a parent component to a child component. How components communicate in React/Vue/etc. |
-| **Hook** | A React concept — functions that let components use state and lifecycle features. \`useState\`, \`useEffect\`, \`useRef\` are the common ones. |
+| **Hook** | A React concept ï¿½ functions that let components use state and lifecycle features. \`useState\`, \`useEffect\`, \`useRef\` are the common ones. |
 | **Routing** | Mapping URLs to different pages/views. When you go to /about, the router shows the About page. |
-| **SPA** | Single Page Application — a web app that loads once and dynamically updates content without full page reloads. React, Vue, Angular apps are SPAs. |
+| **SPA** | Single Page Application ï¿½ a web app that loads once and dynamically updates content without full page reloads. React, Vue, Angular apps are SPAs. |
 | **SSR / SSG** | Server-Side Rendering / Static Site Generation. SSR generates HTML on the server for each request. SSG generates all HTML at build time. Both improve SEO and initial load speed compared to pure SPAs. |
 | **Hydration** | The process where a server-rendered HTML page becomes interactive by attaching JavaScript event handlers on the client side. |
 | **Build Tool** | Software that transforms your source code into optimized production files. Vite, Webpack, esbuild, Turbopack are build tools. |
@@ -1898,7 +1898,7 @@ The vocabulary of building things people interact with in a browser.
 | **Responsive Design** | Making layouts adapt to different screen sizes (phone, tablet, desktop). |
 | **Viewport** | The visible area of a web page in the browser. Mobile viewports are smaller than desktop viewports. |
 | **Semantic HTML** | Using HTML tags that convey meaning (e.g., \`<nav>\`, \`<article>\`, \`<header>\`) instead of generic \`<div>\` for everything. Important for accessibility and SEO. |
-| **Accessibility (a11y)** | Making web content usable by people with disabilities — screen readers, keyboard navigation, color contrast, ARIA attributes. |
+| **Accessibility (a11y)** | Making web content usable by people with disabilities ï¿½ screen readers, keyboard navigation, color contrast, ARIA attributes. |
 
 ---
 
@@ -1908,17 +1908,17 @@ Where data lives permanently. Every app with user accounts, posts, or any persis
 
 | Term | What It Means |
 |------|--------------|
-| **SQL** | Structured Query Language — the language for querying relational databases. SELECT, INSERT, UPDATE, DELETE are the core operations. |
+| **SQL** | Structured Query Language ï¿½ the language for querying relational databases. SELECT, INSERT, UPDATE, DELETE are the core operations. |
 | **NoSQL** | Databases that don't use traditional SQL tables. Document stores (MongoDB), key-value stores (Redis), graph databases (Neo4j). |
-| **Schema** | The structure definition of your data — what fields exist, their types, and relationships. |
+| **Schema** | The structure definition of your data ï¿½ what fields exist, their types, and relationships. |
 | **Migration** | A versioned change to your database schema. Like git commits, but for database structure. "Run migrations" = apply pending schema changes. |
-| **ORM** | Object-Relational Mapping — a library that lets you interact with databases using your programming language's objects instead of raw SQL. Prisma, SQLAlchemy, TypeORM are ORMs. |
+| **ORM** | Object-Relational Mapping ï¿½ a library that lets you interact with databases using your programming language's objects instead of raw SQL. Prisma, SQLAlchemy, TypeORM are ORMs. |
 | **Primary Key** | A unique identifier for each record in a table. Usually an auto-incrementing ID or a UUID. |
 | **Foreign Key** | A field that references the primary key of another table, creating a relationship between them. |
 | **Index** | A data structure that speeds up database lookups, like the index in a book. Without an index, the database scans every row (slow). |
 | **Query** | A request for data from a database. "The query is slow" = the database lookup takes too long. |
 | **Transaction** | A group of database operations that either ALL succeed or ALL fail. No partial changes. Critical for financial operations. |
-| **CRUD** | Create, Read, Update, Delete — the four basic database operations. Most applications are fundamentally CRUD apps with nice UIs. |
+| **CRUD** | Create, Read, Update, Delete ï¿½ the four basic database operations. Most applications are fundamentally CRUD apps with nice UIs. |
 | **Redis** | An in-memory data store used for caching, session management, and real-time features. Extremely fast because data lives in RAM, not disk. |
 | **Connection Pool** | A cache of database connections that are reused rather than creating new ones for each request. Improves performance. |
 
@@ -1930,12 +1930,12 @@ Understanding what your code actually runs on helps you understand performance i
 
 | Term | What It Means |
 |------|--------------|
-| **CPU** | Central Processing Unit — the "brain" that executes instructions. Clock speed (GHz) and core count determine raw computation power. |
-| **GPU** | Graphics Processing Unit — originally for rendering graphics, now essential for AI/ML because it can do thousands of parallel computations simultaneously. NVIDIA GPUs (CUDA) dominate AI training. |
-| **RAM** | Random Access Memory — fast, temporary storage that programs use while running. When your computer "runs out of memory," it's running out of RAM. |
-| **VRAM** | Video RAM — memory on the GPU. AI models need to fit in VRAM to run efficiently. "OOM" (Out Of Memory) errors during model inference usually mean insufficient VRAM. |
+| **CPU** | Central Processing Unit ï¿½ the "brain" that executes instructions. Clock speed (GHz) and core count determine raw computation power. |
+| **GPU** | Graphics Processing Unit ï¿½ originally for rendering graphics, now essential for AI/ML because it can do thousands of parallel computations simultaneously. NVIDIA GPUs (CUDA) dominate AI training. |
+| **RAM** | Random Access Memory ï¿½ fast, temporary storage that programs use while running. When your computer "runs out of memory," it's running out of RAM. |
+| **VRAM** | Video RAM ï¿½ memory on the GPU. AI models need to fit in VRAM to run efficiently. "OOM" (Out Of Memory) errors during model inference usually mean insufficient VRAM. |
 | **Storage (SSD/HDD)** | Permanent data storage. SSDs (Solid State Drives) are fast. HDDs (Hard Disk Drives) are slow but cheap. NVMe SSDs are the fastest. |
-| **Cache** | Fast, small storage that keeps frequently accessed data close to the processor. L1/L2/L3 caches are on the CPU. Caching is a universal pattern — keep copies of expensive-to-compute things for fast retrieval. |
+| **Cache** | Fast, small storage that keeps frequently accessed data close to the processor. L1/L2/L3 caches are on the CPU. Caching is a universal pattern ï¿½ keep copies of expensive-to-compute things for fast retrieval. |
 | **Bottleneck** | The slowest component that limits overall system performance. Could be CPU, GPU, memory, disk, or network. |
 | **Throughput** | How much work a system can do per unit of time. Requests per second, tokens per second, frames per second. |
 | **Concurrency** | Doing multiple things at once (or appearing to). A web server handling 1000 simultaneous connections uses concurrency. |
@@ -1951,9 +1951,9 @@ Most servers run Linux. Most AI development happens on Linux. These terms come u
 |------|--------------|
 | **Terminal / Console** | A text-based interface for running commands. On Mac: Terminal. On Windows: PowerShell or WSL. On Linux: any terminal emulator. |
 | **Bash** | The most common Linux shell. When AI writes shell scripts, they're usually Bash scripts. |
-| **sudo** | "Super User Do" — run a command with administrator/root privileges. Required for installing system software, changing system files, etc. |
+| **sudo** | "Super User Do" ï¿½ run a command with administrator/root privileges. Required for installing system software, changing system files, etc. |
 | **apt / yum / brew** | Package managers for installing software. apt (Debian/Ubuntu), yum (CentOS/RHEL), brew (macOS). Like app stores for command-line tools. |
-| **SSH** | Secure Shell — a protocol for remotely connecting to and controlling another computer via an encrypted connection. "SSH into the server" = connect to a remote machine's terminal. |
+| **SSH** | Secure Shell ï¿½ a protocol for remotely connecting to and controlling another computer via an encrypted connection. "SSH into the server" = connect to a remote machine's terminal. |
 | **SCP / rsync** | Tools for copying files between machines. SCP is simpler, rsync is smarter (only copies changes). |
 | **grep** | Search for text patterns in files. "Grep for that error message" = search your codebase for a specific string. |
 | **pipe ( \\| )** | Sends the output of one command as input to another. \`cat file.txt \\| grep "error"\` reads a file and filters for lines containing "error." |
@@ -1963,7 +1963,7 @@ Most servers run Linux. Most AI development happens on Linux. These terms come u
 | **container** | A lightweight, isolated environment for running applications. Docker containers package your app with all its dependencies so it runs the same everywhere. |
 | **Docker** | The most popular containerization platform. A Dockerfile defines how to build a container image. Docker Compose manages multi-container applications. |
 | **Volume** | Persistent storage for containers. Without a volume, data inside a container disappears when the container stops. |
-| **WSL** | Windows Subsystem for Linux — lets you run a real Linux environment inside Windows. Essential for Windows developers working with Linux-native tools. |
+| **WSL** | Windows Subsystem for Linux ï¿½ lets you run a real Linux environment inside Windows. Essential for Windows developers working with Linux-native tools. |
 
 ---
 
@@ -1980,9 +1980,9 @@ When one machine isn't enough, you need clusters. This is how AI training, big w
 | **VM (Virtual Machine)** | A software emulation of a computer that runs on physical hardware. Multiple VMs can run on one physical server. |
 | **Kubernetes (K8s)** | An orchestration system for managing containers at scale. Automatically handles deployment, scaling, load balancing, and failure recovery. |
 | **SLURM** | A job scheduler for HPC (High Performance Computing) clusters. Common in academic research and AI training. You submit jobs and SLURM allocates GPU/CPU resources. |
-| **HPC** | High Performance Computing — powerful computing clusters used for scientific research, simulations, and large-scale model training. |
+| **HPC** | High Performance Computing ï¿½ powerful computing clusters used for scientific research, simulations, and large-scale model training. |
 | **Distributed Training** | Training an AI model across multiple GPUs or machines simultaneously. Techniques: data parallelism (split data), model parallelism (split model), pipeline parallelism (split layers). |
-| **CI/CD** | Continuous Integration / Continuous Deployment — automated pipelines that build, test, and deploy your code when you push changes. GitHub Actions, GitLab CI, Jenkins are CI/CD tools. |
+| **CI/CD** | Continuous Integration / Continuous Deployment ï¿½ automated pipelines that build, test, and deploy your code when you push changes. GitHub Actions, GitLab CI, Jenkins are CI/CD tools. |
 | **Serverless** | Cloud functions that run on demand without managing servers. AWS Lambda, Vercel Functions, Cloudflare Workers. You pay per execution, not per server-hour. |
 | **Microservice** | An architectural pattern where an application is split into small, independent services that communicate via APIs. Opposite of a "monolith" (one big application). |
 | **Scaling (Horizontal vs. Vertical)** | Vertical = bigger machine (more RAM, faster CPU). Horizontal = more machines. Horizontal scaling is usually preferred because it has no upper limit. |
@@ -2017,10 +2017,10 @@ The vocabulary of the tools that are writing your code.
 
 | Term | What It Means |
 |------|--------------|
-| **Model** | A trained neural network — the "brain" that generates text, images, or predictions. GPT-4, Claude, Llama are language models. |
-| **LLM** | Large Language Model — a model trained on massive text datasets to understand and generate language. The AI writing your code is an LLM. |
-| **VLM** | Vision-Language Model — an LLM that can also process images. Can "see" screenshots, diagrams, or photos and reason about them. |
-| **Token** | The basic unit of text that models process. Roughly 3/4 of a word. "Hello world" ˜ 2 tokens. Context limits are measured in tokens. |
+| **Model** | A trained neural network ï¿½ the "brain" that generates text, images, or predictions. GPT-4, Claude, Llama are language models. |
+| **LLM** | Large Language Model ï¿½ a model trained on massive text datasets to understand and generate language. The AI writing your code is an LLM. |
+| **VLM** | Vision-Language Model ï¿½ an LLM that can also process images. Can "see" screenshots, diagrams, or photos and reason about them. |
+| **Token** | The basic unit of text that models process. Roughly 3/4 of a word. "Hello world" ï¿½ 2 tokens. Context limits are measured in tokens. |
 | **Context Window** | How much text a model can "see" at once. GPT-4 has a 128K context window. Larger = can read more of your codebase simultaneously. |
 | **Inference** | Running a trained model to get outputs. When AI generates code for you, that's inference. |
 | **Training** | The process of teaching a model by showing it data. Pretraining = learning from massive datasets. Fine-tuning = specializing on specific tasks. |
@@ -2030,10 +2030,10 @@ The vocabulary of the tools that are writing your code.
 | **Hallucination** | When an AI generates plausible-sounding but factually incorrect information. It "hallucinates" functions that don't exist, APIs with wrong signatures, or made-up facts. |
 | **Embedding** | A numerical representation of text/images in a high-dimensional space. Similar concepts have similar embeddings. Used for search, recommendations, and clustering. |
 | **Vector Database** | A database optimized for storing and searching embeddings. Pinecone, Weaviate, Chroma are vector databases. Used for semantic search and RAG. |
-| **RAG** | Retrieval-Augmented Generation — giving an AI access to external data (documents, codebase, web) so it can ground its answers in facts rather than relying solely on training data. |
-| **Agent** | An AI system that can take actions — run code, browse the web, call APIs, edit files — not just generate text. Antigravity is an agent. |
-| **MoE** | Mixture of Experts — an architecture where only a subset of the model's parameters are active for each input. Makes models efficient despite having many total parameters. |
-| **RLHF** | Reinforcement Learning from Human Feedback — training an AI to align with human preferences by having humans rank outputs in order of quality. |
+| **RAG** | Retrieval-Augmented Generation ï¿½ giving an AI access to external data (documents, codebase, web) so it can ground its answers in facts rather than relying solely on training data. |
+| **Agent** | An AI system that can take actions ï¿½ run code, browse the web, call APIs, edit files ï¿½ not just generate text. Antigravity is an agent. |
+| **MoE** | Mixture of Experts ï¿½ an architecture where only a subset of the model's parameters are active for each input. Makes models efficient despite having many total parameters. |
+| **RLHF** | Reinforcement Learning from Human Feedback ï¿½ training an AI to align with human preferences by having humans rank outputs in order of quality. |
 | **Overfitting** | When a model memorizes training data instead of learning general patterns. It performs well on training data but poorly on new data. |
 | **Epoch** | One complete pass through the entire training dataset. Training takes multiple epochs. |
 | **Loss** | A number that measures how wrong the model's predictions are. Training aims to minimize loss. Lower = better. |
@@ -2043,7 +2043,7 @@ The vocabulary of the tools that are writing your code.
 | **Transformer** | The neural network architecture behind modern LLMs. Key innovation: the attention mechanism, which lets the model weigh which parts of the input are relevant to each output. |
 | **Attention** | A mechanism that lets models focus on relevant parts of the input when producing output. "Self-attention" = each word attends to every other word in the sequence. |
 | **Diffusion Model** | An AI architecture for generating images by learning to gradually remove noise. Stable Diffusion, DALL-E, and Midjourney use this approach. |
-| **LoRA** | Low-Rank Adaptation — a technique for fine-tuning large models efficiently by only training a small number of additional parameters instead of the full model. |
+| **LoRA** | Low-Rank Adaptation ï¿½ a technique for fine-tuning large models efficiently by only training a small number of additional parameters instead of the full model. |
 | **Quantization** | Reducing model precision (e.g., from 32-bit to 4-bit numbers) to use less memory and run faster, with minimal quality loss. "4-bit quantized" models run on consumer GPUs. |
 
 ---
@@ -2057,11 +2057,11 @@ You don't need to do the math, but understanding these terms helps you interpret
 | **Mean / Average** | Sum of values divided by count. The most basic summary statistic. |
 | **Variance / Standard Deviation** | How spread out values are from the mean. Low variance = consistent. High variance = unpredictable. |
 | **Distribution** | The pattern of how values are spread. Normal distribution (bell curve) is the most common. |
-| **Correlation** | How strongly two variables move together. Correlation does NOT imply causation — ice cream sales and drowning deaths are correlated (both increase in summer). |
+| **Correlation** | How strongly two variables move together. Correlation does NOT imply causation ï¿½ ice cream sales and drowning deaths are correlated (both increase in summer). |
 | **Regression** | Predicting a continuous number (price, temperature) from input features. Linear regression draws a best-fit line through data. |
 | **Classification** | Predicting a category (spam/not spam, cat/dog) from input features. |
 | **Precision / Recall** | Precision = of all items you identified as positive, what fraction actually were? Recall = of all actual positives, what fraction did you catch? There's usually a trade-off. |
-| **Accuracy** | The percentage of correct predictions. Can be misleading — if 99% of emails aren't spam, a model that predicts "not spam" for everything has 99% accuracy but is useless. |
+| **Accuracy** | The percentage of correct predictions. Can be misleading ï¿½ if 99% of emails aren't spam, a model that predicts "not spam" for everything has 99% accuracy but is useless. |
 | **F1 Score** | The harmonic mean of precision and recall. A balanced metric when both matter. |
 | **Perplexity** | How "surprised" a language model is by text. Lower perplexity = the model predicts the text well. Used to evaluate language models. |
 | **Dimensionality** | The number of features/variables in a dataset. A 768-dimensional embedding has 768 numbers describing each item. |
@@ -2082,7 +2082,7 @@ Concepts borrowed from physics that appear in computing and AI.
 | **Feedback Loop** | Output of a system feeds back as input. Positive feedback loops amplify (exponential growth/collapse). Negative feedback loops stabilize (thermostats, PID controllers). AI self-improvement is a positive feedback loop. |
 | **Latent Space** | A compressed, learned representation where similar items are close together. Diffusion models generate images by navigating latent space. |
 | **Decay** | Gradual reduction of a value over time. Learning rate decay = lowering the learning rate as training progresses for finer adjustments. Weight decay = regularization that prevents overfitting. |
-| **Annealing** | Inspired by metallurgy — gradually reducing temperature (randomness) during optimization to first explore broadly, then fine-tune locally. Simulated annealing is a search algorithm based on this principle. |
+| **Annealing** | Inspired by metallurgy ï¿½ gradually reducing temperature (randomness) during optimization to first explore broadly, then fine-tune locally. Simulated annealing is a search algorithm based on this principle. |
 
 ---
 
@@ -2095,11 +2095,11 @@ Terms you'll encounter when building anything that handles user data or connects
 | **Authentication (AuthN)** | Verifying WHO you are. Username/password, OAuth, biometrics. "Are you who you claim to be?" |
 | **Authorization (AuthZ)** | Verifying WHAT you can do. After authentication, does this user have permission to access this resource? |
 | **OAuth** | An authorization framework that lets third-party apps access your data without your password. "Sign in with Google/GitHub" uses OAuth. |
-| **JWT** | JSON Web Token — a compact, self-contained token for securely transmitting information. Commonly used for authentication. Contains encoded (not encrypted) user info. |
+| **JWT** | JSON Web Token ï¿½ a compact, self-contained token for securely transmitting information. Commonly used for authentication. Contains encoded (not encrypted) user info. |
 | **Hashing** | Converting data into a fixed-length string that can't be reversed. Passwords are stored as hashes, not plaintext. SHA-256, bcrypt are hashing algorithms. |
 | **Encryption** | Making data unreadable without a key. Unlike hashing, encryption is reversible with the right key. AES, RSA are encryption algorithms. |
-| **CSRF** | Cross-Site Request Forgery — tricking a user's browser into making unwanted requests to a site they're logged into. CSRF tokens prevent this. |
-| **XSS** | Cross-Site Scripting — injecting malicious scripts into web pages viewed by other users. Input sanitization prevents this. |
+| **CSRF** | Cross-Site Request Forgery ï¿½ tricking a user's browser into making unwanted requests to a site they're logged into. CSRF tokens prevent this. |
+| **XSS** | Cross-Site Scripting ï¿½ injecting malicious scripts into web pages viewed by other users. Input sanitization prevents this. |
 | **SQL Injection** | Inserting malicious SQL into input fields to manipulate a database. Parameterized queries prevent this. |
 | **API Key** | A secret string that authenticates your app to a service. NEVER commit API keys to git. Use environment variables. |
 | **.env File** | A file storing environment variables (API keys, database URLs) that should NEVER be committed to version control. |
@@ -2145,7 +2145,7 @@ How modern software is built from thousands of smaller pieces.
 
 ---
 
-*This reference is part of the Developer Workflow series. Bookmark it — you'll come back to this more often than you think. And remember: you don't need to memorize everything here. You just need to recognize the terms when AI uses them, and know enough to ask the right follow-up questions.*
+*This reference is part of the Developer Workflow series. Bookmark it ï¿½ you'll come back to this more often than you think. And remember: you don't need to memorize everything here. You just need to recognize the terms when AI uses them, and know enough to ask the right follow-up questions.*
     `
   },
 ];

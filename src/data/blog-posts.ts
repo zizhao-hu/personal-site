@@ -1238,7 +1238,8 @@ The question is whether *this* generation will be the first to actually learn th
 ---
 
 *This essay was inspired by the Chinese-language video essay [從經濟危機到世界大戰，一共有幾步？](https://www.youtube.com/watch?v=kQjUUV_x5o8) which brilliantly traces the chain from economic crisis to WWII.*
-    `n    }
+    `
+    }
 ];
 
 export function getBlogBySlug(slug: string): BlogPost | undefined {

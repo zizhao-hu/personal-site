@@ -247,19 +247,13 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 exEmit.position.y = -2;
             }
             if (boosterDetached) {
-                if (t < 52) { // Flip
-                    boosterRotZ = lerp(boosterRotZ, Math.PI, dt * 1.5);
-                    boosterY = lerp(boosterY, sepY - 5, dt * 0.3);
+                if (t < 75) { // Free fall — no flip, just descending
                     boosterExhaust.stop();
-                } else if (t < 68) { // Boostback
-                    boosterExhaust.start(); boosterExhaust.emitRate = 900;
-                    boosterY = lerp(boosterY, sepY * 0.5, dt * 0.7);
-                } else if (t < 85) { // Entry
-                    boosterExhaust.stop();
-                    boosterY = lerp(boosterY, E_R + 60, dt * 0.5);
-                } else if (t < 95) { // Landing burn
+                    boosterY = lerp(boosterY, E_R + 200, dt * 0.4);
+                } else if (t < 90) { // Landing burn — reignite engines
                     boosterExhaust.start(); boosterExhaust.emitRate = 1200;
-                    boosterY = lerp(boosterY, E_R + 36, dt * 1.5);
+                    boosterRotZ = lerp(boosterRotZ, 0, dt * 2); // Straighten for landing
+                    boosterY = lerp(boosterY, E_R + 36, dt * 1.2);
                 } else if (t < 100) { // Catch
                     boosterExhaust.emitRate = lerp(boosterExhaust.emitRate, 0, dt * 3);
                     boosterY = lerp(boosterY, E_R + 35, dt * 2);

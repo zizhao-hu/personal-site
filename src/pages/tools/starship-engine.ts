@@ -409,19 +409,25 @@ function buildStarship(scene: Scene, parent: TransformNode) {
     meshes.push(cyl(scene, 'nu', 0, 6, 8, 48, steel, shipNode, 0, bY + 48, 0));
     const sh = MeshBuilder.CreateCylinder('shld', { diameterTop: 9.15, diameterBottom: 9.15, height: 36, tessellation: 48, arc: 0.5 }, scene);
     sh.material = black; sh.parent = shipNode; sh.position.y = bY + 18; meshes.push(sh);
-    // Flaps (trapezoidal) 
+    // Flaps (trapezoidal) — with small vertical hinge brackets
     const flapM = mat(scene, 'flapM', 0.08, 0.08, 0.08, 0);
     for (let i = 0; i < 2; i++) {
         const fr = new TransformNode('fwR' + i, scene); fr.parent = shipNode;
         fr.position.set(i === 0 ? 4.8 : -4.8, bY + 35, 0); fr.rotation.z = i === 0 ? -0.12 : 0.12;
         const f = MeshBuilder.CreateCylinder('fwF' + i, { diameterTop: 3.5, diameterBottom: 5.5, height: 8, tessellation: 4 }, scene);
         f.material = flapM; f.parent = fr; f.rotation.y = Math.PI / 4; f.scaling.z = 0.04; meshes.push(f);
+        // Small vertical hinge bracket
+        const hb = box(scene, 'fwHb' + i, 0.3, 2.5, 0.4, dark, fr, 0, 3.5, 0);
+        meshes.push(hb);
     }
     for (let i = 0; i < 2; i++) {
         const fr = new TransformNode('afR' + i, scene); fr.parent = shipNode;
         fr.position.set(0, bY + 3, i === 0 ? 4.8 : -4.8); fr.rotation.x = i === 0 ? -0.1 : 0.1;
         const f = MeshBuilder.CreateCylinder('afF' + i, { diameterTop: 2.8, diameterBottom: 4.5, height: 6, tessellation: 4 }, scene);
         f.material = flapM; f.parent = fr; f.rotation.y = Math.PI / 4; f.scaling.z = 0.04; meshes.push(f);
+        // Small vertical hinge bracket
+        const hb = box(scene, 'afHb' + i, 0.4, 2, 0.3, dark, fr, 0, 2.5, 0);
+        meshes.push(hb);
     }
     // Ship engines (glow material)
     for (let i = 0; i < 3; i++) {
@@ -469,12 +475,11 @@ function buildLaunchSite(scene: Scene, parent: TransformNode) {
         box(scene, 'hb' + l, 4, 0.4, 0.4, tM, parent, tx, y, 0);
         box(scene, 'hb2' + l, 0.4, 0.4, 4, tM, parent, tx, y, 0);
     }
-    // Chopsticks
+    // Chopsticks — wide open initially
     const chM = mat(scene, 'ch', 0.5, 0.45, 0.4, 0.2);
-    const chopL = box(scene, 'chopL', 36, 2, 1.8, chM, parent, tx + 20, 85, -5.5);
-    const chopR = box(scene, 'chopR', 36, 2, 1.8, chM, parent, tx + 20, 85, 5.5);
-    // QD arm
-    box(scene, 'qd', 22, 1.5, 2, chM, parent, tx + 13, 105, 0);
+    const chopL = box(scene, 'chopL', 36, 2, 1.8, chM, parent, tx + 20, 85, -12);
+    const chopR = box(scene, 'chopR', 36, 2, 1.8, chM, parent, tx + 20, 85, 12);
+    // (QD arm removed — it looked like a pin in the rocket)
     // Lightning rod
     cyl(scene, 'rod', 0.08, 0.3, 12, 8, tM, parent, tx, 146, 0);
     // Concrete pad

@@ -1,7 +1,8 @@
 import {
     Engine, Scene, ArcRotateCamera, Vector3, HemisphericLight, DirectionalLight,
     MeshBuilder, StandardMaterial, Color3, Color4, ParticleSystem,
-    GlowLayer, ShadowGenerator, Mesh, TransformNode, KeyboardEventTypes, PointLight
+    GlowLayer, ShadowGenerator, Mesh, TransformNode, KeyboardEventTypes, PointLight,
+    DynamicTexture
 } from '@babylonjs/core';
 
 export interface SimState {
@@ -139,9 +140,9 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             else if (t < 275) { state.phase = 'exploration'; state.throttle = 0; }
             else { state.phase = 'complete'; state.throttle = 0; }
 
-            // ── PHYSICS ──
-            const accel = state.throttle / 100 * 3.5;
-            const grav = state.altitude < 100 ? 0.0098 : 0.0005;
+            // ── PHYSICS (slowed significantly so ship stays visible near Earth) ──
+            const accel = state.throttle / 100 * 0.8;
+            const grav = state.altitude < 100 ? 0.012 : 0.002;
             const moving = !['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase);
             if (t >= 0 && moving) {
                 state.velocity += (accel - grav) * dt;
@@ -340,30 +341,66 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     return () => { window.removeEventListener('starship-launch', onLaunch); };
 }
 
-// ═══ EARTH SPHERE ═══
+// ═══ EARTH SPHERE with world map ═══
 function buildEarth(scene: Scene) {
     const earth = MeshBuilder.CreateSphere('earth', { diameter: E_R * 2, segments: 64 }, scene);
     const eM = new StandardMaterial('eM', scene);
-    eM.diffuseColor = new Color3(0.12, 0.32, 0.62); eM.specularColor = new Color3(0.15, 0.15, 0.25);
+    // Create procedural world map texture
+    const texSize = 2048;
+    const tex = new DynamicTexture('earthTex', texSize, scene, true);
+    const ctx = tex.getContext();
+    // Ocean
+    ctx.fillStyle = '#1a4d8a';
+    ctx.fillRect(0, 0, texSize, texSize);
+    // Draw continents on equirectangular projection
+    ctx.fillStyle = '#2d6b30';
+    const W = texSize, H = texSize;
+    const drawContinent = (points: [number, number][]) => {
+        ctx.beginPath();
+        points.forEach(([lon, lat], i) => {
+            const x = ((lon + 180) / 360) * W;
+            const y = ((90 - lat) / 180) * H;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.closePath(); ctx.fill();
+    };
+    // North America
+    drawContinent([[-130, 55], [-125, 60], [-100, 65], [-80, 60], [-60, 48], [-65, 40], [-80, 25], [-90, 20], [-105, 18], [-118, 32], [-125, 42], [-130, 55]]);
+    // South America
+    drawContinent([[-80, 10], [-60, 5], [-35, -5], [-35, -20], [-40, -30], [-50, -35], [-55, -50], [-70, -55], [-75, -45], [-70, -18], [-80, 0], [-80, 10]]);
+    // Europe
+    drawContinent([[-10, 36], [0, 43], [5, 48], [15, 55], [30, 60], [40, 62], [30, 55], [25, 45], [20, 38], [10, 36], [-10, 36]]);
+    // Africa
+    drawContinent([[-15, 15], [-5, 35], [10, 37], [35, 30], [50, 12], [43, 0], [35, -10], [30, -25], [20, -35], [15, -30], [10, -5], [-5, 5], [-15, 15]]);
+    // Asia
+    drawContinent([[40, 62], [60, 70], [80, 72], [120, 70], [140, 60], [150, 55], [130, 45], [120, 30], [105, 20], [90, 10], [75, 8], [70, 20], [50, 30], [40, 40], [30, 55], [40, 62]]);
+    // India
+    drawContinent([[68, 25], [72, 30], [80, 28], [88, 22], [80, 8], [72, 10], [68, 25]]);
+    // Australia
+    drawContinent([[115, -15], [130, -12], [150, -15], [152, -25], [148, -35], [140, -38], [130, -35], [115, -30], [115, -15]]);
+    // Antarctica
+    ctx.fillStyle = '#d8d8d8';
+    drawContinent([[-180, -65], [-120, -70], [-60, -68], [0, -66], [60, -68], [120, -70], [180, -65], [180, -90], [-180, -90], [-180, -65]]);
+    // Ice caps
+    ctx.fillStyle = '#e8e8e8';
+    ctx.fillRect(0, 0, W, H * 0.06); // North pole
+    // Desert regions
+    ctx.fillStyle = '#8a7340';
+    drawContinent([[-5, 20], [0, 30], [15, 32], [35, 28], [35, 18], [10, 15], [-5, 20]]); // Sahara
+    drawContinent([[45, 18], [60, 25], [70, 22], [55, 15], [45, 18]]); // Arabian
+    tex.update();
+    eM.diffuseTexture = tex;
+    eM.specularColor = new Color3(0.15, 0.15, 0.25);
     earth.material = eM;
-    // Land masses
-    const lM = new StandardMaterial('lnd', scene); lM.diffuseColor = new Color3(0.22, 0.42, 0.18); lM.specularColor = Color3.Black();
-    for (let i = 0; i < 12; i++) {
-        const l = MeshBuilder.CreateDisc('land' + i, { radius: 30 + Math.random() * 90, tessellation: 20 }, scene);
-        l.material = lM;
-        const th = Math.random() * Math.PI * 2, ph = Math.random() * Math.PI * 0.8 + 0.1, r = E_R + 0.3;
-        l.position.set(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th));
-        l.lookAt(Vector3.Zero());
-    }
     // Atmosphere
-    const atmo = MeshBuilder.CreateSphere('atmo', { diameter: E_R * 2 + 40, segments: 48 }, scene);
+    const atmo = MeshBuilder.CreateSphere('atmo', { diameter: E_R * 2 + 80, segments: 48 }, scene);
     const aM = new StandardMaterial('aM', scene); aM.diffuseColor = new Color3(0.3, 0.55, 0.95);
-    aM.emissiveColor = new Color3(0.08, 0.15, 0.4); aM.alpha = 0.12; aM.backFaceCulling = false;
+    aM.emissiveColor = new Color3(0.08, 0.15, 0.4); aM.alpha = 0.10; aM.backFaceCulling = false;
     atmo.material = aM;
     // Clouds
-    const clouds = MeshBuilder.CreateSphere('clouds', { diameter: E_R * 2 + 12, segments: 48 }, scene);
+    const clouds = MeshBuilder.CreateSphere('clouds', { diameter: E_R * 2 + 20, segments: 48 }, scene);
     const cM = new StandardMaterial('cM', scene); cM.diffuseColor = Color3.White();
-    cM.emissiveColor = new Color3(0.25, 0.25, 0.25); cM.alpha = 0.18; cM.backFaceCulling = false;
+    cM.emissiveColor = new Color3(0.25, 0.25, 0.25); cM.alpha = 0.15; cM.backFaceCulling = false;
     clouds.material = cM;
     return { earth, atmo, clouds };
 }

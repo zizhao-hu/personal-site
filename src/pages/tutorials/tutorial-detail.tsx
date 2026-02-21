@@ -5,6 +5,7 @@ import { getTutorialBySlug } from "@/data/tutorials";
 import { ArrowLeft, Clock, Code, BookOpen, CheckCircle, ExternalLink } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 
 const difficultyConfig = {
   beginner: {
@@ -118,6 +119,7 @@ export const TutorialDetail = () => {
           <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-heading prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-brand-orange prose-strong:text-foreground prose-blockquote:border-brand-orange prose-blockquote:text-muted-foreground prose-li:text-muted-foreground prose-table:border-border prose-th:bg-muted prose-th:border-border prose-td:border-border">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
               components={{
                 ...markdownCodeComponents,
                 table({ children }) {

@@ -157,23 +157,37 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             state.altitude = Math.max(0, state.altitude);
             state.velocity = Math.max(0, state.velocity);
 
-            // ── SHIP POSITION: moves outward from Earth surface ──
+            // ── SHIP POSITION: moves outward + orbits around Earth ──
             const sceneAlt = state.altitude * 0.15;
-            const targetY = E_R + 28 + 35.5 + sceneAlt;
-            shipRoot.position.y = lerp(shipRoot.position.y, targetY, dt * 4);
+            // During orbit/TLI/coast, ship moves around Earth (angular position)
+            let orbitAngle = 0;
+            if (['orbit', 'tli', 'coast', 'lunar-approach', 'landing-burn'].includes(state.phase)) {
+                // Gradually increase orbital angle
+                orbitAngle = Math.min((t - 55) * 0.008, Math.PI * 0.6); // Up to ~108 degrees around
+            }
+            const orbitR = E_R + 28 + 35.5 + sceneAlt;
+            const targetX = Math.sin(orbitAngle) * orbitR;
+            const targetY = Math.cos(orbitAngle) * orbitR;
+            shipRoot.position.x = lerp(shipRoot.position.x, targetX, dt * 3);
+            shipRoot.position.y = lerp(shipRoot.position.y, targetY, dt * 3);
 
-            // Gravity turn + lunar flip
+            // Gravity turn: vertical → gradually tilt → fully horizontal for orbit
             if (['liftoff', 'maxq'].includes(state.phase)) {
-                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.min((t - 3) * 0.003, 0.2), dt * 2);
+                // Slow tilt start: 0→~15° during ascent
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.min((t - 3) * 0.008, 0.25), dt * 1.5);
+            } else if (state.phase === 'meco' || state.phase === 'separation' || state.phase === 'ses') {
+                // Tilt more: getting to ~45°
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, 0.8, dt * 0.8);
             } else if (['orbit', 'tli'].includes(state.phase)) {
-                shipRoot.rotation.z = lerp(shipRoot.rotation.z, 0.6, dt * 0.5); // Nearly horizontal
+                // Fully horizontal + match orbit angle (perpendicular to radial direction)
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI / 2 + orbitAngle, dt * 0.6);
             } else if (state.phase === 'coast') {
-                shipRoot.rotation.z = lerp(shipRoot.rotation.z, 0, dt * 0.3); // Settle for coast
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI / 2 + orbitAngle, dt * 0.3);
             } else if (state.phase === 'lunar-approach') {
                 // 180° flip: rotate so engines face Moon (downward toward surface)
                 shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI, dt * 1.2);
             } else if (['landing-burn', 'touchdown', 'landed'].includes(state.phase)) {
-                // Keep engines facing down (PI rotation = upside down = engines toward Moon)
+                // Keep engines facing down
                 shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI, dt * 3);
             }
 
@@ -249,8 +263,10 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 } else if (t < 100) { // Catch
                     boosterExhaust.emitRate = lerp(boosterExhaust.emitRate, 0, dt * 3);
                     boosterY = lerp(boosterY, E_R + 35, dt * 2);
-                    launchSite.chopL.position.z = lerp(launchSite.chopL.position.z, -3.5, dt * 3);
-                    launchSite.chopR.position.z = lerp(launchSite.chopR.position.z, 3.5, dt * 3);
+                    const cLP = launchSite.chopL.parent as TransformNode;
+                    const cRP = launchSite.chopR.parent as TransformNode;
+                    cLP.rotation.z = lerp(cLP.rotation.z, -0.05, dt * 3);
+                    cRP.rotation.z = lerp(cRP.rotation.z, 0.05, dt * 3);
                 } else { boosterExhaust.stop(); boosterY = E_R + 35; }
                 ship.booster.position.y = lerp(ship.booster.position.y, boosterY, dt * 5);
                 ship.booster.rotation.z = lerp(ship.booster.rotation.z, boosterRotZ, dt * 3);
@@ -535,10 +551,21 @@ function buildLaunchSite(scene: Scene, parent: TransformNode) {
         box(scene, 'hb' + l, 4, 0.4, 0.4, tM, parent, tx, y, 0);
         box(scene, 'hb2' + l, 0.4, 0.4, 4, tM, parent, tx, y, 0);
     }
-    // Chopsticks
+    // Chopsticks — V-shape arms pivoting from tower
+    // Each arm connects at the tower at y=85 and extends outward at 30° from center (60° total V)
     const chM = mat(scene, 'ch', 0.5, 0.45, 0.4, 0.2);
-    const chopL = box(scene, 'chopL', 36, 2, 1.8, chM, parent, tx + 20, 85, -12);
-    const chopR = box(scene, 'chopR', 36, 2, 1.8, chM, parent, tx + 20, 85, 12);
+    // Left chopstick: pivot at tower, angled -30° in Z (opening left-up)
+    const chopLPivot = new TransformNode('chopLPiv', scene);
+    chopLPivot.parent = parent;
+    chopLPivot.position.set(tx, 85, 0);
+    chopLPivot.rotation.z = -Math.PI / 6; // -30° from vertical = opening outward
+    const chopL = box(scene, 'chopL', 1.8, 2, 36, chM, chopLPivot, 0, 0, 18); // Extends outward
+    // Right chopstick: pivot at tower, angled +30° in Z
+    const chopRPivot = new TransformNode('chopRPiv', scene);
+    chopRPivot.parent = parent;
+    chopRPivot.position.set(tx, 85, 0);
+    chopRPivot.rotation.z = Math.PI / 6; // +30° from vertical = opening outward
+    const chopR = box(scene, 'chopR', 1.8, 2, 36, chM, chopRPivot, 0, 0, -18); // Extends outward
     // Lightning rod
     cyl(scene, 'rod', 0.08, 0.3, 12, 8, tM, parent, tx, 146, 0);
     // Circular concrete pad

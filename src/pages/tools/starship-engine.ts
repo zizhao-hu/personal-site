@@ -25,7 +25,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     scene.clearColor = new Color4(0.28, 0.52, 0.82, 1);
 
     // Camera starts looking at rocket on pad
-    const cam = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3.2, 200, new Vector3(0, E_R + 50, 0), scene);
+    const cam = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3.2, 200, Vector3.Zero(), scene);
     cam.lowerRadiusLimit = 10; cam.upperRadiusLimit = 50000;
     cam.attachControl(canvas, true); cam.wheelPrecision = 5;
 
@@ -38,18 +38,28 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     const earth = buildEarth(scene);
     earth.clouds.rotation.y = 0; // Will animate in loop
 
-    // ── Launch site ON Earth surface (top of sphere, y = E_R) ──
+    // ── Launch site at Starbase, Texas (25.997°N, 97.157°W) on Earth sphere ──
     const siteRoot = new TransformNode('siteRoot', scene);
-    siteRoot.position.y = E_R; // Sits on north pole of Earth
+    // Convert lat/lon to 3D position on sphere
+    const latRad = (25.997 * Math.PI) / 180;
+    const lonRad = (-97.157 * Math.PI) / 180;
+    const sx = E_R * Math.cos(latRad) * Math.sin(lonRad);
+    const sy = E_R * Math.sin(latRad);
+    const sz = E_R * Math.cos(latRad) * Math.cos(lonRad);
+    siteRoot.position.set(sx, sy, sz);
+    // Orient site so "up" points away from Earth center
+    siteRoot.lookAt(Vector3.Zero());
+    siteRoot.rotation.x += Math.PI; // Flip so structures point outward
     const launchSite = buildLaunchSite(scene, siteRoot);
 
     // No flat ground — launch directly from Earth sphere surface
+    cam.target.set(sx, sy + 50, sz); // Point camera at launch site
 
     // ── SHIP on pad ──
     const shipRoot = new TransformNode('shipRoot', scene);
     const ship = buildStarship(scene, shipRoot);
-    const padTop = E_R + 28; // OLM top
-    shipRoot.position.y = padTop + 35.5;
+    const padTop = sy + 28; // Approximate OLM top in world Y
+    shipRoot.position.set(sx, sy + 28 + 35.5, sz);
 
     const shadowGen = new ShadowGenerator(2048, sun);
     shadowGen.useBlurExponentialShadowMap = true;
@@ -132,13 +142,13 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             else if (t < 55) { state.phase = 'ses'; state.throttle = 65; }
             else if (t < 90) { state.phase = 'orbit'; state.throttle = lerp(65, 5, (t - 55) / 35); }
             else if (t < 100) { state.phase = 'tli'; state.throttle = 75; }
-            else if (t < 125) { state.phase = 'coast'; state.throttle = 2; } // Shortened coast
-            else if (t < 140) { state.phase = 'lunar-approach'; state.throttle = lerp(2, 15, (t - 125) / 15); }
-            else if (t < 160) { state.phase = 'landing-burn'; state.throttle = lerp(0, 85, Math.min(1, (t - 140) / 5)); }
-            else if (t < 170) { state.phase = 'touchdown'; state.throttle = lerp(30, 0, (t - 160) / 10); }
-            else if (t < 180) { state.phase = 'landed'; state.throttle = 0; }
-            else if (t < 200) { state.phase = 'eva'; state.throttle = 0; }
-            else if (t < 240) { state.phase = 'exploration'; state.throttle = 0; }
+            else if (t < 105) { state.phase = 'coast'; state.throttle = 2; } // 5s coast
+            else if (t < 120) { state.phase = 'lunar-approach'; state.throttle = lerp(2, 15, (t - 105) / 15); }
+            else if (t < 140) { state.phase = 'landing-burn'; state.throttle = lerp(0, 85, Math.min(1, (t - 120) / 5)); }
+            else if (t < 150) { state.phase = 'touchdown'; state.throttle = lerp(30, 0, (t - 140) / 10); }
+            else if (t < 160) { state.phase = 'landed'; state.throttle = 0; }
+            else if (t < 180) { state.phase = 'eva'; state.throttle = 0; }
+            else if (t < 220) { state.phase = 'exploration'; state.throttle = 0; }
             else { state.phase = 'complete'; state.throttle = 0; }
 
             // ── PHYSICS (gradual acceleration, capped at escape velocity 11.2 km/s) ──
@@ -158,10 +168,9 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             state.altitude = Math.max(0, state.altitude);
             state.velocity = Math.max(0, state.velocity);
 
-            // ── SHIP POSITION: on Earth sphere surface, moving outward ──
-            // Map altitude (km) to scene units above Earth surface
-            const sceneAlt = state.altitude * 0.15; // Compressed: 100km → 15 units
-            const targetY = E_R + 28 + 35.5 + sceneAlt;
+            // ── SHIP POSITION: moves outward from Earth surface ──
+            const sceneAlt = state.altitude * 0.15;
+            const targetY = sy + 28 + 35.5 + sceneAlt;
             shipRoot.position.y = lerp(shipRoot.position.y, targetY, dt * 4);
 
             // Gravity turn + lunar flip
@@ -210,7 +219,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             }
 
             // Landing burn reignition flash
-            if (state.phase === 'landing-burn' && t > 140 && t < 143) {
+            if (state.phase === 'landing-burn' && t > 120 && t < 123) {
                 shipExhaust.emitRate = 5000; shipExhaust.maxSize = 20;
                 shipCore.emitRate = 2000;
                 engineLight.intensity = 8;
@@ -294,7 +303,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
 
             // ── MOON APPROACH ──
             if (['coast', 'lunar-approach', 'landing-burn', 'touchdown'].includes(state.phase)) {
-                const aT = Math.min(1, (t - 100) / 95);
+                const aT = Math.min(1, (t - 100) / 50); // Faster approach with 5s coast
                 moonRoot.position.z = lerp(EM_DIST, M_R * 3, aT);
                 moonRoot.position.y = lerp(EM_DIST * 0.15, shipRoot.position.y - M_R - 50, aT);
                 const ms = 1 + aT * 1.5;
@@ -318,7 +327,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             if (['eva', 'exploration', 'complete'].includes(state.phase)) {
                 astro.root.setEnabled(true);
                 if (state.phase === 'eva') {
-                    const ep = (t - 180) / 20;
+                    const ep = (t - 160) / 20;
                     astro.root.position.set(shipRoot.position.x + 15 + ep * 20, moonLandingY + 1.2 + Math.abs(Math.sin(t * 3)) * 0.3, 0);
                 }
             }
@@ -506,20 +515,20 @@ function buildLaunchSite(scene: Scene, parent: TransformNode) {
     const tM = mat(scene, 'tw', 0.45, 0.4, 0.35, 0.15);
     const cM = mat(scene, 'cn', 0.35, 0.33, 0.3, 0);
     const sM = mat(scene, 'sp', 0.4, 0.38, 0.35, 0.2);
-    // OLM: steel table with central opening, on 6 legs
-    box(scene, 'olmL', 25, 3, 25, sM, parent, 0, 27.5, 0);
-    // OLM hole (dark center representing flame opening)
+    // OLM: circular steel table with central opening, on 6 legs
+    cyl(scene, 'olmL', 25, 25, 3, 32, sM, parent, 0, 27.5, 0);
+    // OLM hole (dark center)
     const holeMat = mat(scene, 'hole', 0.08, 0.08, 0.08, 0);
-    box(scene, 'olmHole', 10, 3.1, 10, holeMat, parent, 0, 27.5, 0);
+    cyl(scene, 'olmHole', 10, 10, 3.1, 16, holeMat, parent, 0, 27.5, 0);
     // 6 support legs
     for (let i = 0; i < 6; i++) {
         const a = (i * Math.PI * 2) / 6;
         cyl(scene, 'olmLeg' + i, 2, 2.5, 26, 8, sM, parent, Math.cos(a) * 10, 13, Math.sin(a) * 10);
     }
-    // Water-cooled steel plate (beneath OLM)
-    box(scene, 'wPlate', 22, 1, 22, mat(scene, 'wcp', 0.3, 0.28, 0.25, 0.1), parent, 0, 25, 0);
-    // Concrete foundation
-    box(scene, 'found', 30, 2, 30, cM, parent, 0, 1, 0);
+    // Water-cooled steel plate (circular, beneath OLM)
+    cyl(scene, 'wPlate', 22, 22, 1, 24, mat(scene, 'wcp', 0.3, 0.28, 0.25, 0.1), parent, 0, 25, 0);
+    // Circular concrete foundation
+    cyl(scene, 'found', 30, 30, 2, 32, cM, parent, 0, 1, 0);
     // Flame trench
     box(scene, 'trench', 8, 4, 35, mat(scene, 'trM', 0.2, 0.18, 0.16, 0), parent, 0, 2, 18);
 
@@ -533,15 +542,14 @@ function buildLaunchSite(scene: Scene, parent: TransformNode) {
         box(scene, 'hb' + l, 4, 0.4, 0.4, tM, parent, tx, y, 0);
         box(scene, 'hb2' + l, 0.4, 0.4, 4, tM, parent, tx, y, 0);
     }
-    // Chopsticks — wide open initially
+    // Chopsticks
     const chM = mat(scene, 'ch', 0.5, 0.45, 0.4, 0.2);
     const chopL = box(scene, 'chopL', 36, 2, 1.8, chM, parent, tx + 20, 85, -12);
     const chopR = box(scene, 'chopR', 36, 2, 1.8, chM, parent, tx + 20, 85, 12);
-    // (QD arm removed — it looked like a pin in the rocket)
     // Lightning rod
     cyl(scene, 'rod', 0.08, 0.3, 12, 8, tM, parent, tx, 146, 0);
-    // Concrete pad
-    box(scene, 'cpad', 80, 0.3, 80, cM, parent, 0, 0.15, 0);
+    // Circular concrete pad
+    cyl(scene, 'cpad', 80, 80, 0.3, 48, cM, parent, 0, 0.15, 0);
     // Fuel tanks
     const wM = mat(scene, 'wh', 0.9, 0.9, 0.9, 0.3);
     for (let i = 0; i < 4; i++) cyl(scene, 'ft' + i, 5, 5, 20, 16, wM, parent, -40 + i * 8, 10, 40);

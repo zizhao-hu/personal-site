@@ -1,151 +1,157 @@
 import {
     Engine, Scene, ArcRotateCamera, Vector3, HemisphericLight, DirectionalLight,
     MeshBuilder, StandardMaterial, Color3, Color4, ParticleSystem,
-    GlowLayer, ShadowGenerator,
-    Mesh, TransformNode
+    GlowLayer, ShadowGenerator, Mesh, TransformNode, KeyboardEventTypes
 } from '@babylonjs/core';
 
 export interface SimState {
-    phase: string;
-    altitude: number;
-    velocity: number;
-    downrange: number;
-    fuel: number;
-    thrust: number;
-    missionTime: number;
-    throttle: number;
+    phase: string; altitude: number; velocity: number; downrange: number;
+    fuel: number; thrust: number; missionTime: number; throttle: number;
 }
 
-// ── Scale: 1 unit = 1 meter ──
-// Real dimensions: Booster 71m tall, Ship 52m tall, 9m diameter
-// Total stack ~123m, Mechazilla tower ~145m
+// Scale: Earth radius=500, Moon radius=136, Moon distance=6000
+const EARTH_R = 500, MOON_R = 136, MOON_DIST = 6000;
 
-let engine: Engine | null = null;
-let scene: Scene | null = null;
-let animFrame = 0;
+let engine: Engine | null = null, scene: Scene | null = null;
 
 export function destroyScene() {
-    if (animFrame) cancelAnimationFrame(animFrame);
-    scene?.dispose();
-    engine?.dispose();
-    engine = null;
-    scene = null;
+    scene?.dispose(); engine?.dispose(); engine = null; scene = null;
 }
 
 export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: SimState) => void): () => void {
     engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
     scene = new Scene(engine);
-    scene.clearColor = new Color4(0.01, 0.01, 0.03, 1);
+    scene.clearColor = new Color4(0.25, 0.45, 0.75, 1); // Start with blue sky
 
-    // ── Camera ──
     const cam = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3, 180, new Vector3(0, 60, 0), scene);
-    cam.lowerRadiusLimit = 30;
-    cam.upperRadiusLimit = 500;
-    cam.attachControl(canvas, true);
-    cam.wheelPrecision = 5;
+    cam.lowerRadiusLimit = 15; cam.upperRadiusLimit = 2000;
+    cam.attachControl(canvas, true); cam.wheelPrecision = 5;
 
-    // ── Lighting ──
     const hemi = new HemisphericLight('hemi', new Vector3(0, 1, 0), scene);
     hemi.intensity = 0.35;
     const sun = new DirectionalLight('sun', new Vector3(-1, -2, -1), scene);
-    sun.intensity = 1.4;
-    sun.position = new Vector3(200, 400, 200);
+    sun.intensity = 1.4; sun.position = new Vector3(200, 400, 200);
 
-    // ── Glow layer ──
-    const glow = new GlowLayer('glow', scene);
-    glow.intensity = 0.7;
+    const glow = new GlowLayer('glow', scene); glow.intensity = 0.8;
 
-    // ── Build Starship Stack ──
+    // ── Build everything ──
     const shipRoot = new TransformNode('shipRoot', scene);
     const ship = buildStarshipStack(scene, shipRoot);
-    // Position: ship sits on the OLM, bottom of booster at ~30m (OLM height)
-    shipRoot.position.y = 30 + 71 / 2; // Center of booster at OLM top + half booster height
+    shipRoot.position.y = 30 + 35.5;
 
-    // ── Build Launch Site (Mechazilla + OLM) ──
     buildLaunchSite(scene);
 
-    // ── Ground ──
     const ground = MeshBuilder.CreateGround('ground', { width: 4000, height: 4000, subdivisions: 4 }, scene);
-    const groundMat = new StandardMaterial('groundMat', scene);
-    groundMat.diffuseColor = new Color3(0.15, 0.13, 0.1);
-    groundMat.specularColor = Color3.Black();
-    ground.material = groundMat;
-    ground.receiveShadows = true;
+    const groundMat = new StandardMaterial('gm', scene);
+    groundMat.diffuseColor = new Color3(0.15, 0.13, 0.1); groundMat.specularColor = Color3.Black();
+    ground.material = groundMat; ground.receiveShadows = true;
 
-    // ── Shadow ──
     const shadowGen = new ShadowGenerator(2048, sun);
     shadowGen.useBlurExponentialShadowMap = true;
     ship.meshes.forEach(m => shadowGen.addShadowCaster(m));
 
-    // ── Exhaust particles ──
-    const exhaustEmitter = MeshBuilder.CreateSphere('exEmit', { diameter: 3 }, scene);
-    exhaustEmitter.parent = shipRoot;
-    exhaustEmitter.position.y = -71 / 2 - 2; // Bottom of booster
-    exhaustEmitter.isVisible = false;
+    // Engine fire
+    const exhaustEmitter = MeshBuilder.CreateSphere('exE', { diameter: 4 }, scene);
+    exhaustEmitter.parent = shipRoot; exhaustEmitter.position.y = -37; exhaustEmitter.isVisible = false;
     const exhaust = createExhaustParticles(scene, exhaustEmitter);
 
-    // ── Stars ──
+    // Mach diamond core
+    const coreEmitter = MeshBuilder.CreateSphere('coreE', { diameter: 1 }, scene);
+    coreEmitter.parent = shipRoot; coreEmitter.position.y = -37; coreEmitter.isVisible = false;
+    const exhaustCore = createExhaustCore(scene, coreEmitter);
+
     createStarfield(scene);
 
-    // ── Moon surface (hidden initially) ──
+    // ── Earth sphere (below ground) ──
+    const earthRoot = new TransformNode('earthRoot', scene);
+    earthRoot.position.y = -EARTH_R;
+    const { earthSphere, atmosphere, clouds } = buildEarth(scene, earthRoot);
+    earthSphere.isVisible = false; atmosphere.isVisible = false; clouds.isVisible = false;
+
+    // ── Moon sphere (far away) ──
+    const moonRoot = new TransformNode('moonRoot', scene);
+    moonRoot.position.set(0, MOON_DIST * 0.3, MOON_DIST);
+    const moonSphere = buildMoonSphere(scene, moonRoot);
+
+    // ── Moon surface detail (for landing, hidden initially) ──
     const moonSurface = buildMoonSurface(scene);
     moonSurface.setEnabled(false);
 
-    // ── Simulation state ──
+    // ── Moon base ──
+    const moonBase = buildMoonBase(scene);
+    moonBase.setEnabled(false);
+
+    // ── Astronaut + Rover ──
+    const astronaut = buildAstronaut(scene);
+    astronaut.root.setEnabled(false);
+    const rover = buildRover(scene);
+    rover.root.setEnabled(false);
+
+    // ── Rover keyboard controls ──
+    const keys: Record<string, boolean> = {};
+    scene.onKeyboardObservable.add((info) => {
+        const key = info.event.key.toLowerCase();
+        keys[key] = info.type === KeyboardEventTypes.KEYDOWN;
+    });
+
+    // ── Sim state ──
     const state: SimState = {
-        phase: 'prelaunch',
-        altitude: 0,
-        velocity: 0,
-        downrange: 0,
-        fuel: 100,
-        thrust: 0,
-        missionTime: -10,
-        throttle: 0,
+        phase: 'prelaunch', altitude: 0, velocity: 0, downrange: 0,
+        fuel: 100, thrust: 0, missionTime: -10, throttle: 0,
     };
 
-    let lastTime = performance.now();
-    let launched = false;
-    let phaseTimer = 0;
-    let camShake = 0;
+    let lastTime = performance.now(), launched = false, phaseTimer = 0;
 
     const onLaunch = () => { launched = true; };
     window.addEventListener('starship-launch', onLaunch);
 
-    // ── Render loop ──
     engine.runRenderLoop(() => {
         const now = performance.now();
         const dt = Math.min((now - lastTime) / 1000, 0.1);
         lastTime = now;
 
         if (launched) {
-            state.missionTime += dt;
-            phaseTimer += dt;
-            updateSimulation(state, dt, phaseTimer, shipRoot, exhaust, cam, ground, moonSurface, ship);
-            camShake = state.phase === 'liftoff' || state.phase === 'ignition' ? 0.3 : state.phase === 'landing-burn' ? 0.12 : 0;
+            state.missionTime += dt; phaseTimer += dt;
+            updateSim(state, dt, shipRoot, exhaust, exhaustCore, cam, ground,
+                earthSphere, atmosphere, clouds, earthRoot,
+                moonRoot, moonSphere, moonSurface, moonBase,
+                astronaut, rover, ship, keys);
         } else {
             state.missionTime = -10 + (performance.now() % 10000) / 1000;
         }
 
         // Camera shake
-        if (camShake > 0) {
-            cam.target.x += (Math.random() - 0.5) * camShake;
-            cam.target.y += (Math.random() - 0.5) * camShake * 0.5;
+        const shake = (state.phase === 'liftoff' || state.phase === 'ignition') ? 0.3
+            : state.phase === 'landing-burn' ? 0.12 : 0;
+        if (shake > 0) {
+            cam.target.x += (Math.random() - 0.5) * shake;
+            cam.target.y += (Math.random() - 0.5) * shake * 0.5;
         }
+
+        // Sky color transition (blue → black)
+        const skyT = Math.min(1, state.altitude / 120);
+        scene!.clearColor = new Color4(
+            0.25 * (1 - skyT), 0.45 * (1 - skyT), 0.75 * (1 - skyT * 0.7), 1
+        );
 
         onTelemetry(state);
         scene!.render();
     });
 
-    return () => {
-        window.removeEventListener('starship-launch', onLaunch);
-    };
+    return () => { window.removeEventListener('starship-launch', onLaunch); };
 }
 
-function updateSimulation(
-    s: SimState, dt: number, _pt: number,
-    shipRoot: TransformNode, exhaust: ParticleSystem,
-    cam: ArcRotateCamera, ground: Mesh, moonSurface: TransformNode,
-    ship: { meshes: Mesh[], booster: TransformNode }
+// ═══ SIMULATION UPDATE ═══
+function updateSim(
+    s: SimState, dt: number, shipRoot: TransformNode,
+    exhaust: ParticleSystem, exhaustCore: ParticleSystem,
+    cam: ArcRotateCamera, ground: Mesh,
+    earthSphere: Mesh, atmosphere: Mesh, clouds: Mesh, earthRoot: TransformNode,
+    moonRoot: TransformNode, moonSphere: Mesh, moonSurface: TransformNode,
+    moonBase: TransformNode,
+    astro: { root: TransformNode }, rover: { root: TransformNode, body: Mesh },
+    ship: { meshes: Mesh[], booster: TransformNode },
+    keys: Record<string, boolean>
 ) {
     const t = s.missionTime;
 
@@ -160,669 +166,518 @@ function updateSimulation(
     else if (t < 120) { s.phase = 'coast'; s.throttle = 5; }
     else if (t < 160) { s.phase = 'lunar-approach'; s.throttle = 10; }
     else if (t < 180) { s.phase = 'landing-burn'; s.throttle = Math.min((t - 160) / 5 * 90, 90); }
-    else if (t < 190) { s.phase = 'touchdown'; s.throttle = 0; }
+    else if (t < 190) { s.phase = 'touchdown'; s.throttle = Math.max(0, (190 - t) / 10 * 20); }
+    else if (t < 200) { s.phase = 'landed'; s.throttle = 0; }
+    else if (t < 220) { s.phase = 'eva'; s.throttle = 0; }
+    else if (t < 260) { s.phase = 'exploration'; s.throttle = 0; }
     else { s.phase = 'complete'; s.throttle = 0; }
 
-    // Physics (simplified orbital-ish)
+    // Physics
     const accel = s.throttle / 100 * 3.5;
     const gravity = s.altitude < 100 ? 0.0098 : 0.001;
-
-    if (t >= 0 && s.phase !== 'touchdown' && s.phase !== 'complete') {
+    if (t >= 0 && !['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(s.phase)) {
         s.velocity += (accel - gravity) * dt;
         s.altitude += s.velocity * dt;
         s.downrange += s.velocity * dt * 0.7;
         s.fuel = Math.max(0, s.fuel - s.throttle * dt * 0.03);
         s.thrust = s.throttle;
     }
-
-    if (s.phase === 'touchdown' || s.phase === 'complete') {
-        s.velocity = Math.max(0, s.velocity - dt * 2);
-        s.thrust = 0;
+    if (['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(s.phase)) {
+        s.velocity = Math.max(0, s.velocity - dt * 2); s.thrust = 0;
     }
+    s.altitude = Math.max(0, s.altitude); s.velocity = Math.max(0, s.velocity);
 
-    // Clamp
-    s.altitude = Math.max(0, s.altitude);
-    s.velocity = Math.max(0, s.velocity);
-
-    // ── Visual updates ──
-
-    // Ship position — maps altitude to scene Y
+    // ── Visual: Ship position ──
     const sceneY = Math.min(s.altitude * 0.8, 400);
-    shipRoot.position.y = 30 + 71 / 2 + sceneY;
+    shipRoot.position.y = 30 + 35.5 + sceneY;
 
-    // Tilt during ascent (gravity turn)
+    // Tilt
     if (s.phase === 'liftoff' || s.phase === 'maxq') {
         shipRoot.rotation.z = Math.min((t - 3) * 0.002, 0.12);
     } else if (s.phase === 'landing-burn') {
         shipRoot.rotation.z = Math.max(shipRoot.rotation.z - dt * 0.05, 0);
     }
 
-    // Exhaust
+    // ── Exhaust fire ──
     if (s.throttle > 5) {
-        exhaust.start();
+        exhaust.start(); exhaustCore.start();
         exhaust.emitRate = s.throttle * 15;
         exhaust.minSize = 2 + s.throttle * 0.05;
         exhaust.maxSize = 6 + s.throttle * 0.08;
-        exhaust.minLifeTime = 0.3;
-        exhaust.maxLifeTime = 1.0 + s.throttle * 0.008;
-    } else {
-        exhaust.stop();
-    }
+        exhaustCore.emitRate = s.throttle * 5;
+        exhaustCore.minSize = 0.5 + s.throttle * 0.02;
+        exhaustCore.maxSize = 2 + s.throttle * 0.03;
+    } else { exhaust.stop(); exhaustCore.stop(); }
 
-    // Camera follow
+    // ── Camera follow ──
     if (s.phase !== 'prelaunch') {
         cam.target.y += (shipRoot.position.y - cam.target.y) * dt * 2;
-        if (s.altitude > 50) {
-            cam.radius += (200 + s.altitude * 0.4 - cam.radius) * dt;
-        }
+        if (s.altitude > 50) cam.radius += (200 + s.altitude * 0.4 - cam.radius) * dt;
     }
 
-    // Stage separation visual
+    // ── Stage separation ──
     if (s.phase === 'separation') {
         ship.booster.position.y -= dt * 8;
         ship.booster.rotation.z += dt * 0.05;
     }
 
-    // Ground fade / Moon swap
-    if (s.altitude > 80) {
-        ground.visibility = Math.max(0, 1 - (s.altitude - 80) / 40);
+    // ── Earth visibility (show sphere as altitude increases) ──
+    if (s.altitude > 30) {
+        earthSphere.isVisible = true; atmosphere.isVisible = true; clouds.isVisible = true;
     }
-    if (s.phase === 'lunar-approach' || s.phase === 'landing-burn' || s.phase === 'touchdown' || s.phase === 'complete') {
+    // Rotate clouds slowly
+    clouds.rotation.y += dt * 0.01;
+
+    // ── Ground fade ──
+    if (s.altitude > 60) {
+        ground.visibility = Math.max(0, 1 - (s.altitude - 60) / 60);
+    }
+
+    // ── Moon approach (move moon closer during transit) ──
+    if (s.phase === 'coast' || s.phase === 'lunar-approach' || s.phase === 'landing-burn') {
+        const approachT = Math.min(1, (t - 55) / 125);
+        moonRoot.position.z = MOON_DIST * (1 - approachT * 0.95);
+        moonRoot.position.y = MOON_DIST * 0.3 * (1 - approachT);
+        // Scale moon sphere up as it "approaches"
+        const moonScale = 1 + approachT * 3;
+        moonSphere.scaling.set(moonScale, moonScale, moonScale);
+        // Move Earth away
+        earthRoot.position.y = -EARTH_R - approachT * 2000;
+    }
+
+    // ── Moon surface for landing ──
+    if (['lunar-approach', 'landing-burn', 'touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(s.phase)) {
         moonSurface.setEnabled(true);
-        moonSurface.position.y = shipRoot.position.y - 60;
+        moonBase.setEnabled(true);
+        if (s.phase === 'landing-burn' || s.phase === 'touchdown') {
+            moonSurface.position.y = shipRoot.position.y - 70;
+            moonBase.position.y = moonSurface.position.y;
+        }
         ground.visibility = 0;
     }
-}
 
-// ═══════════════════════════════════════════════════════════════
-// STARSHIP STACK — Accurate proportions
-// Booster: 71m tall, 9m diameter
-// Ship: 52m tall, 9m diameter (including nose)
-// ═══════════════════════════════════════════════════════════════
+    // ── Post-landing: Astronaut EVA ──
+    if (s.phase === 'eva' || s.phase === 'exploration' || s.phase === 'complete') {
+        astro.root.setEnabled(true);
+        astro.root.position.y = moonSurface.position.y + 1.2;
+        astro.root.position.x = shipRoot.position.x + 15;
+        astro.root.position.z = shipRoot.position.z;
 
-function buildStarshipStack(scene: Scene, parent: TransformNode): { meshes: Mesh[], booster: TransformNode } {
-    const meshes: Mesh[] = [];
-
-    // ── Materials ──
-    const steelMat = new StandardMaterial('steelMat', scene);
-    steelMat.diffuseColor = new Color3(0.78, 0.78, 0.76);
-    steelMat.specularColor = new Color3(0.5, 0.5, 0.5);
-    steelMat.specularPower = 40;
-
-    const darkSteelMat = new StandardMaterial('darkSteelMat', scene);
-    darkSteelMat.diffuseColor = new Color3(0.3, 0.3, 0.3);
-    darkSteelMat.specularColor = new Color3(0.2, 0.2, 0.2);
-
-    const engineMat = new StandardMaterial('engMat', scene);
-    engineMat.diffuseColor = new Color3(0.15, 0.15, 0.15);
-    engineMat.specularColor = new Color3(0.1, 0.1, 0.1);
-
-    const heatShieldMat = new StandardMaterial('hsMat', scene);
-    heatShieldMat.diffuseColor = new Color3(0.05, 0.05, 0.05);
-    heatShieldMat.specularColor = Color3.Black();
-
-    const nozzleGlowMat = new StandardMaterial('nozzleGlow', scene);
-    nozzleGlowMat.diffuseColor = new Color3(0.1, 0.1, 0.1);
-    nozzleGlowMat.emissiveColor = new Color3(0.15, 0.05, 0);
-
-    // ── SUPER HEAVY BOOSTER (71m tall, 9m diameter) ──
-    const boosterRoot = new TransformNode('boosterRoot', scene);
-    boosterRoot.parent = parent;
-    boosterRoot.position.y = 0; // Center of stack at y=0
-
-    // Main booster body
-    const boosterBody = MeshBuilder.CreateCylinder('boosterBody', {
-        diameterTop: 9, diameterBottom: 9, height: 71, tessellation: 48
-    }, scene);
-    boosterBody.material = steelMat;
-    boosterBody.parent = boosterRoot;
-    boosterBody.position.y = 0;
-    meshes.push(boosterBody);
-
-    // Booster bottom skirt (slightly wider at the base, engine section)
-    const boosterSkirt = MeshBuilder.CreateCylinder('boosterSkirt', {
-        diameterTop: 9, diameterBottom: 9.4, height: 5, tessellation: 48
-    }, scene);
-    boosterSkirt.material = darkSteelMat;
-    boosterSkirt.parent = boosterRoot;
-    boosterSkirt.position.y = -33;
-    meshes.push(boosterSkirt);
-
-    // ── 33 Raptor Engines: 3 center + 10 inner ring + 20 outer ring ──
-    const engineBottom = -35.5; // Bottom of booster
-    const engineLen = 3;
-
-    // 3 center engines (gimbaled)
-    for (let i = 0; i < 3; i++) {
-        const angle = (i * Math.PI * 2) / 3;
-        const r = 0.8;
-        const eng = createRaptorEngine(scene, engineMat, nozzleGlowMat, 1.3, engineLen);
-        eng.parent = boosterRoot;
-        eng.position.set(Math.cos(angle) * r, engineBottom, Math.sin(angle) * r);
-        meshes.push(eng);
-    }
-
-    // 10 inner ring engines (gimbaled)
-    for (let i = 0; i < 10; i++) {
-        const angle = (i * Math.PI * 2) / 10;
-        const r = 2.3;
-        const eng = createRaptorEngine(scene, engineMat, nozzleGlowMat, 1.3, engineLen);
-        eng.parent = boosterRoot;
-        eng.position.set(Math.cos(angle) * r, engineBottom, Math.sin(angle) * r);
-        meshes.push(eng);
-    }
-
-    // 20 outer ring engines (fixed)
-    for (let i = 0; i < 20; i++) {
-        const angle = (i * Math.PI * 2) / 20;
-        const r = 3.8;
-        const eng = createRaptorEngine(scene, engineMat, nozzleGlowMat, 1.3, engineLen);
-        eng.parent = boosterRoot;
-        eng.position.set(Math.cos(angle) * r, engineBottom, Math.sin(angle) * r);
-        meshes.push(eng);
-    }
-
-    // ── Grid fins (4, at the top of booster) ──
-    const gridFinMat = new StandardMaterial('gridFinMat', scene);
-    gridFinMat.diffuseColor = new Color3(0.2, 0.2, 0.2);
-    for (let i = 0; i < 4; i++) {
-        const angle = (i * Math.PI) / 2 + Math.PI / 4;
-        const fin = MeshBuilder.CreateBox('gridFin' + i, { width: 4.5, height: 3.5, depth: 0.25 }, scene);
-        fin.material = gridFinMat;
-        fin.parent = boosterRoot;
-        fin.position.y = 33;
-        fin.position.x = Math.cos(angle) * 5.5;
-        fin.position.z = Math.sin(angle) * 5.5;
-        fin.rotation.y = angle;
-        meshes.push(fin);
-
-        // Grid pattern (cross members)
-        for (let j = 0; j < 3; j++) {
-            const bar = MeshBuilder.CreateBox('gridBar' + i + '_' + j, { width: 4.5, height: 0.08, depth: 0.28 }, scene);
-            bar.material = gridFinMat;
-            bar.parent = fin;
-            bar.position.y = -1.2 + j * 1.2;
+        // Walk astronaut toward rover
+        if (s.phase === 'eva') {
+            const evaProgress = (t - 200) / 20;
+            astro.root.position.x = shipRoot.position.x + 15 + evaProgress * 20;
+            // Bobbing walk animation
+            astro.root.position.y = moonSurface.position.y + 1.2 + Math.abs(Math.sin(t * 3)) * 0.4;
         }
     }
 
-    // ── Hot-staging ring (interstage) ──
-    const hotStageRing = MeshBuilder.CreateCylinder('hotStage', {
-        diameterTop: 9.2, diameterBottom: 9.2, height: 4, tessellation: 48
-    }, scene);
-    const hotStageMat = new StandardMaterial('hotStageMat', scene);
-    hotStageMat.diffuseColor = new Color3(0.25, 0.25, 0.22);
-    hotStageRing.material = hotStageMat;
-    hotStageRing.parent = boosterRoot;
-    hotStageRing.position.y = 35.5 + 2; // Top of booster
-    meshes.push(hotStageRing);
+    // ── Rover exploration ──
+    if (s.phase === 'exploration' || s.phase === 'complete') {
+        rover.root.setEnabled(true);
+        rover.root.position.y = moonSurface.position.y + 0.8;
 
-    // Hot-staging vent slots
-    for (let i = 0; i < 8; i++) {
-        const slot = MeshBuilder.CreateBox('ventSlot' + i, { width: 2.5, height: 3, depth: 0.1 }, scene);
-        const slotMat = new StandardMaterial('slotMat' + i, scene);
-        slotMat.diffuseColor = new Color3(0.08, 0.08, 0.08);
-        slot.material = slotMat;
-        const angle = (i * Math.PI * 2) / 8;
-        slot.parent = hotStageRing;
-        slot.position.set(Math.cos(angle) * 4.65, 0, Math.sin(angle) * 4.65);
-        slot.rotation.y = angle;
-        meshes.push(slot);
+        if (s.phase === 'exploration') {
+            // Keyboard controls for rover
+            const speed = 15;
+            if (keys['w'] || keys['arrowup']) rover.root.position.z += speed * dt;
+            if (keys['s'] || keys['arrowdown']) rover.root.position.z -= speed * dt;
+            if (keys['a'] || keys['arrowleft']) {
+                rover.root.rotation.y += 1.5 * dt;
+                rover.root.position.x -= speed * dt * 0.5;
+            }
+            if (keys['d'] || keys['arrowright']) {
+                rover.root.rotation.y -= 1.5 * dt;
+                rover.root.position.x += speed * dt * 0.5;
+            }
+            // Camera follows rover
+            cam.target.x += (rover.root.position.x - cam.target.x) * dt * 3;
+            cam.target.z += (rover.root.position.z - cam.target.z) * dt * 3;
+            cam.radius += (40 - cam.radius) * dt * 2;
+            // Astronaut rides on rover
+            astro.root.position.x = rover.root.position.x;
+            astro.root.position.z = rover.root.position.z;
+            astro.root.position.y = rover.root.position.y + 2;
+        }
     }
+}
 
-    // ═══ STARSHIP UPPER STAGE (52m tall, 9m diameter) ═══
+// ═══ STARSHIP STACK ═══
+function buildStarshipStack(scene: Scene, parent: TransformNode): { meshes: Mesh[], booster: TransformNode } {
+    const meshes: Mesh[] = [];
+    const steelMat = makeMat(scene, 'steel', 0.78, 0.78, 0.76, 0.5);
+    const darkMat = makeMat(scene, 'dark', 0.3, 0.3, 0.3, 0.2);
+    const engMat = makeMat(scene, 'eng', 0.15, 0.15, 0.15, 0.1);
+    const hsMat = makeMat(scene, 'hs', 0.05, 0.05, 0.05, 0);
+    const glowMat = new StandardMaterial('glow', scene);
+    glowMat.diffuseColor = new Color3(0.1, 0.1, 0.1);
+    glowMat.emissiveColor = new Color3(0.15, 0.05, 0);
+
+    // Booster (71m)
+    const boosterRoot = new TransformNode('boosterRoot', scene);
+    boosterRoot.parent = parent;
+    const bb = MeshBuilder.CreateCylinder('bb', { diameterTop: 9, diameterBottom: 9, height: 71, tessellation: 48 }, scene);
+    bb.material = steelMat; bb.parent = boosterRoot; meshes.push(bb);
+    // Skirt
+    const sk = MeshBuilder.CreateCylinder('sk', { diameterTop: 9, diameterBottom: 9.4, height: 5, tessellation: 48 }, scene);
+    sk.material = darkMat; sk.parent = boosterRoot; sk.position.y = -33; meshes.push(sk);
+    // 33 engines: 3+10+20
+    [{ count: 3, r: 0.8 }, { count: 10, r: 2.3 }, { count: 20, r: 3.8 }].forEach(ring => {
+        for (let i = 0; i < ring.count; i++) {
+            const a = (i * Math.PI * 2) / ring.count;
+            const e = MeshBuilder.CreateCylinder('e', { diameterTop: 0.78, diameterBottom: 1.3, height: 3, tessellation: 12 }, scene);
+            e.material = engMat; e.parent = boosterRoot;
+            e.position.set(Math.cos(a) * ring.r, -35.5, Math.sin(a) * ring.r);
+            meshes.push(e);
+        }
+    });
+    // Grid fins
+    for (let i = 0; i < 4; i++) {
+        const a = (i * Math.PI) / 2 + Math.PI / 4;
+        const f = MeshBuilder.CreateBox('gf' + i, { width: 4.5, height: 3.5, depth: 0.25 }, scene);
+        f.material = darkMat; f.parent = boosterRoot; f.position.y = 33;
+        f.position.x = Math.cos(a) * 5.5; f.position.z = Math.sin(a) * 5.5; f.rotation.y = a;
+        meshes.push(f);
+    }
+    // Hot-staging ring
+    const hs = MeshBuilder.CreateCylinder('hs', { diameterTop: 9.2, diameterBottom: 9.2, height: 4, tessellation: 48 }, scene);
+    hs.material = darkMat; hs.parent = boosterRoot; hs.position.y = 37.5; meshes.push(hs);
+
+    // Ship upper stage (52m)
     const shipNode = new TransformNode('shipNode', scene);
     shipNode.parent = parent;
-    const shipBaseY = 71 / 2 + 4; // Above the hot-staging ring
-
-    // Main body (barrel section ~36m)
-    const shipBody = MeshBuilder.CreateCylinder('shipBody', {
-        diameterTop: 9, diameterBottom: 9, height: 36, tessellation: 48
-    }, scene);
-    shipBody.material = steelMat;
-    shipBody.parent = shipNode;
-    shipBody.position.y = shipBaseY + 18;
-    meshes.push(shipBody);
-
-    // Nose cone (ogive ~16m)
-    const noseLower = MeshBuilder.CreateCylinder('noseLower', {
-        diameterTop: 6, diameterBottom: 9, height: 8, tessellation: 48
-    }, scene);
-    noseLower.material = steelMat;
-    noseLower.parent = shipNode;
-    noseLower.position.y = shipBaseY + 36 + 4;
-    meshes.push(noseLower);
-
-    const noseUpper = MeshBuilder.CreateCylinder('noseUpper', {
-        diameterTop: 0, diameterBottom: 6, height: 8, tessellation: 48
-    }, scene);
-    noseUpper.material = steelMat;
-    noseUpper.parent = shipNode;
-    noseUpper.position.y = shipBaseY + 36 + 12;
-    meshes.push(noseUpper);
-
-    // ── Heat shield (black tiles on one side — simplified as half-cylinder overlay) ──
-    const heatShield = MeshBuilder.CreateCylinder('heatShield', {
-        diameterTop: 9.15, diameterBottom: 9.15, height: 36, tessellation: 48,
-        arc: 0.5
-    }, scene);
-    heatShield.material = heatShieldMat;
-    heatShield.parent = shipNode;
-    heatShield.position.y = shipBaseY + 18;
-    heatShield.rotation.y = Math.PI / 2;
-    meshes.push(heatShield);
-
-    // ── Forward flaps (2, near nose — larger, angled) ──
-    const flapMat = new StandardMaterial('flapMat', scene);
-    flapMat.diffuseColor = new Color3(0.08, 0.08, 0.08);
-
+    const baseY = 39.5;
+    const body = MeshBuilder.CreateCylinder('sb', { diameterTop: 9, diameterBottom: 9, height: 36, tessellation: 48 }, scene);
+    body.material = steelMat; body.parent = shipNode; body.position.y = baseY + 18; meshes.push(body);
+    // Nose
+    const nl = MeshBuilder.CreateCylinder('nl', { diameterTop: 6, diameterBottom: 9, height: 8, tessellation: 48 }, scene);
+    nl.material = steelMat; nl.parent = shipNode; nl.position.y = baseY + 40; meshes.push(nl);
+    const nu = MeshBuilder.CreateCylinder('nu', { diameterTop: 0, diameterBottom: 6, height: 8, tessellation: 48 }, scene);
+    nu.material = steelMat; nu.parent = shipNode; nu.position.y = baseY + 48; meshes.push(nu);
+    // Heat shield
+    const shield = MeshBuilder.CreateCylinder('sh', { diameterTop: 9.15, diameterBottom: 9.15, height: 36, tessellation: 48, arc: 0.5 }, scene);
+    shield.material = hsMat; shield.parent = shipNode; shield.position.y = baseY + 18; meshes.push(shield);
+    // Flaps
+    const flapMat = makeMat(scene, 'flap', 0.08, 0.08, 0.08, 0);
     for (let i = 0; i < 2; i++) {
-        const flap = MeshBuilder.CreateBox('fwdFlap' + i, { width: 4.5, height: 7, depth: 0.3 }, scene);
-        flap.material = flapMat;
-        flap.parent = shipNode;
-        flap.position.y = shipBaseY + 34;
-        flap.position.x = i === 0 ? 5.2 : -5.2;
-        flap.rotation.z = i === 0 ? -0.15 : 0.15;
-
-        // Hinge detail
-        const hinge = MeshBuilder.CreateCylinder('fwdHinge' + i, {
-            diameter: 0.6, height: 4.8, tessellation: 12
-        }, scene);
-        hinge.material = darkSteelMat;
-        hinge.parent = flap;
-        hinge.position.y = 3.5;
-        hinge.rotation.z = Math.PI / 2;
-        meshes.push(flap, hinge);
+        const ff = MeshBuilder.CreateBox('ff' + i, { width: 4.5, height: 7, depth: 0.3 }, scene);
+        ff.material = flapMat; ff.parent = shipNode;
+        ff.position.y = baseY + 34; ff.position.x = i === 0 ? 5.2 : -5.2;
+        ff.rotation.z = i === 0 ? -0.15 : 0.15; meshes.push(ff);
+        const af = MeshBuilder.CreateBox('af' + i, { width: 4, height: 5, depth: 0.3 }, scene);
+        af.material = flapMat; af.parent = shipNode;
+        af.position.y = baseY + 4; af.position.z = i === 0 ? 5.2 : -5.2;
+        af.rotation.x = i === 0 ? -0.12 : 0.12; meshes.push(af);
     }
-
-    // ── Aft flaps (2, near bottom — smaller) ──
-    for (let i = 0; i < 2; i++) {
-        const flap = MeshBuilder.CreateBox('aftFlap' + i, { width: 4, height: 5, depth: 0.3 }, scene);
-        flap.material = flapMat;
-        flap.parent = shipNode;
-        flap.position.y = shipBaseY + 4;
-        flap.position.z = i === 0 ? 5.2 : -5.2;
-        flap.rotation.x = i === 0 ? -0.12 : 0.12;
-
-        const hinge = MeshBuilder.CreateCylinder('aftHinge' + i, {
-            diameter: 0.5, height: 4.2, tessellation: 12
-        }, scene);
-        hinge.material = darkSteelMat;
-        hinge.parent = flap;
-        hinge.position.y = 2.5;
-        hinge.rotation.x = Math.PI / 2;
-        meshes.push(flap, hinge);
-    }
-
-    // ── 6 Raptor engines on Starship: 3 sea-level (center) + 3 vacuum (outer, big bell) ──
-    const shipEngineY = shipBaseY - 2;
-
-    // 3 sea-level Raptors (center, gimbaled)
+    // 6 ship engines: 3 sea-level + 3 vacuum
     for (let i = 0; i < 3; i++) {
-        const angle = (i * Math.PI * 2) / 3 + Math.PI / 6;
-        const r = 1.5;
-        const eng = createRaptorEngine(scene, engineMat, nozzleGlowMat, 1.3, 2.5);
-        eng.parent = shipNode;
-        eng.position.set(Math.cos(angle) * r, shipEngineY, Math.sin(angle) * r);
-        meshes.push(eng);
+        const a = (i * Math.PI * 2) / 3 + Math.PI / 6;
+        const e = MeshBuilder.CreateCylinder('se' + i, { diameterTop: 0.78, diameterBottom: 1.3, height: 2.5, tessellation: 12 }, scene);
+        e.material = engMat; e.parent = shipNode; e.position.set(Math.cos(a) * 1.5, baseY - 2, Math.sin(a) * 1.5);
+        meshes.push(e);
     }
-
-    // 3 vacuum Raptors (outer, larger extended nozzle)
     for (let i = 0; i < 3; i++) {
-        const angle = (i * Math.PI * 2) / 3;
-        const r = 3.2;
-        const eng = createRaptorVacuum(scene, engineMat, nozzleGlowMat);
-        eng.parent = shipNode;
-        eng.position.set(Math.cos(angle) * r, shipEngineY - 1, Math.sin(angle) * r);
-        meshes.push(eng);
+        const a = (i * Math.PI * 2) / 3;
+        const e = MeshBuilder.CreateCylinder('ve' + i, { diameterTop: 1.0, diameterBottom: 2.4, height: 4, tessellation: 16 }, scene);
+        e.material = engMat; e.parent = shipNode; e.position.set(Math.cos(a) * 3.2, baseY - 3, Math.sin(a) * 3.2);
+        // Vacuum extension
+        const ext = MeshBuilder.CreateCylinder('vx' + i, { diameterTop: 2.4, diameterBottom: 2.8, height: 2.5, tessellation: 16 }, scene);
+        const extMat = makeMat(scene, 'vxm' + i, 0.25, 0.2, 0.15, 0.1);
+        ext.material = extMat; ext.parent = e; ext.position.y = -3.25;
+        meshes.push(e);
     }
-
-    // ── SpaceX logo band ──
-    const logoBand = MeshBuilder.CreateCylinder('logoBand', {
-        diameterTop: 9.2, diameterBottom: 9.2, height: 0.8, tessellation: 48
-    }, scene);
-    const logoMat = new StandardMaterial('logoMat', scene);
-    logoMat.diffuseColor = Color3.White();
-    logoMat.emissiveColor = new Color3(0.15, 0.15, 0.15);
-    logoBand.material = logoMat;
-    logoBand.parent = shipNode;
-    logoBand.position.y = shipBaseY + 28;
-    meshes.push(logoBand);
-
-    // ── Payload door outline ──
-    const doorFrame = MeshBuilder.CreateBox('doorFrame', { width: 5, height: 8, depth: 0.15 }, scene);
-    const doorMat = new StandardMaterial('doorMat', scene);
-    doorMat.diffuseColor = new Color3(0.6, 0.6, 0.6);
-    doorMat.emissiveColor = new Color3(0.05, 0.05, 0.05);
-    doorFrame.material = doorMat;
-    doorFrame.parent = shipNode;
-    doorFrame.position.set(4.6, shipBaseY + 24, 0);
-    doorFrame.rotation.y = 0;
-    meshes.push(doorFrame);
-
     return { meshes, booster: boosterRoot };
 }
 
-// Creates a single sea-level Raptor engine bell
-function createRaptorEngine(scene: Scene, bodyMat: StandardMaterial, glowMat: StandardMaterial, diameter: number, height: number): Mesh {
-    const eng = MeshBuilder.CreateCylinder('raptor', {
-        diameterTop: diameter * 0.6, diameterBottom: diameter, height: height, tessellation: 16
-    }, scene);
-    eng.material = bodyMat;
-
-    // Inner glow ring
-    const innerRing = MeshBuilder.CreateTorus('raptorRing', {
-        diameter: diameter * 0.7, thickness: 0.08, tessellation: 16
-    }, scene);
-    innerRing.material = glowMat;
-    innerRing.parent = eng;
-    innerRing.position.y = -height / 2;
-
-    return eng;
-}
-
-// Creates a vacuum Raptor engine (much larger extended nozzle)
-function createRaptorVacuum(scene: Scene, bodyMat: StandardMaterial, glowMat: StandardMaterial): Mesh {
-    // Much larger bell for vacuum optimization
-    const eng = MeshBuilder.CreateCylinder('raptorVac', {
-        diameterTop: 1.0, diameterBottom: 2.4, height: 4, tessellation: 20
-    }, scene);
-    eng.material = bodyMat;
-
-    // Extended nozzle (regeneratively cooled — slightly different color)
-    const extension = MeshBuilder.CreateCylinder('vacExtension', {
-        diameterTop: 2.4, diameterBottom: 2.8, height: 2.5, tessellation: 20
-    }, scene);
-    const extMat = new StandardMaterial('vacExtMat', scene);
-    extMat.diffuseColor = new Color3(0.25, 0.2, 0.15);
-    extMat.specularColor = new Color3(0.15, 0.1, 0.1);
-    extension.material = extMat;
-    extension.parent = eng;
-    extension.position.y = -3.25;
-
-    // Inner glow
-    const innerRing = MeshBuilder.CreateTorus('vacRing', {
-        diameter: 2.5, thickness: 0.1, tessellation: 20
-    }, scene);
-    innerRing.material = glowMat;
-    innerRing.parent = eng;
-    innerRing.position.y = -4.5;
-
-    return eng;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// LAUNCH SITE — Mechazilla Tower + Orbital Launch Mount (OLM)
-// Tower: ~145m tall (including lightning rod)
-// OLM: ~30m tall steel-reinforced platform
-// ═══════════════════════════════════════════════════════════════
-
+// ═══ LAUNCH SITE ═══
 function buildLaunchSite(scene: Scene) {
-    const towerMat = new StandardMaterial('towerMat', scene);
-    towerMat.diffuseColor = new Color3(0.45, 0.4, 0.35);
-    towerMat.specularColor = new Color3(0.15, 0.15, 0.15);
-
-    const concreteMat = new StandardMaterial('concreteMat', scene);
-    concreteMat.diffuseColor = new Color3(0.35, 0.33, 0.3);
-    concreteMat.specularColor = Color3.Black();
-
-    const steelPlateMat = new StandardMaterial('steelPlate', scene);
-    steelPlateMat.diffuseColor = new Color3(0.4, 0.38, 0.35);
-    steelPlateMat.specularColor = new Color3(0.2, 0.2, 0.2);
-
-    // ── Orbital Launch Mount (OLM) ──
-    // Large reinforced steel/concrete platform ~30m tall
-    const olmBase = MeshBuilder.CreateBox('olmBase', { width: 25, height: 4, depth: 25 }, scene);
-    olmBase.material = concreteMat;
-    olmBase.position.y = 2;
-
-    // OLM support columns (4 massive legs)
+    const tMat = makeMat(scene, 'tower', 0.45, 0.4, 0.35, 0.15);
+    const cMat = makeMat(scene, 'concrete', 0.35, 0.33, 0.3, 0);
+    const sMat = makeMat(scene, 'steelP', 0.4, 0.38, 0.35, 0.2);
+    // OLM
+    const base = MeshBuilder.CreateBox('olmB', { width: 25, height: 4, depth: 25 }, scene);
+    base.material = cMat; base.position.y = 2;
     for (let i = 0; i < 4; i++) {
-        const col = MeshBuilder.CreateBox('olmCol' + i, { width: 4, height: 28, depth: 4 }, scene);
-        col.material = steelPlateMat;
-        const xOff = (i % 2 === 0 ? 1 : -1) * 8;
-        const zOff = (i < 2 ? 1 : -1) * 8;
-        col.position.set(xOff, 14, zOff);
+        const c = MeshBuilder.CreateBox('oc' + i, { width: 4, height: 28, depth: 4 }, scene);
+        c.material = sMat; c.position.set((i % 2 === 0 ? 1 : -1) * 8, 14, (i < 2 ? 1 : -1) * 8);
     }
-
-    // OLM top plate (launch table) where the rocket sits
-    const olmTop = MeshBuilder.CreateBox('olmTop', { width: 22, height: 3, depth: 22 }, scene);
-    olmTop.material = steelPlateMat;
-    olmTop.position.y = 29;
-
-    // Flame deflector / water-cooled steel plate
-    const deflector = MeshBuilder.CreateBox('deflector', { width: 20, height: 1.5, depth: 20 }, scene);
-    const deflectorMat = new StandardMaterial('deflMat', scene);
-    deflectorMat.diffuseColor = new Color3(0.25, 0.22, 0.2);
-    deflector.material = deflectorMat;
-    deflector.position.y = 27;
-
-    // Hold-down clamp ring (simplified)
-    const clampRing = MeshBuilder.CreateTorus('clampRing', {
-        diameter: 10, thickness: 0.6, tessellation: 32
-    }, scene);
-    clampRing.material = steelPlateMat;
-    clampRing.position.y = 30.5;
-
-    // Individual hold-down clamps (20 clamps around circumference)
-    for (let i = 0; i < 20; i++) {
-        const angle = (i * Math.PI * 2) / 20;
-        const clamp = MeshBuilder.CreateBox('clamp' + i, { width: 0.8, height: 1.5, depth: 0.5 }, scene);
-        clamp.material = steelPlateMat;
-        clamp.position.set(Math.cos(angle) * 5, 31, Math.sin(angle) * 5);
-        clamp.rotation.y = angle;
+    const top = MeshBuilder.CreateBox('ot', { width: 22, height: 3, depth: 22 }, scene);
+    top.material = sMat; top.position.y = 29;
+    // Clamp ring
+    const cr = MeshBuilder.CreateTorus('cr', { diameter: 10, thickness: 0.6, tessellation: 32 }, scene);
+    cr.material = sMat; cr.position.y = 30.5;
+    // Tower (140m)
+    const tx = -18;
+    for (const [dx, dz] of [[-2.5, -2.5], [2.5, -2.5], [-2.5, 2.5], [2.5, 2.5]]) {
+        const c = MeshBuilder.CreateBox('tc', { width: 1.5, height: 140, depth: 1.5 }, scene);
+        c.material = tMat; c.position.set(tx + dx, 70, dz);
     }
-
-    // ── Mechazilla Tower (145m tall steel truss tower) ──
-    // Main tower structure — 4 vertical rails with cross bracing
-    const towerX = -18;
-    const towerHeight = 140;
-
-    // 4 vertical columns
-    const colPositions = [
-        [towerX - 2.5, 0, -2.5],
-        [towerX + 2.5, 0, -2.5],
-        [towerX - 2.5, 0, 2.5],
-        [towerX + 2.5, 0, 2.5]
-    ];
-
-    for (let i = 0; i < 4; i++) {
-        const col = MeshBuilder.CreateBox('towerCol' + i, { width: 1.5, height: towerHeight, depth: 1.5 }, scene);
-        col.material = towerMat;
-        col.position.set(colPositions[i][0], towerHeight / 2, colPositions[i][2]);
+    // Cross bracing
+    for (let l = 0; l < 9; l++) {
+        const y = 10 + l * 15;
+        const b1 = MeshBuilder.CreateBox('hb' + l, { width: 5, height: 0.5, depth: 0.5 }, scene);
+        b1.material = tMat; b1.position.set(tx, y, 0);
+        const b2 = MeshBuilder.CreateBox('hb2' + l, { width: 0.5, height: 0.5, depth: 5 }, scene);
+        b2.material = tMat; b2.position.set(tx, y, 0);
     }
-
-    // Cross bracing (every 15m)
-    for (let level = 0; level < 9; level++) {
-        const y = 10 + level * 15;
-
-        // Horizontal beams
-        const beam1 = MeshBuilder.CreateBox('hBeam' + level + 'a', { width: 5, height: 0.5, depth: 0.5 }, scene);
-        beam1.material = towerMat;
-        beam1.position.set(towerX, y, 0);
-
-        const beam2 = MeshBuilder.CreateBox('hBeam' + level + 'b', { width: 0.5, height: 0.5, depth: 5 }, scene);
-        beam2.material = towerMat;
-        beam2.position.set(towerX, y, 0);
-
-        // Diagonal brace (X-pattern, simplified)
-        if (level % 2 === 0) {
-            const diag = MeshBuilder.CreateBox('diag' + level, { width: 0.3, height: 18, depth: 0.3 }, scene);
-            diag.material = towerMat;
-            diag.position.set(towerX, y + 7.5, 0);
-            diag.rotation.z = 0.35;
-        }
-    }
-
-    // ── Chopstick Arms (2, 36m long tubular steel truss) ──
-    const chopstickMat = new StandardMaterial('chopMat', scene);
-    chopstickMat.diffuseColor = new Color3(0.5, 0.45, 0.4);
-    chopstickMat.specularColor = new Color3(0.2, 0.2, 0.2);
-
-    const chopstickY = 85; // Arms positioned about halfway up tower
-
+    // Chopstick arms
+    const chMat = makeMat(scene, 'chop', 0.5, 0.45, 0.4, 0.2);
     for (let i = 0; i < 2; i++) {
-        const armRoot = new TransformNode('chopstick' + i, scene);
-        armRoot.position.set(towerX, chopstickY, (i - 0.5) * 7);
-
-        // Main arm beam (36m long)
         const arm = MeshBuilder.CreateBox('arm' + i, { width: 36, height: 2, depth: 1.8 }, scene);
-        arm.material = chopstickMat;
-        arm.parent = armRoot;
-        arm.position.x = 18 + 2.5; // Extends from tower toward rocket
-
-        // Arm top rail
-        const rail = MeshBuilder.CreateBox('armRail' + i, { width: 20, height: 0.3, depth: 0.5 }, scene);
-        const railMat = new StandardMaterial('railMat' + i, scene);
-        railMat.diffuseColor = new Color3(0.6, 0.55, 0.5);
-        rail.material = railMat;
-        rail.parent = armRoot;
-        rail.position.set(28, 1.2, 0);
-
-        // Arm support strut (triangular brace back to tower)
-        const strut = MeshBuilder.CreateBox('armStrut' + i, { width: 0.6, height: 25, depth: 0.6 }, scene);
-        strut.material = towerMat;
-        strut.parent = armRoot;
-        strut.position.set(8, -10, 0);
-        strut.rotation.z = 0.5;
+        arm.material = chMat; arm.position.set(tx + 20.5, 85, (i - 0.5) * 7);
     }
-
-    // ── QD (Quick Disconnect) Arm ──
-    const qdY = 105; // Higher up, connects to the ship
-    const qdArm = MeshBuilder.CreateBox('qdArm', { width: 22, height: 1.5, depth: 2 }, scene);
-    const qdMat = new StandardMaterial('qdMat', scene);
-    qdMat.diffuseColor = new Color3(0.55, 0.5, 0.45);
-    qdArm.material = qdMat;
-    qdArm.position.set(towerX + 13, qdY, 0);
-
-    // QD connector plate at end
-    const qdPlate = MeshBuilder.CreateBox('qdPlate', { width: 2, height: 3, depth: 2.5 }, scene);
-    qdPlate.material = steelPlateMat;
-    qdPlate.position.set(towerX + 24, qdY, 0);
-
-    // ── Lightning rod (10m tall, top of tower) ──
-    const rod = MeshBuilder.CreateCylinder('lightningRod', {
-        diameterTop: 0.08, diameterBottom: 0.3, height: 12, tessellation: 8
-    }, scene);
-    rod.material = towerMat;
-    rod.position.set(towerX, towerHeight + 6, 0);
-
-    // ── Platform/carriage for chopsticks (on tower rails) ──
-    const carriage = MeshBuilder.CreateBox('carriage', { width: 7, height: 4, depth: 7 }, scene);
-    carriage.material = steelPlateMat;
-    carriage.position.set(towerX, chopstickY - 3, 0);
-
-    // ── Ground-level infrastructure ──
+    // QD arm
+    const qd = MeshBuilder.CreateBox('qd', { width: 22, height: 1.5, depth: 2 }, scene);
+    qd.material = chMat; qd.position.set(tx + 13, 105, 0);
+    // Lightning rod
+    const rod = MeshBuilder.CreateCylinder('rod', { diameterTop: 0.08, diameterBottom: 0.3, height: 12, tessellation: 8 }, scene);
+    rod.material = tMat; rod.position.set(tx, 146, 0);
     // Concrete pad
-    const padGround = MeshBuilder.CreateBox('padGround', { width: 60, height: 0.5, depth: 60 }, scene);
-    padGround.material = concreteMat;
-    padGround.position.y = 0.25;
-
-    // Propellant tank farm (simplified cylindrical tanks)
-    const tankMat = new StandardMaterial('tankMat', scene);
-    tankMat.diffuseColor = Color3.White();
-    tankMat.specularColor = new Color3(0.3, 0.3, 0.3);
-
+    const pad = MeshBuilder.CreateBox('pad', { width: 60, height: 0.5, depth: 60 }, scene);
+    pad.material = cMat; pad.position.y = 0.25;
+    // Fuel tanks
+    const wMat = makeMat(scene, 'white', 0.9, 0.9, 0.9, 0.3);
     for (let i = 0; i < 4; i++) {
-        const tank = MeshBuilder.CreateCylinder('fuelTank' + i, {
-            diameterTop: 5, diameterBottom: 5, height: 20, tessellation: 20
-        }, scene);
-        tank.material = tankMat;
-        tank.position.set(-40 + i * 8, 10, 35);
-
-        // Tank dome
-        const dome = MeshBuilder.CreateSphere('tankDome' + i, {
-            diameter: 5, slice: 0.5, segments: 16
-        }, scene);
-        dome.material = tankMat;
-        dome.position.set(-40 + i * 8, 20, 35);
+        const tk = MeshBuilder.CreateCylinder('ft' + i, { diameterTop: 5, diameterBottom: 5, height: 20, tessellation: 16 }, scene);
+        tk.material = wMat; tk.position.set(-40 + i * 8, 10, 35);
     }
 }
 
-// ── Exhaust particles ──
+// ═══ EARTH WITH ATMOSPHERE ═══
+function buildEarth(scene: Scene, parent: TransformNode) {
+    // Earth sphere
+    const earthSphere = MeshBuilder.CreateSphere('earth', { diameter: EARTH_R * 2, segments: 64 }, scene);
+    const earthMat = new StandardMaterial('earthMat', scene);
+    earthMat.diffuseColor = new Color3(0.15, 0.35, 0.65);
+    earthMat.specularColor = new Color3(0.2, 0.2, 0.3);
+    earthSphere.material = earthMat;
+    earthSphere.parent = parent;
+
+    // Land masses (green/brown patches as slightly-offset spheres)
+    const landMat = new StandardMaterial('landMat', scene);
+    landMat.diffuseColor = new Color3(0.25, 0.45, 0.2);
+    landMat.specularColor = Color3.Black();
+    for (let i = 0; i < 8; i++) {
+        const land = MeshBuilder.CreateDisc('land' + i, { radius: 40 + Math.random() * 80, tessellation: 20 }, scene);
+        land.material = landMat; land.parent = parent;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI * 0.8 + 0.1;
+        const r = EARTH_R + 0.5;
+        land.position.set(r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
+        land.lookAt(Vector3.Zero());
+    }
+
+    // Atmosphere glow (slightly larger sphere with emissive blue)
+    const atmosphere = MeshBuilder.CreateSphere('atmo', { diameter: EARTH_R * 2 + 30, segments: 48 }, scene);
+    const atmoMat = new StandardMaterial('atmoMat', scene);
+    atmoMat.diffuseColor = new Color3(0.3, 0.5, 0.9);
+    atmoMat.emissiveColor = new Color3(0.1, 0.2, 0.5);
+    atmoMat.alpha = 0.15;
+    atmoMat.backFaceCulling = false;
+    atmosphere.material = atmoMat;
+    atmosphere.parent = parent;
+
+    // Cloud layer
+    const clouds = MeshBuilder.CreateSphere('clouds', { diameter: EARTH_R * 2 + 10, segments: 48 }, scene);
+    const cloudMat = new StandardMaterial('cloudMat', scene);
+    cloudMat.diffuseColor = Color3.White();
+    cloudMat.emissiveColor = new Color3(0.3, 0.3, 0.3);
+    cloudMat.alpha = 0.2;
+    cloudMat.backFaceCulling = false;
+    clouds.material = cloudMat;
+    clouds.parent = parent;
+
+    return { earthSphere, atmosphere, clouds };
+}
+
+// ═══ MOON SPHERE ═══
+function buildMoonSphere(scene: Scene, parent: TransformNode): Mesh {
+    const moon = MeshBuilder.CreateSphere('moon', { diameter: MOON_R * 2, segments: 48 }, scene);
+    const moonMat = new StandardMaterial('moonMat', scene);
+    moonMat.diffuseColor = new Color3(0.55, 0.53, 0.48);
+    moonMat.specularColor = new Color3(0.05, 0.05, 0.05);
+    moon.material = moonMat;
+    moon.parent = parent;
+    // Mare (dark patches)
+    for (let i = 0; i < 6; i++) {
+        const mare = MeshBuilder.CreateDisc('mare' + i, { radius: 15 + Math.random() * 25, tessellation: 20 }, scene);
+        const mareMat = makeMat(scene, 'mm' + i, 0.35, 0.33, 0.3, 0);
+        mare.material = mareMat; mare.parent = parent;
+        const th = Math.random() * Math.PI * 2, ph = Math.random() * Math.PI;
+        const r = MOON_R + 0.3;
+        mare.position.set(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th));
+        mare.lookAt(Vector3.Zero());
+    }
+    return moon;
+}
+
+// ═══ MOON SURFACE (for landing detail) ═══
+function buildMoonSurface(scene: Scene): TransformNode {
+    const root = new TransformNode('moonSurf', scene);
+    const g = MeshBuilder.CreateGround('mg', { width: 800, height: 800, subdivisions: 80 }, scene);
+    const gm = makeMat(scene, 'mgs', 0.5, 0.48, 0.44, 0.05);
+    g.material = gm; g.parent = root;
+    for (let i = 0; i < 30; i++) {
+        const r = 4 + Math.random() * 15;
+        const c = MeshBuilder.CreateDisc('cr' + i, { radius: r, tessellation: 24 }, scene);
+        c.material = makeMat(scene, 'crm' + i, 0.38, 0.36, 0.32, 0);
+        c.parent = root; c.rotation.x = Math.PI / 2;
+        c.position.set((Math.random() - 0.5) * 500, 0.05, (Math.random() - 0.5) * 500);
+        const rim = MeshBuilder.CreateTorus('rim' + i, { diameter: r * 2, thickness: r * 0.12, tessellation: 20 }, scene);
+        rim.material = makeMat(scene, 'rmm' + i, 0.52, 0.5, 0.46, 0);
+        rim.parent = root; rim.position.copyFrom(c.position); rim.position.y = 0.2; rim.rotation.x = Math.PI / 2;
+    }
+    return root;
+}
+
+// ═══ MOON BASE ═══
+function buildMoonBase(scene: Scene): TransformNode {
+    const root = new TransformNode('moonBase', scene);
+    const habMat = makeMat(scene, 'hab', 0.85, 0.85, 0.82, 0.3);
+    const metalMat = makeMat(scene, 'metal', 0.5, 0.5, 0.5, 0.2);
+    const panelMat = new StandardMaterial('panel', scene);
+    panelMat.diffuseColor = new Color3(0.1, 0.1, 0.35);
+    panelMat.emissiveColor = new Color3(0.02, 0.02, 0.08);
+    const bx = 50, bz = 30;
+    // Habitat domes
+    for (let i = 0; i < 3; i++) {
+        const dome = MeshBuilder.CreateSphere('dome' + i, { diameter: 12, slice: 0.5, segments: 20 }, scene);
+        dome.material = habMat; dome.parent = root; dome.position.set(bx + i * 18, 0, bz);
+    }
+    // Connecting tunnels
+    for (let i = 0; i < 2; i++) {
+        const tun = MeshBuilder.CreateCylinder('tun' + i, { diameter: 3, height: 16, tessellation: 12 }, scene);
+        tun.material = metalMat; tun.parent = root;
+        tun.position.set(bx + 9 + i * 18, 1.5, bz); tun.rotation.z = Math.PI / 2;
+    }
+    // Solar panel arrays
+    for (let i = 0; i < 4; i++) {
+        const pole = MeshBuilder.CreateCylinder('pole' + i, { diameter: 0.3, height: 6, tessellation: 8 }, scene);
+        pole.material = metalMat; pole.parent = root; pole.position.set(bx + i * 12, 3, bz + 20);
+        const panel = MeshBuilder.CreateBox('sp' + i, { width: 8, height: 0.1, depth: 4 }, scene);
+        panel.material = panelMat; panel.parent = root; panel.position.set(bx + i * 12, 6.5, bz + 20);
+        panel.rotation.x = -0.3;
+    }
+    // Comms dish
+    const dish = MeshBuilder.CreateSphere('dish', { diameter: 5, slice: 0.3, segments: 16 }, scene);
+    dish.material = habMat; dish.parent = root; dish.position.set(bx - 10, 8, bz);
+    dish.rotation.x = -0.5;
+    const dishPole = MeshBuilder.CreateCylinder('dp', { diameter: 0.4, height: 8, tessellation: 8 }, scene);
+    dishPole.material = metalMat; dishPole.parent = root; dishPole.position.set(bx - 10, 4, bz);
+    // Landing pad markers
+    for (let i = 0; i < 8; i++) {
+        const a = (i * Math.PI * 2) / 8;
+        const marker = MeshBuilder.CreateBox('lm' + i, { width: 3, height: 0.05, depth: 0.5 }, scene);
+        const mMat = new StandardMaterial('lmm' + i, scene);
+        mMat.diffuseColor = new Color3(0.8, 0.4, 0.1); mMat.emissiveColor = new Color3(0.3, 0.15, 0.05);
+        marker.material = mMat; marker.parent = root;
+        marker.position.set(Math.cos(a) * 15, 0.05, Math.sin(a) * 15); marker.rotation.y = a;
+    }
+    return root;
+}
+
+// ═══ ASTRONAUT ═══
+function buildAstronaut(scene: Scene): { root: TransformNode } {
+    const root = new TransformNode('astronaut', scene);
+    const suitMat = makeMat(scene, 'suit', 0.9, 0.9, 0.88, 0.2);
+    const visorMat = new StandardMaterial('visor', scene);
+    visorMat.diffuseColor = new Color3(0.1, 0.15, 0.3);
+    visorMat.emissiveColor = new Color3(0.05, 0.08, 0.15);
+    // Body
+    MeshBuilder.CreateCapsule('torso', { height: 1.6, radius: 0.4 }, scene).material = suitMat;
+    const torso = scene.getMeshByName('torso')!; torso.parent = root;
+    // Helmet
+    const head = MeshBuilder.CreateSphere('helmet', { diameter: 0.7, segments: 12 }, scene);
+    head.material = suitMat; head.parent = root; head.position.y = 1.2;
+    const visor = MeshBuilder.CreateSphere('visorM', { diameter: 0.5, segments: 12 }, scene);
+    visor.material = visorMat; visor.parent = root; visor.position.set(0.15, 1.25, 0);
+    // Backpack (PLSS)
+    const bp = MeshBuilder.CreateBox('plss', { width: 0.5, height: 0.7, depth: 0.3 }, scene);
+    bp.material = suitMat; bp.parent = root; bp.position.set(-0.3, 0.5, 0);
+    // Legs
+    for (let i = 0; i < 2; i++) {
+        const leg = MeshBuilder.CreateCylinder('leg' + i, { diameter: 0.25, height: 0.9, tessellation: 8 }, scene);
+        leg.material = suitMat; leg.parent = root;
+        leg.position.set(0, -0.7, (i - 0.5) * 0.3);
+    }
+    return { root };
+}
+
+// ═══ ROVER ═══
+function buildRover(scene: Scene): { root: TransformNode, body: Mesh } {
+    const root = new TransformNode('rover', scene);
+    root.position.set(70, 0, 30);
+    const bodyMat = makeMat(scene, 'roverBody', 0.7, 0.7, 0.68, 0.2);
+    const wheelMat = makeMat(scene, 'roverWheel', 0.25, 0.25, 0.25, 0.1);
+    // Chassis
+    const body = MeshBuilder.CreateBox('roverChassis', { width: 4, height: 1, depth: 2.5 }, scene);
+    body.material = bodyMat; body.parent = root;
+    // Wheels
+    for (const [x, z] of [[-1.8, -1.2], [-1.8, 1.2], [1.8, -1.2], [1.8, 1.2]]) {
+        const w = MeshBuilder.CreateCylinder('rw', { diameter: 0.8, height: 0.3, tessellation: 16 }, scene);
+        w.material = wheelMat; w.parent = root; w.position.set(x, -0.3, z); w.rotation.x = Math.PI / 2;
+    }
+    // Antenna
+    const ant = MeshBuilder.CreateCylinder('rant', { diameterTop: 0.02, diameterBottom: 0.08, height: 2, tessellation: 6 }, scene);
+    ant.material = bodyMat; ant.parent = root; ant.position.set(-1.5, 1.5, 0);
+    const dish = MeshBuilder.CreateDisc('rdish', { radius: 0.4, tessellation: 12 }, scene);
+    dish.material = bodyMat; dish.parent = root; dish.position.set(-1.5, 2.5, 0); dish.rotation.z = 0.3;
+    // Solar panel
+    const sp = MeshBuilder.CreateBox('rsp', { width: 3, height: 0.05, depth: 1.5 }, scene);
+    const spMat = new StandardMaterial('rspMat', scene);
+    spMat.diffuseColor = new Color3(0.1, 0.1, 0.35);
+    spMat.emissiveColor = new Color3(0.02, 0.02, 0.06);
+    sp.material = spMat; sp.parent = root; sp.position.y = 1.2;
+    return { root, body };
+}
+
+// ═══ PARTICLES ═══
 function createExhaustParticles(scene: Scene, emitter: Mesh): ParticleSystem {
     const ps = new ParticleSystem('exhaust', 5000, scene);
     ps.createPointEmitter(new Vector3(-2, -1, -2), new Vector3(2, -1, 2));
-
     ps.color1 = new Color4(1, 0.7, 0.15, 1);
     ps.color2 = new Color4(1, 0.4, 0.08, 0.9);
     ps.colorDead = new Color4(0.4, 0.3, 0.2, 0);
-
-    ps.minSize = 2;
-    ps.maxSize = 6;
-    ps.minLifeTime = 0.3;
-    ps.maxLifeTime = 1.2;
-    ps.emitRate = 0;
-    ps.blendMode = ParticleSystem.BLENDMODE_ADD;
-
-    ps.minEmitPower = 25;
-    ps.maxEmitPower = 50;
-    ps.updateSpeed = 0.02;
-
-    ps.gravity = new Vector3(0, -8, 0);
-    ps.emitter = emitter;
-
-    ps.start();
+    ps.minSize = 2; ps.maxSize = 6;
+    ps.minLifeTime = 0.3; ps.maxLifeTime = 1.2;
+    ps.emitRate = 0; ps.blendMode = ParticleSystem.BLENDMODE_ADD;
+    ps.minEmitPower = 25; ps.maxEmitPower = 50;
+    ps.updateSpeed = 0.02; ps.gravity = new Vector3(0, -8, 0);
+    ps.emitter = emitter; ps.start();
     return ps;
 }
 
-// ── Starfield ──
-function createStarfield(scene: Scene) {
-    const starMat = new StandardMaterial('starMat', scene);
-    starMat.emissiveColor = Color3.White();
-    starMat.disableLighting = true;
+function createExhaustCore(scene: Scene, emitter: Mesh): ParticleSystem {
+    const ps = new ParticleSystem('core', 2000, scene);
+    ps.createPointEmitter(new Vector3(-0.5, -1, -0.5), new Vector3(0.5, -1, 0.5));
+    ps.color1 = new Color4(0.8, 0.85, 1, 1);
+    ps.color2 = new Color4(1, 1, 0.9, 0.95);
+    ps.colorDead = new Color4(1, 0.6, 0.1, 0);
+    ps.minSize = 0.5; ps.maxSize = 2;
+    ps.minLifeTime = 0.1; ps.maxLifeTime = 0.4;
+    ps.emitRate = 0; ps.blendMode = ParticleSystem.BLENDMODE_ADD;
+    ps.minEmitPower = 30; ps.maxEmitPower = 60;
+    ps.updateSpeed = 0.01; ps.gravity = new Vector3(0, -5, 0);
+    ps.emitter = emitter; ps.start();
+    return ps;
+}
 
+function createStarfield(scene: Scene) {
+    const m = new StandardMaterial('starM', scene);
+    m.emissiveColor = Color3.White(); m.disableLighting = true;
     for (let i = 0; i < 600; i++) {
-        const star = MeshBuilder.CreateSphere('star' + i, { diameter: 0.3 + Math.random() * 0.6 }, scene);
-        star.material = starMat;
+        const s = MeshBuilder.CreateSphere('s' + i, { diameter: 0.3 + Math.random() * 0.6 }, scene);
+        s.material = m;
         const r = 800 + Math.random() * 700;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.random() * Math.PI;
-        star.position.set(
-            r * Math.sin(phi) * Math.cos(theta),
-            r * Math.cos(phi),
-            r * Math.sin(phi) * Math.sin(theta)
-        );
+        const th = Math.random() * Math.PI * 2, ph = Math.random() * Math.PI;
+        s.position.set(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th));
     }
 }
 
-// ── Moon surface ──
-function buildMoonSurface(scene: Scene): TransformNode {
-    const root = new TransformNode('moonRoot', scene);
-
-    const moonGround = MeshBuilder.CreateGround('moonGround', { width: 800, height: 800, subdivisions: 80 }, scene);
-    const moonMat = new StandardMaterial('moonMat', scene);
-    moonMat.diffuseColor = new Color3(0.5, 0.48, 0.44);
-    moonMat.specularColor = new Color3(0.05, 0.05, 0.05);
-    moonGround.material = moonMat;
-    moonGround.parent = root;
-
-    // Craters (more realistic spread)
-    for (let i = 0; i < 30; i++) {
-        const radius = 4 + Math.random() * 15;
-        const crater = MeshBuilder.CreateDisc('crater' + i, { radius: radius, tessellation: 28 }, scene);
-        const cMat = new StandardMaterial('craterMat' + i, scene);
-        cMat.diffuseColor = new Color3(0.38, 0.36, 0.32);
-        cMat.specularColor = Color3.Black();
-        crater.material = cMat;
-        crater.parent = root;
-        crater.rotation.x = Math.PI / 2;
-        crater.position.set(
-            (Math.random() - 0.5) * 500,
-            0.05,
-            (Math.random() - 0.5) * 500
-        );
-
-        // Crater rim
-        const rim = MeshBuilder.CreateTorus('rim' + i, {
-            diameter: radius * 2, thickness: radius * 0.15, tessellation: 24
-        }, scene);
-        const rimMat = new StandardMaterial('rimMat' + i, scene);
-        rimMat.diffuseColor = new Color3(0.52, 0.5, 0.46);
-        rim.material = rimMat;
-        rim.parent = root;
-        rim.position.set(crater.position.x, 0.2, crater.position.z);
-        rim.rotation.x = Math.PI / 2;
-    }
-
-    return root;
+// ═══ HELPER ═══
+function makeMat(scene: Scene, name: string, r: number, g: number, b: number, spec: number): StandardMaterial {
+    const m = new StandardMaterial(name, scene);
+    m.diffuseColor = new Color3(r, g, b);
+    m.specularColor = new Color3(spec, spec, spec);
+    return m;
 }

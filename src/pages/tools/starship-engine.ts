@@ -68,14 +68,15 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     const shipCore = makeExhaust(scene, exEmit, 3000, 1, 4, 120, 200, 0.15, 0.6, new Color4(0.6, 0.75, 1, 1), new Color4(1, 1, 0.9, 0.9));
 
     // Glowing exhaust cone mesh (translucent, visible during thrust)
-    const exhaustCone = MeshBuilder.CreateCylinder('exCone', { diameterTop: 8, diameterBottom: 1, height: 60, tessellation: 16 }, scene);
+    // Cone starts at engine nozzles (y=-37) and extends 60m downward
+    const exhaustCone = MeshBuilder.CreateCylinder('exCone', { diameterTop: 10, diameterBottom: 0.5, height: 60, tessellation: 16 }, scene);
     const coneMat = new StandardMaterial('coneMat', scene);
     coneMat.diffuseColor = new Color3(1, 0.5, 0.1);
     coneMat.emissiveColor = new Color3(0.6, 0.25, 0.02);
-    coneMat.alpha = 0; // Start invisible
+    coneMat.alpha = 0;
     coneMat.backFaceCulling = false;
     exhaustCone.material = coneMat;
-    exhaustCone.parent = shipRoot; exhaustCone.position.y = -67; // 30m below engines
+    exhaustCone.parent = shipRoot; exhaustCone.position.y = -37 - 30; // Center of 60m cone, starts at engines
 
     // Launch smoke/steam (water deluge)
     const smokeEmit = MeshBuilder.CreateBox('smE', { size: 8 }, scene);
@@ -130,22 +131,24 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             else if (t < 45) { state.phase = 'separation'; state.throttle = 0; } // ~25km alt
             else if (t < 55) { state.phase = 'ses'; state.throttle = 65; }
             else if (t < 90) { state.phase = 'orbit'; state.throttle = lerp(65, 5, (t - 55) / 35); }
-            else if (t < 100) { state.phase = 'tli'; state.throttle = 75; } // Trans-Lunar Injection
-            else if (t < 160) { state.phase = 'coast'; state.throttle = 2; }
-            else if (t < 175) { state.phase = 'lunar-approach'; state.throttle = lerp(2, 15, (t - 160) / 15); }
-            else if (t < 195) { state.phase = 'landing-burn'; state.throttle = lerp(0, 85, Math.min(1, (t - 175) / 5)); }
-            else if (t < 205) { state.phase = 'touchdown'; state.throttle = lerp(30, 0, (t - 195) / 10); }
-            else if (t < 215) { state.phase = 'landed'; state.throttle = 0; }
-            else if (t < 235) { state.phase = 'eva'; state.throttle = 0; }
-            else if (t < 275) { state.phase = 'exploration'; state.throttle = 0; }
+            else if (t < 100) { state.phase = 'tli'; state.throttle = 75; }
+            else if (t < 125) { state.phase = 'coast'; state.throttle = 2; } // Shortened coast
+            else if (t < 140) { state.phase = 'lunar-approach'; state.throttle = lerp(2, 15, (t - 125) / 15); }
+            else if (t < 160) { state.phase = 'landing-burn'; state.throttle = lerp(0, 85, Math.min(1, (t - 140) / 5)); }
+            else if (t < 170) { state.phase = 'touchdown'; state.throttle = lerp(30, 0, (t - 160) / 10); }
+            else if (t < 180) { state.phase = 'landed'; state.throttle = 0; }
+            else if (t < 200) { state.phase = 'eva'; state.throttle = 0; }
+            else if (t < 240) { state.phase = 'exploration'; state.throttle = 0; }
             else { state.phase = 'complete'; state.throttle = 0; }
 
-            // ── PHYSICS (slowed significantly so ship stays visible near Earth) ──
-            const accel = state.throttle / 100 * 0.8;
-            const grav = state.altitude < 100 ? 0.012 : 0.002;
+            // ── PHYSICS (gradual acceleration, capped at escape velocity 11.2 km/s) ──
+            const ESCAPE_V = 11.2; // km/s escape velocity cap
+            const accel = state.throttle / 100 * 0.6;
+            const grav = state.altitude < 100 ? 0.015 : 0.003;
             const moving = !['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase);
             if (t >= 0 && moving) {
                 state.velocity += (accel - grav) * dt;
+                state.velocity = Math.min(state.velocity, ESCAPE_V); // Cap at escape velocity
                 state.altitude += state.velocity * dt;
                 state.downrange += state.velocity * dt * 0.7;
                 state.fuel = Math.max(0, state.fuel - state.throttle * dt * 0.025);
@@ -207,7 +210,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             }
 
             // Landing burn reignition flash
-            if (state.phase === 'landing-burn' && t > 175 && t < 177) {
+            if (state.phase === 'landing-burn' && t > 140 && t < 143) {
                 shipExhaust.emitRate = 5000; shipExhaust.maxSize = 20;
                 shipCore.emitRate = 2000;
                 engineLight.intensity = 8;
@@ -255,16 +258,16 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 ship.booster.rotation.z = lerp(ship.booster.rotation.z, boosterRotZ, dt * 3);
             }
 
-            // ── CAMERA ──
+            // ── CAMERA (stays close during launch, slowly zooms out) ──
             if (state.phase !== 'prelaunch') {
                 const cTargetY = (boosterDetached && t > 42 && t < 100 && state.altitude < 200)
                     ? (shipRoot.position.y + boosterY) / 2
                     : shipRoot.position.y;
                 cam.target.y = lerp(cam.target.y, cTargetY, dt * 2);
-                // Zoom out as altitude increases (see Earth curvature)
+                // Gentle zoom out — stay focused on ship
                 if (state.altitude > 30) {
-                    const desiredR = 200 + state.altitude * 3;
-                    cam.radius = lerp(cam.radius, Math.min(desiredR, 30000), dt * 0.8);
+                    const desiredR = 200 + state.altitude * 0.5;
+                    cam.radius = lerp(cam.radius, Math.min(desiredR, 800), dt * 0.5);
                 }
             }
             // Shake
@@ -315,7 +318,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             if (['eva', 'exploration', 'complete'].includes(state.phase)) {
                 astro.root.setEnabled(true);
                 if (state.phase === 'eva') {
-                    const ep = (t - 215) / 20;
+                    const ep = (t - 180) / 20;
                     astro.root.position.set(shipRoot.position.x + 15 + ep * 20, moonLandingY + 1.2 + Math.abs(Math.sin(t * 3)) * 0.3, 0);
                 }
             }

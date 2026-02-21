@@ -1,6 +1,6 @@
 import { Header } from "@/components/custom/header";
 import { useState } from "react";
-import { Bot, Brain, Globe, Cpu, Shield, Sparkles, ExternalLink, Github, Eye, Zap, Network, LayoutGrid, List } from "lucide-react";
+import { Bot, Brain, Globe, Cpu, Shield, Sparkles, ExternalLink, Github, Eye, Zap, Network, LayoutGrid, List, ScanEye } from "lucide-react";
 import { tagPillClass, tagBadgeClass } from "@/lib/tag-colors";
 
 interface Project {
@@ -34,18 +34,21 @@ const projects: Project[] = [
     image: "/images/projects/agentforge.png",
   },
   {
-    title: "Project Orion",
-    description: "Completed MOVE Fellowship project at Handshake AI focused on high-quality reasoning refinement, safety injections, and model corrections. Specialized work leveraging PhD-level expertise in AI safety and alignment.",
+    title: "VLMDraw: Physics-Based AI Image Detection",
+    description: "Detecting AI-generated images through physics-based reasoning — analyzing depth maps, brightness-depth consistency, and light estimation to expose how AI fails to model real-world physics. A 3-feature classifier achieves 68.3% accuracy with just depth gradients and brightness edge analysis.",
     details: [
-      "High-quality reasoning annotations and corrections",
-      "Safety injections and 'rogue behavior' testing",
-      "Jailbreak detection and mitigation strategies",
-      "PhD-level expertise in targeted model refinement phases"
+      "Key finding: AI images are paradoxically too physically consistent — overly smooth brightness-depth relationships and symmetric depth distributions",
+      "Yet AI images show sharper depth gradients (d=0.653), revealing lack of true 3D understanding",
+      "3-feature model (grad_mean, brightness_at_depth_edges, n_valid_patches) outperforms full 27-feature model by 13.3pp",
+      "27 physics features across depth statistics, brightness-depth coupling, and light estimation pipelines",
+      "PCA reveals real/fake signal is not dominant — scene complexity dominates, requiring targeted feature selection"
     ],
-    tags: ["AI Safety", "Model Alignment", "Handshake AI", "MOVE Fellowship"],
-    status: "completed",
-    icon: Bot,
-    color: "purple",
+    tags: ["Computer Vision", "AI Detection", "Physics-Based", "Depth Estimation", "Research"],
+    status: "active",
+    icon: ScanEye,
+    color: "rose",
+    github: "https://github.com/zizhao-hu/vlmdraw",
+    image: "/images/projects/vlmdraw-depth.png",
   },
   {
     title: "DREAM-C2L: Continual Learning Framework",

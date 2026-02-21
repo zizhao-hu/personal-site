@@ -127,37 +127,105 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     let moonLandingY = 0;
 
     // ═══ REAL PHYSICS CONSTANTS ═══
-    // 1 scene unit ≈ 1 meter (rocket scale). E_R is exaggerated for visual.
-    // Surface gravity: g = GM/R² → GM = g × R²
-    const G_SURFACE = 9.81;                          // Exact Earth surface gravity (m/s²)
-    const GM_E = G_SURFACE * E_R * E_R;              // = 981,000,000
-    const GM_M = GM_E / 81.3;                        // Moon mass ratio (exact)
+    const G_SURFACE = 9.81;                          // Exact Earth surface gravity
+    const GM_E = G_SURFACE * E_R * E_R;              // 981,000,000
+    const GM_M = GM_E / 81.3;                        // Moon: 1/81.3 of Earth
 
     // ═══ ROCKET MASS MODEL (tons) ═══
-    // Booster (Super Heavy): 200t dry + 3400t propellant = 3600t
-    // Ship (Starship): 120t dry + 1200t propellant = 1320t
     const BOOSTER_DRY = 200, BOOSTER_PROP = 3400;
     const SHIP_DRY = 120, SHIP_PROP = 1200;
+    const BOOSTER_COM_Y = 0, BOOSTER_ENGINE_Y = -35.5;
+    const SHIP_COM_Y = 65.5, SHIP_ENGINE_Y = 36.5;
 
-    // Thrust: 33 Raptors × 2.3 MN = 74.4 MN (booster), 6 Raptors × 1.5 MN = 9 MN (ship)
-    // Acceleration = Thrust / mass. At launch: 74.4e6 / (5000e3 × 9.81) ≈ 1.52g
-    const BOOSTER_THRUST_ACCEL = G_SURFACE * 1.5;    // TWR 1.5 at full stack mass
-    const SHIP_THRUST_ACCEL = G_SURFACE * 0.9;       // Ship-only TWR ~0.9 (needs to build up)
+    // ═══ PRE-PLANNED TRAJECTORY ═══
+    // Orbit parameters (scene units relative to Earth center at origin)
+    const ORBIT_ALT = 800;                             // LEO altitude above E_R
+    const ORBIT_R = E_R + ORBIT_ALT;                   // Orbital radius
+    const LUNAR_ORBIT_R = M_R + 400;                   // Lunar orbit radius
 
-    // ═══ CENTER OF MASS MODEL ═══
-    // Positions relative to shipRoot origin (booster center = y=0)
-    const BOOSTER_COM_Y = 0;       // Booster CoM at center of 71m booster
-    const BOOSTER_ENGINE_Y = -35.5; // Engine position (bottom of booster)
-    const SHIP_COM_Y = 39.5 + 26;  // Ship CoM at ~center of 52m ship
-    const SHIP_ENGINE_Y = 36.5;     // Ship engine position
+    // Trajectory function: given mission time → target (x, y) in scene coords
+    function trajectoryTarget(t: number, _phase: string): { x: number; y: number } {
+        if (t < 0) return { x: 0, y: E_R + 28 + 35.5 }; // On pad
 
-    // ═══ ORBITAL MECHANICS STATE ═══
-    let px = 0, py = E_R + 28 + 35.5; // Ship position (scene coords)
-    let vx = 0, vy = 0;               // Velocity (units/s)
-    let heading = 0;                    // Ship orientation (rad, 0=up)
-    let angularVel = 0;                 // Angular velocity (rad/s)
-    let fuelFracBooster = 1.0;          // Booster fuel remaining (0–1)
-    let fuelFracShip = 1.0;             // Ship fuel remaining (0–1)
+        // ── ASCENT (0–42s): vertical → gravity turn → orbit insertion ──
+        if (t < 42) {
+            // Progress through ascent: 0 → 1
+            const p = Math.min(1, t / 42);
+            // Altitude: accelerates upward, reaches ORBIT_ALT
+            const alt = ORBIT_ALT * (3 * p * p - 2 * p * p * p); // Smooth S-curve
+            // Angle from vertical (gravity turn): 0 → ~45°
+            const angle = p * p * (Math.PI / 4);
+            const r = E_R + 28 + alt;
+            return { x: Math.sin(angle) * r, y: Math.cos(angle) * r };
+        }
+
+        // ── ORBIT (42–80s): circular orbit, angular position increases ──
+        if (t < 80) {
+            const orbitStart = Math.PI / 4; // Where ascent ended
+            const orbitProgress = (t - 42) / 38;
+            const angle = orbitStart + orbitProgress * (Math.PI * 0.6);
+            return { x: Math.sin(angle) * ORBIT_R, y: Math.cos(angle) * ORBIT_R };
+        }
+
+        // ── TLI BURN (80–95s): prograde, orbit faster + climb ──
+        if (t < 95) {
+            const tliBase = Math.PI / 4 + Math.PI * 0.6; // Where orbit ended
+            const tliProgress = (t - 80) / 15;
+            const angle = tliBase + tliProgress * (Math.PI * 0.5);
+            const r = ORBIT_R + tliProgress * ORBIT_ALT * 2; // Climbing out
+            return { x: Math.sin(angle) * r, y: Math.cos(angle) * r };
+        }
+
+        // ── COAST (95–120s): transfer toward Moon ──
+        if (t < 120) {
+            const coastProgress = (t - 95) / 25;
+            const cp = 3 * coastProgress * coastProgress - 2 * coastProgress * coastProgress * coastProgress;
+            // TLI end position
+            const tliEndAngle = Math.PI / 4 + Math.PI * 0.6 + Math.PI * 0.5;
+            const tliEndR = ORBIT_R + ORBIT_ALT * 2;
+            const startX = Math.sin(tliEndAngle) * tliEndR;
+            const startY = Math.cos(tliEndAngle) * tliEndR;
+            // Target: near Moon
+            const moonX = moonRoot.position.x, moonY = moonRoot.position.y;
+            const targetX = moonX;
+            const targetY = moonY + LUNAR_ORBIT_R;
+            return { x: lerp(startX, targetX, cp), y: lerp(startY, targetY, cp) };
+        }
+
+        // ── LOI (120–135s): orbit Moon ──
+        if (t < 135) {
+            const loiProgress = (t - 120) / 15;
+            const angle = loiProgress * Math.PI * 0.8;
+            const moonX = moonRoot.position.x, moonY = moonRoot.position.y;
+            return {
+                x: moonX + Math.sin(angle) * LUNAR_ORBIT_R,
+                y: moonY + Math.cos(angle) * LUNAR_ORBIT_R
+            };
+        }
+
+        // ── DESCENT (135–155s): spiral down to surface ──
+        if (t < 155) {
+            const descentProgress = (t - 135) / 20;
+            const dp = 3 * descentProgress * descentProgress - 2 * descentProgress * descentProgress * descentProgress;
+            const angle = Math.PI * 0.8 + descentProgress * Math.PI * 0.4;
+            const r = lerp(LUNAR_ORBIT_R, M_R + 40, dp);
+            const moonX = moonRoot.position.x, moonY = moonRoot.position.y;
+            return {
+                x: lerp(moonX + Math.sin(angle) * r, moonX, dp * dp),
+                y: moonY + Math.cos(angle) * r
+            };
+        }
+
+        // ── LANDED ──
+        const moonY = moonRoot.position.y;
+        return { x: moonRoot.position.x, y: moonY + M_R + 40 };
+    }
+
+    // ═══ STATE ═══
+    let px = 0, py = E_R + 28 + 35.5;
+    let vx = 0, vy = 0;
+    let heading = 0, angularVel = 0;
+    let fuelFracBooster = 1.0, fuelFracShip = 1.0;
     let inMoonSOI = false;
 
     const onLaunch = () => { launched = true; };
@@ -192,93 +260,81 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             else if (t < 235) { state.phase = 'exploration'; state.throttle = 0; }
             else { state.phase = 'complete'; state.throttle = 0; }
 
-            // ═══ PHYSICS WITH CENTER OF MASS & TORQUE ═══
+            // ═══ TRAJECTORY-FOLLOWING GUIDANCE ═══
             const stopped = ['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase);
             const separated = boosterDetached;
 
             if (t >= 0 && !stopped) {
-                // ── MASS & CENTER OF MASS ──
-                let totalMass: number, comY: number, engineY: number, maxThrust: number;
+                // ── MASS & CoM ──
+                let totalMass: number, comY: number, engineY: number;
                 if (!separated) {
-                    // Full stack
-                    const boosterMass = BOOSTER_DRY + BOOSTER_PROP * fuelFracBooster;
-                    const shipMass = SHIP_DRY + SHIP_PROP * fuelFracShip;
-                    totalMass = boosterMass + shipMass;
-                    comY = (boosterMass * BOOSTER_COM_Y + shipMass * SHIP_COM_Y) / totalMass;
+                    const bM = BOOSTER_DRY + BOOSTER_PROP * fuelFracBooster;
+                    const sM = SHIP_DRY + SHIP_PROP * fuelFracShip;
+                    totalMass = bM + sM;
+                    comY = (bM * BOOSTER_COM_Y + sM * SHIP_COM_Y) / totalMass;
                     engineY = BOOSTER_ENGINE_Y;
-                    maxThrust = BOOSTER_THRUST_ACCEL * (BOOSTER_DRY + BOOSTER_PROP) / totalMass;
-                    // Burn booster fuel
                     fuelFracBooster = Math.max(0, fuelFracBooster - (state.throttle / 100) * dt * 0.02);
                 } else {
-                    // Ship only
                     totalMass = SHIP_DRY + SHIP_PROP * fuelFracShip;
                     comY = SHIP_COM_Y;
                     engineY = SHIP_ENGINE_Y;
-                    maxThrust = SHIP_THRUST_ACCEL * (SHIP_DRY + SHIP_PROP) / totalMass;
-                    // Burn ship fuel
                     fuelFracShip = Math.max(0, fuelFracShip - (state.throttle / 100) * dt * 0.015);
                 }
 
-                // ── GRAVITY ──
+                // ── GRAVITY (still real) ──
                 const moonX = moonRoot.position.x, moonY = moonRoot.position.y;
                 const dxE = px, dyE = py;
                 const dxM = px - moonX, dyM = py - moonY;
                 const rE = Math.sqrt(dxE * dxE + dyE * dyE);
                 const rM = Math.sqrt(dxM * dxM + dyM * dyM);
-
                 inMoonSOI = rM < 5000 && ['lunar-approach', 'landing-burn', 'touchdown'].includes(state.phase);
 
                 let gx = 0, gy = 0;
                 if (inMoonSOI) {
                     const gMag = GM_M / (rM * rM + 100);
-                    gx = -gMag * (dxM / rM);
-                    gy = -gMag * (dyM / rM);
+                    gx = -gMag * (dxM / rM); gy = -gMag * (dyM / rM);
                 } else {
                     const gMag = GM_E / (rE * rE + 100);
-                    gx = -gMag * (dxE / rE);
-                    gy = -gMag * (dyE / rE);
+                    gx = -gMag * (dxE / rE); gy = -gMag * (dyE / rE);
                 }
 
-                // ── HEADING GUIDANCE (target direction) ──
-                let targetHeading = heading;
-                if (['liftoff', 'maxq'].includes(state.phase)) {
-                    targetHeading = Math.min((t - 1) * 0.015, 0.3);
-                } else if (['meco', 'separation', 'ses'].includes(state.phase)) {
-                    targetHeading = 0.9;
-                } else if (['orbit', 'tli'].includes(state.phase)) {
-                    targetHeading = Math.atan2(dxE, dyE) + Math.PI / 2;
-                } else if (state.phase === 'coast') {
-                    targetHeading = Math.atan2(moonX - px, moonY - py);
-                } else if (state.phase === 'lunar-approach') {
-                    targetHeading = Math.atan2(-vx, -vy); // Retrograde
-                } else if (state.phase === 'landing-burn') {
-                    targetHeading = Math.atan2(dxM, dyM); // Away from Moon
-                }
+                // ── TRAJECTORY TARGET (where we should be) ──
+                const target = trajectoryTarget(t, state.phase);
+                const nextTarget = trajectoryTarget(t + 0.1, state.phase);
 
-                // ── TORQUE FROM THRUST OFFSET ──
-                // Lever arm = distance from CoM to engine along ship body
+                // Required velocity to follow trajectory
+                const reqVx = (nextTarget.x - target.x) / 0.1;
+                const reqVy = (nextTarget.y - target.y) / 0.1;
+
+                // Position error → correction force
+                const errX = target.x - px, errY = target.y - py;
+                const posCorrection = 2.0; // How aggressively to correct position
+
+                // Required acceleration = (desired_velocity - current_velocity) / tau + gravity_compensation
+                const tau = 1.0; // Response time
+                const reqAx = (reqVx + errX * posCorrection - vx) / tau - gx;
+                const reqAy = (reqVy + errY * posCorrection - vy) / tau - gy;
+
+                // ── HEADING from required acceleration ──
+                const targetHeading = Math.atan2(reqAx, reqAy);
+
+                // ── TORQUE & ATTITUDE (CoM-based rotation) ──
                 const leverArm = comY - engineY;
-                const thrustAccel = (state.throttle / 100) * maxThrust;
-
-                // Angle between heading and target → torque
                 let headingError = targetHeading - heading;
-                // Normalize to [-PI, PI]
                 while (headingError > Math.PI) headingError -= 2 * Math.PI;
                 while (headingError < -Math.PI) headingError += 2 * Math.PI;
 
-                // Torque = thrust × lever_arm × sin(heading_error) / (moment of inertia)
-                // Simplified MoI ∝ totalMass × length²
-                const moi = totalMass * 0.01; // Simplified moment of inertia
-                const torque = thrustAccel * leverArm * Math.sin(headingError * 0.5) / moi;
-
-                // Also apply RCS-like attitude control (reaction control system)
-                const rcsControl = headingError * 3.0 - angularVel * 5.0; // PD controller
-
-                angularVel += (torque * 0.0001 + rcsControl * 0.5) * dt;
-                angularVel *= (1 - dt * 2); // Angular damping
+                const moi = totalMass * 0.01;
+                const thrustMag = (state.throttle / 100) * G_SURFACE * 1.5;
+                const torque = thrustMag * leverArm * Math.sin(headingError * 0.3) / moi;
+                const rcs = headingError * 4.0 - angularVel * 6.0;
+                angularVel += (torque * 0.0001 + rcs * 0.8) * dt;
+                angularVel *= (1 - dt * 3);
                 heading += angularVel * dt;
 
-                // ── THRUST (applied along heading) ──
+                // ── THRUST along heading, compensating for gravity ──
+                const reqMag = Math.sqrt(reqAx * reqAx + reqAy * reqAy);
+                const thrustAccel = Math.min(reqMag, G_SURFACE * 2.0) * (state.throttle / 100);
                 const tx = Math.sin(heading) * thrustAccel;
                 const ty = Math.cos(heading) * thrustAccel;
 
@@ -288,7 +344,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 px += vx * dt;
                 py += vy * dt;
 
-                // Prevent falling through Earth surface
+                // Surface collision guard
                 const surfaceR = E_R + 28;
                 if (rE < surfaceR && !inMoonSOI) {
                     const norm = surfaceR / rE;
@@ -307,8 +363,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             }
 
             if (stopped) {
-                vx = lerp(vx, 0, dt * 5);
-                vy = lerp(vy, 0, dt * 5);
+                vx = lerp(vx, 0, dt * 5); vy = lerp(vy, 0, dt * 5);
                 angularVel = lerp(angularVel, 0, dt * 5);
                 state.velocity = lerp(state.velocity, 0, dt * 3);
                 state.thrust = state.throttle;

@@ -25,7 +25,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     scene.clearColor = new Color4(0.28, 0.52, 0.82, 1);
 
     // Camera starts looking at rocket on pad
-    const cam = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3.2, 200, Vector3.Zero(), scene);
+    const cam = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3.2, 200, new Vector3(0, E_R + 50, 0), scene);
     cam.lowerRadiusLimit = 10; cam.upperRadiusLimit = 50000;
     cam.attachControl(canvas, true); cam.wheelPrecision = 5;
 
@@ -38,28 +38,17 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     const earth = buildEarth(scene);
     earth.clouds.rotation.y = 0; // Will animate in loop
 
-    // ── Launch site at Starbase, Texas (25.997°N, 97.157°W) on Earth sphere ──
+    // ── Launch site at north pole (physics simplicity) ──
+    // Earth is rotated so Starbase Texas appears at the top
     const siteRoot = new TransformNode('siteRoot', scene);
-    // Convert lat/lon to 3D position on sphere
-    const latRad = (25.997 * Math.PI) / 180;
-    const lonRad = (-97.157 * Math.PI) / 180;
-    const sx = E_R * Math.cos(latRad) * Math.sin(lonRad);
-    const sy = E_R * Math.sin(latRad);
-    const sz = E_R * Math.cos(latRad) * Math.cos(lonRad);
-    siteRoot.position.set(sx, sy, sz);
-    // Orient site so "up" points away from Earth center
-    siteRoot.lookAt(Vector3.Zero());
-    siteRoot.rotation.x += Math.PI; // Flip so structures point outward
+    siteRoot.position.y = E_R; // Sits on top of Earth sphere
     const launchSite = buildLaunchSite(scene, siteRoot);
-
-    // No flat ground — launch directly from Earth sphere surface
-    cam.target.set(sx, sy + 50, sz); // Point camera at launch site
 
     // ── SHIP on pad ──
     const shipRoot = new TransformNode('shipRoot', scene);
     const ship = buildStarship(scene, shipRoot);
-    const padTop = sy + 28; // Approximate OLM top in world Y
-    shipRoot.position.set(sx, sy + 28 + 35.5, sz);
+    const padTop = E_R + 28; // OLM top
+    shipRoot.position.y = padTop + 35.5;
 
     const shadowGen = new ShadowGenerator(2048, sun);
     shadowGen.useBlurExponentialShadowMap = true;
@@ -170,7 +159,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
 
             // ── SHIP POSITION: moves outward from Earth surface ──
             const sceneAlt = state.altitude * 0.15;
-            const targetY = sy + 28 + 35.5 + sceneAlt;
+            const targetY = E_R + 28 + 35.5 + sceneAlt;
             shipRoot.position.y = lerp(shipRoot.position.y, targetY, dt * 4);
 
             // Gravity turn + lunar flip
@@ -404,6 +393,10 @@ function buildEarth(scene: Scene) {
     eM.diffuseTexture = tex;
     eM.specularColor = new Color3(0.15, 0.15, 0.25);
     earth.material = eM;
+    // Rotate Earth so Starbase Texas (25.997°N, 97.157°W) is at the north pole (top)
+    // Latitude offset: rotate around X/Z to move 26°N point to pole
+    earth.rotation.x = -(Math.PI / 2 - (25.997 * Math.PI) / 180); // Tilt so 26°N becomes pole
+    earth.rotation.y = (97.157 * Math.PI) / 180; // Rotate longitude so -97°W faces up
     // Atmosphere
     const atmo = MeshBuilder.CreateSphere('atmo', { diameter: E_R * 2 + 80, segments: 48 }, scene);
     const aM = new StandardMaterial('aM', scene); aM.diffuseColor = new Color3(0.3, 0.55, 0.95);

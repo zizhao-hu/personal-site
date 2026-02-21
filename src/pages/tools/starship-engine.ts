@@ -13,7 +13,7 @@ export interface SimState {
 // Proportional scale: 1 unit ≈ 1 meter near ground
 // Earth radius 6371km → 6000 units. Moon radius 1737km → 1640 units (ratio 0.273 preserved)
 // Earth-Moon distance 384,400km → 90000 (~15x Earth radius, compressed from real 60x)
-const E_R = 6000, M_R = 1640, EM_DIST = 90000;
+const E_R = 10000, M_R = 2700, EM_DIST = 120000;
 const lerp = (a: number, b: number, t: number) => a + (b - a) * Math.min(1, Math.max(0, t));
 
 let engine: Engine | null = null, scene: Scene | null = null;
@@ -142,7 +142,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
 
             // ── PHYSICS (gradual acceleration, capped at escape velocity 11.2 km/s) ──
             const ESCAPE_V = 11.2; // km/s escape velocity cap
-            const accel = state.throttle / 100 * 0.6;
+            const accel = state.throttle / 100 * 1.5;
             const grav = state.altitude < 100 ? 0.015 : 0.003;
             const moving = !['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase);
             if (t >= 0 && moving) {
@@ -158,7 +158,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             state.velocity = Math.max(0, state.velocity);
 
             // ── SHIP POSITION: moves outward + orbits around Earth ──
-            const sceneAlt = state.altitude * 0.15;
+            const sceneAlt = state.altitude * 0.4;
             // During orbit/TLI/coast, ship moves around Earth (angular position)
             let orbitAngle = 0;
             if (['orbit', 'tli', 'coast', 'lunar-approach', 'landing-burn'].includes(state.phase)) {

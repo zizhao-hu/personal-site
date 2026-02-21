@@ -10,10 +10,9 @@ export interface SimState {
 }
 
 // Proportional scale: 1 unit ≈ 1 meter near ground
-// Earth radius 6371km → we use 600 (compressed ~10,000x for rendering)
-// Moon radius 1737km → 164 (Moon/Earth ratio 0.273 preserved)
-// Earth-Moon distance 384,400km → 9000 (~15x Earth radius, compressed from real 60x)
-const E_R = 600, M_R = 164, EM_DIST = 9000;
+// Earth radius 6371km → 6000 units. Moon radius 1737km → 1640 units (ratio 0.273 preserved)
+// Earth-Moon distance 384,400km → 90000 (~15x Earth radius, compressed from real 60x)
+const E_R = 6000, M_R = 1640, EM_DIST = 90000;
 const lerp = (a: number, b: number, t: number) => a + (b - a) * Math.min(1, Math.max(0, t));
 
 let engine: Engine | null = null, scene: Scene | null = null;
@@ -25,8 +24,8 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     scene.clearColor = new Color4(0.28, 0.52, 0.82, 1);
 
     // Camera starts looking at rocket on pad
-    const cam = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3.2, 150, new Vector3(0, E_R + 50, 0), scene);
-    cam.lowerRadiusLimit = 10; cam.upperRadiusLimit = 5000;
+    const cam = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3.2, 200, new Vector3(0, E_R + 50, 0), scene);
+    cam.lowerRadiusLimit = 10; cam.upperRadiusLimit = 50000;
     cam.attachControl(canvas, true); cam.wheelPrecision = 5;
 
     const hemi = new HemisphericLight('hemi', new Vector3(0, 1, 0), scene); hemi.intensity = 0.3;
@@ -239,8 +238,8 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 cam.target.y = lerp(cam.target.y, cTargetY, dt * 2);
                 // Zoom out as altitude increases (see Earth curvature)
                 if (state.altitude > 30) {
-                    const desiredR = 150 + state.altitude * 0.6;
-                    cam.radius = lerp(cam.radius, Math.min(desiredR, 1500), dt * 0.8);
+                    const desiredR = 200 + state.altitude * 3;
+                    cam.radius = lerp(cam.radius, Math.min(desiredR, 30000), dt * 0.8);
                 }
             }
             // Shake
@@ -255,28 +254,40 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             scene!.clearColor = new Color4(0.28 * (1 - skyT), 0.52 * (1 - skyT), 0.82 * (1 - skyT * 0.8), 1);
 
             // ── GROUND FADE (as Earth sphere takes over) ──
-            if (state.altitude > 40) ground.visibility = lerp(ground.visibility, 0, dt * 2);
-            if (state.altitude > 20) {
-                // Show ground patch fading, Earth sphere taking over
+            // But keep launch pad visible if booster is returning!
+            const boosterReturning = boosterDetached && t < 105;
+            if (state.altitude > 40 && !boosterReturning) {
+                ground.visibility = lerp(ground.visibility, 0, dt * 2);
+            }
+            if (state.altitude > 20 && !boosterReturning) {
                 siteRoot.getChildMeshes().forEach(m => { if (m.name !== 'ground') m.visibility = lerp(m.visibility, Math.max(0, 1 - (state.altitude - 20) / 80), dt * 2); });
+            }
+            // Restore pad visibility when booster is returning
+            if (boosterReturning && t > 65) {
+                siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, 1, dt * 3); });
+                ground.visibility = lerp(ground.visibility, 1, dt * 2);
             }
 
             // ── MOON APPROACH ──
             if (['coast', 'lunar-approach', 'landing-burn', 'touchdown'].includes(state.phase)) {
                 const aT = Math.min(1, (t - 100) / 95);
-                moonRoot.position.z = lerp(EM_DIST, 200, aT);
-                moonRoot.position.y = lerp(EM_DIST * 0.15, shipRoot.position.y - 50, aT);
-                const ms = 1 + aT * 2;
+                moonRoot.position.z = lerp(EM_DIST, M_R * 3, aT);
+                moonRoot.position.y = lerp(EM_DIST * 0.15, shipRoot.position.y - M_R - 50, aT);
+                const ms = 1 + aT * 1.5;
                 moonSphere.scaling.set(ms, ms, ms);
             }
 
             // Near Moon: land on sphere surface
             if (['landing-burn', 'touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase)) {
                 moonBase.setEnabled(true);
-                moonLandingY = moonRoot.position.y + M_R + 2;
+                // Landing Y = top of Moon sphere (accounting for scaling)
+                const moonScale = moonSphere.scaling.y;
+                moonLandingY = moonRoot.position.y + M_R * moonScale + 2;
                 moonBase.position.y = moonLandingY;
                 if (['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase)) {
                     shipRoot.position.y = lerp(shipRoot.position.y, moonLandingY + 25, dt * 2);
+                    // Camera zoom in for landing
+                    cam.radius = lerp(cam.radius, 200, dt * 1.5);
                 }
                 ground.visibility = 0;
             }

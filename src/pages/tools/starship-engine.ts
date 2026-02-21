@@ -116,14 +116,14 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
         const dt = Math.min((now - lastTime) / 1000, 0.1);
         lastTime = now;
 
-        if (!launched) { state.missionTime = -10 + (performance.now() % 10000) / 1000; }
+        if (!launched) { state.missionTime = -3 + (performance.now() % 3000) / 1000; }
         else {
             state.missionTime += dt;
             const t = state.missionTime;
 
             // ── PHASES (separation in atmosphere ~25km, orbit at ~200km) ──
             if (t < 0) { state.phase = 'prelaunch'; state.throttle = 0; }
-            else if (t < 3) { state.phase = 'ignition'; state.throttle = lerp(0, 100, t / 3); }
+            else if (t < 1) { state.phase = 'ignition'; state.throttle = lerp(0, 100, t / 1); }
             else if (t < 18) { state.phase = 'liftoff'; state.throttle = 100; }
             else if (t < 28) { state.phase = 'maxq'; state.throttle = 80; }
             else if (t < 38) { state.phase = 'meco'; state.throttle = lerp(80, 0, (t - 28) / 10); }

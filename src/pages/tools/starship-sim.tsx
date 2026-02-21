@@ -16,7 +16,7 @@ const PHASE_LABELS: Record<Phase, string> = {
     orbit: 'EARTH ORBIT',
     tli: 'TRANS-LUNAR INJECTION',
     coast: 'COAST PHASE',
-    'lunar-approach': 'LUNAR APPROACH',
+    'lunar-approach': 'LUNAR ORBIT INSERTION',
     'landing-burn': 'LANDING BURN',
     touchdown: 'TOUCHDOWN',
     landed: 'SYSTEMS NOMINAL',
@@ -27,7 +27,7 @@ const PHASE_LABELS: Record<Phase, string> = {
 
 const DONE_PHASES = ['landed', 'eva', 'exploration', 'complete'];
 const AFTER = (phase: Phase, milestone: Phase) => {
-    const order: Phase[] = ['prelaunch', 'ignition', 'liftoff', 'maxq', 'meco', 'separation', 'ses', 'coast', 'lunar-approach', 'landing-burn', 'touchdown', 'landed', 'eva', 'exploration', 'complete'];
+    const order: Phase[] = ['prelaunch', 'ignition', 'liftoff', 'maxq', 'meco', 'separation', 'ses', 'orbit', 'tli', 'coast', 'lunar-approach', 'landing-burn', 'touchdown', 'landed', 'eva', 'exploration', 'complete'];
     return order.indexOf(phase) > order.indexOf(milestone);
 };
 
@@ -126,7 +126,8 @@ export const StarshipSim = () => {
                         <MissionStep label="ORBIT" done={AFTER(phase, 'orbit')} active={phase === 'ses' || phase === 'orbit'} />
                         <MissionStep label="TLI BURN" done={AFTER(phase, 'tli')} active={phase === 'tli'} />
                         <MissionStep label="COAST" done={AFTER(phase, 'coast')} active={phase === 'coast'} />
-                        <MissionStep label="LUNAR LANDING" done={AFTER(phase, 'touchdown')} active={phase === 'lunar-approach' || phase === 'landing-burn'} />
+                        <MissionStep label="LOI BURN" done={AFTER(phase, 'lunar-approach')} active={phase === 'lunar-approach'} />
+                        <MissionStep label="DESCENT" done={AFTER(phase, 'touchdown')} active={phase === 'landing-burn'} />
                         <MissionStep label="EVA" done={AFTER(phase, 'eva')} active={phase === 'eva'} />
                         <MissionStep label="EXPLORATION" done={phase === 'complete'} active={phase === 'exploration'} />
                     </div>

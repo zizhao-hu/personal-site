@@ -1,6 +1,6 @@
 import {
     Engine, Scene, ArcRotateCamera, Vector3, HemisphericLight, DirectionalLight,
-    MeshBuilder, StandardMaterial, Color3, Color4, ParticleSystem,
+    MeshBuilder, StandardMaterial, Color3, Color4, ParticleSystem, Texture,
     GlowLayer, ShadowGenerator, Mesh, TransformNode, KeyboardEventTypes, PointLight,
     DynamicTexture
 } from '@babylonjs/core';
@@ -82,6 +82,27 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     smokeEmit.parent = siteRoot; smokeEmit.position.y = 28; smokeEmit.isVisible = false;
     const launchSmoke = makeSmokePS(scene, smokeEmit);
 
+    // ── CLOUD LAYER (ship punches through at ~10-15km) ──
+    const cloudEmit = MeshBuilder.CreateBox('cloudEmit', { size: 1 }, scene);
+    cloudEmit.isVisible = false;
+    cloudEmit.position.y = E_R + 80; // Cloud altitude (~10km scaled)
+    const cloudPS = new ParticleSystem('cloudPS', 200, scene);
+    cloudPS.particleTexture = new Texture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12P4/x8AAwAB/6F3cgAAAABJRU5ErkJggg==', scene);
+    cloudPS.emitter = cloudEmit;
+    cloudPS.minEmitBox = new Vector3(-300, -20, -300);
+    cloudPS.maxEmitBox = new Vector3(300, 20, 300);
+    cloudPS.color1 = new Color4(1, 1, 1, 0.15);
+    cloudPS.color2 = new Color4(0.9, 0.92, 0.95, 0.08);
+    cloudPS.colorDead = new Color4(1, 1, 1, 0);
+    cloudPS.minSize = 80; cloudPS.maxSize = 200;
+    cloudPS.minLifeTime = 8; cloudPS.maxLifeTime = 15;
+    cloudPS.emitRate = 30;
+    cloudPS.direction1 = new Vector3(-0.3, 0, -0.3);
+    cloudPS.direction2 = new Vector3(0.3, 0.1, 0.3);
+    cloudPS.minEmitPower = 0.5; cloudPS.maxEmitPower = 2;
+    cloudPS.blendMode = ParticleSystem.BLENDMODE_ADD;
+    cloudPS.start();
+
     // Booster exhaust (for return burns)
     const bExEmit = MeshBuilder.CreateBox('bExE', { size: 4 }, scene);
     bExEmit.parent = ship.booster; bExEmit.position.y = -35.5; bExEmit.isVisible = false;
@@ -107,6 +128,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     let lastTime = performance.now(), launched = false;
     let boosterDetached = false, sepY = 0, boosterY = 0, boosterRotZ = 0;
     let moonLandingY = 0;
+    let lunarOrbitAngle = 0; // Track lunar orbit angular position
 
     const onLaunch = () => { launched = true; };
     window.addEventListener('starship-launch', onLaunch);
@@ -121,33 +143,39 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             state.missionTime += dt;
             const t = state.missionTime;
 
-            // ── PHASES (separation in atmosphere ~25km, orbit at ~200km) ──
+            // ── PHASES: Realistic Starship HLS mission profile ──
+            // Launch → LEO → TLI burn → Coast → LOI burn → Lunar orbit → Descent → Landing
             if (t < 0) { state.phase = 'prelaunch'; state.throttle = 0; }
             else if (t < 1) { state.phase = 'ignition'; state.throttle = lerp(0, 100, t / 1); }
-            else if (t < 18) { state.phase = 'liftoff'; state.throttle = 100; }
-            else if (t < 28) { state.phase = 'maxq'; state.throttle = 80; }
-            else if (t < 38) { state.phase = 'meco'; state.throttle = lerp(80, 0, (t - 28) / 10); }
-            else if (t < 45) { state.phase = 'separation'; state.throttle = 0; } // ~25km alt
-            else if (t < 55) { state.phase = 'ses'; state.throttle = 65; }
-            else if (t < 90) { state.phase = 'orbit'; state.throttle = lerp(65, 5, (t - 55) / 35); }
-            else if (t < 100) { state.phase = 'tli'; state.throttle = 75; }
-            else if (t < 105) { state.phase = 'coast'; state.throttle = 2; } // 5s coast
-            else if (t < 120) { state.phase = 'lunar-approach'; state.throttle = lerp(2, 15, (t - 105) / 15); }
-            else if (t < 140) { state.phase = 'landing-burn'; state.throttle = lerp(0, 85, Math.min(1, (t - 120) / 5)); }
-            else if (t < 150) { state.phase = 'touchdown'; state.throttle = lerp(30, 0, (t - 140) / 10); }
-            else if (t < 160) { state.phase = 'landed'; state.throttle = 0; }
-            else if (t < 180) { state.phase = 'eva'; state.throttle = 0; }
-            else if (t < 220) { state.phase = 'exploration'; state.throttle = 0; }
+            else if (t < 15) { state.phase = 'liftoff'; state.throttle = 100; }
+            else if (t < 25) { state.phase = 'maxq'; state.throttle = 80; }
+            else if (t < 35) { state.phase = 'meco'; state.throttle = lerp(80, 0, (t - 25) / 10); }
+            else if (t < 42) { state.phase = 'separation'; state.throttle = 0; }
+            else if (t < 52) { state.phase = 'ses'; state.throttle = 70; } // Ship engines restart
+            else if (t < 80) { state.phase = 'orbit'; state.throttle = lerp(70, 5, (t - 52) / 28); } // LEO circularization
+            else if (t < 95) { state.phase = 'tli'; state.throttle = 85; } // Trans-Lunar Injection burn
+            else if (t < 120) { state.phase = 'coast'; state.throttle = 0; } // Coast to Moon (~3 days compressed)
+            else if (t < 135) { state.phase = 'lunar-approach'; state.throttle = 60; } // LOI: deceleration burn to get captured by Moon
+            else if (t < 155) { state.phase = 'landing-burn'; state.throttle = lerp(60, 85, Math.min(1, (t - 135) / 8)); } // Powered descent
+            else if (t < 165) { state.phase = 'touchdown'; state.throttle = lerp(30, 0, (t - 155) / 10); }
+            else if (t < 175) { state.phase = 'landed'; state.throttle = 0; }
+            else if (t < 195) { state.phase = 'eva'; state.throttle = 0; }
+            else if (t < 235) { state.phase = 'exploration'; state.throttle = 0; }
             else { state.phase = 'complete'; state.throttle = 0; }
 
-            // ── PHYSICS (gradual acceleration, capped at escape velocity 11.2 km/s) ──
-            const ESCAPE_V = 11.2; // km/s escape velocity cap
+            // ── PHYSICS ──
+            const ESCAPE_V = 11.2;
             const accel = state.throttle / 100 * 1.5;
             const grav = state.altitude < 100 ? 0.015 : 0.003;
             const moving = !['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase);
             if (t >= 0 && moving) {
-                state.velocity += (accel - grav) * dt;
-                state.velocity = Math.min(state.velocity, ESCAPE_V); // Cap at escape velocity
+                // During LOI/landing, velocity decreases (deceleration)
+                if (['lunar-approach', 'landing-burn'].includes(state.phase)) {
+                    state.velocity = lerp(state.velocity, state.phase === 'landing-burn' ? 0.1 : 2.0, dt * 0.5);
+                } else {
+                    state.velocity += (accel - grav) * dt;
+                    state.velocity = Math.min(state.velocity, ESCAPE_V);
+                }
                 state.altitude += state.velocity * dt;
                 state.downrange += state.velocity * dt * 0.7;
                 state.fuel = Math.max(0, state.fuel - state.throttle * dt * 0.025);
@@ -157,38 +185,81 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             state.altitude = Math.max(0, state.altitude);
             state.velocity = Math.max(0, state.velocity);
 
-            // ── SHIP POSITION: moves outward + orbits around Earth ──
+            // ── SHIP POSITION: orbit Earth → transfer → orbit Moon → descend ──
             const sceneAlt = state.altitude * 0.4;
-            // During orbit/TLI/coast, ship moves around Earth (angular position)
             let orbitAngle = 0;
-            if (['orbit', 'tli', 'coast', 'lunar-approach', 'landing-burn'].includes(state.phase)) {
-                // Gradually increase orbital angle
-                orbitAngle = Math.min((t - 55) * 0.008, Math.PI * 0.6); // Up to ~108 degrees around
-            }
-            const orbitR = E_R + 28 + 35.5 + sceneAlt;
-            const targetX = Math.sin(orbitAngle) * orbitR;
-            const targetY = Math.cos(orbitAngle) * orbitR;
-            shipRoot.position.x = lerp(shipRoot.position.x, targetX, dt * 3);
-            shipRoot.position.y = lerp(shipRoot.position.y, targetY, dt * 3);
 
-            // Gravity turn: vertical → gradually tilt → fully horizontal for orbit
+            if (['orbit', 'tli'].includes(state.phase)) {
+                // Ship orbits Earth — angular position increases
+                orbitAngle = Math.min((t - 52) * 0.012, Math.PI * 0.8);
+                const orbitR = E_R + 28 + 35.5 + sceneAlt;
+                const targetX = Math.sin(orbitAngle) * orbitR;
+                const targetY = Math.cos(orbitAngle) * orbitR;
+                shipRoot.position.x = lerp(shipRoot.position.x, targetX, dt * 3);
+                shipRoot.position.y = lerp(shipRoot.position.y, targetY, dt * 3);
+            } else if (state.phase === 'coast') {
+                // Coast: ship travels from Earth toward Moon (interpolate position)
+                const coastProgress = Math.min(1, (t - 95) / 25);
+                const coastX = lerp(shipRoot.position.x, moonRoot.position.x, coastProgress * 0.02);
+                const coastY = lerp(shipRoot.position.y, moonRoot.position.y + M_R + 500, coastProgress * 0.02);
+                shipRoot.position.x = coastX;
+                shipRoot.position.y = coastY;
+            } else if (state.phase === 'lunar-approach') {
+                // LOI: ship enters lunar orbit — deceleration burn, circular path around Moon
+                lunarOrbitAngle += dt * 0.15;
+                const loiR = M_R + 300;
+                const moonCenterY = moonRoot.position.y;
+                shipRoot.position.x = moonRoot.position.x + Math.sin(lunarOrbitAngle) * loiR;
+                shipRoot.position.y = moonCenterY + Math.cos(lunarOrbitAngle) * loiR;
+            } else if (state.phase === 'landing-burn') {
+                // Powered descent: spiral down from orbit to surface
+                lunarOrbitAngle += dt * 0.08;
+                const descentR = lerp(M_R + 300, M_R + 40, Math.min(1, (t - 135) / 20));
+                const moonCenterY = moonRoot.position.y;
+                shipRoot.position.x = lerp(shipRoot.position.x, moonRoot.position.x, dt * 2);
+                shipRoot.position.y = lerp(shipRoot.position.y, moonCenterY + descentR, dt * 1.5);
+            } else if (!['coast', 'lunar-approach', 'landing-burn', 'touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase)) {
+                // Ascent: straight up from launch pad
+                const orbitR = E_R + 28 + 35.5 + sceneAlt;
+                shipRoot.position.x = lerp(shipRoot.position.x, 0, dt * 3);
+                shipRoot.position.y = lerp(shipRoot.position.y, orbitR, dt * 3);
+            }
+
+            // ── SHIP ROTATION ──
             if (['liftoff', 'maxq'].includes(state.phase)) {
-                // Slow tilt start: 0→~15° during ascent
-                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.min((t - 3) * 0.008, 0.25), dt * 1.5);
-            } else if (state.phase === 'meco' || state.phase === 'separation' || state.phase === 'ses') {
-                // Tilt more: getting to ~45°
+                // Gravity turn: slow tilt 0→~15°
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.min((t - 1) * 0.01, 0.25), dt * 1.5);
+            } else if (['meco', 'separation', 'ses'].includes(state.phase)) {
+                // Pitch over to ~45°
                 shipRoot.rotation.z = lerp(shipRoot.rotation.z, 0.8, dt * 0.8);
             } else if (['orbit', 'tli'].includes(state.phase)) {
-                // Fully horizontal + match orbit angle (perpendicular to radial direction)
+                // Fully horizontal, tangent to orbit
+                orbitAngle = Math.min((t - 52) * 0.012, Math.PI * 0.8);
                 shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI / 2 + orbitAngle, dt * 0.6);
             } else if (state.phase === 'coast') {
-                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI / 2 + orbitAngle, dt * 0.3);
+                // Nose-forward toward Moon
+                const angleToMoon = Math.atan2(moonRoot.position.x - shipRoot.position.x, moonRoot.position.y - shipRoot.position.y);
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, -angleToMoon + Math.PI, dt * 0.5);
             } else if (state.phase === 'lunar-approach') {
-                // 180° flip: rotate so engines face Moon (downward toward surface)
-                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI, dt * 1.2);
-            } else if (['landing-burn', 'touchdown', 'landed'].includes(state.phase)) {
-                // Keep engines facing down
+                // LOI: engines firing retrograde (opposite to orbital velocity) — tangent + PI
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, lunarOrbitAngle + Math.PI / 2 + Math.PI, dt * 1.2);
+            } else if (state.phase === 'landing-burn') {
+                // PDI: engines facing down toward Moon surface
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI, dt * 2);
+            } else if (['touchdown', 'landed'].includes(state.phase)) {
                 shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI, dt * 3);
+            }
+
+            // ── CLOUD LAYER: follows ship horizontally, fades with altitude ──
+            cloudEmit.position.x = shipRoot.position.x;
+            cloudEmit.position.z = shipRoot.position.z;
+            if (state.altitude > 5 && state.altitude < 30) {
+                cloudPS.emitRate = 40;
+                const cloudAlpha = 1 - Math.abs(state.altitude - 15) / 15;
+                cloudPS.color1 = new Color4(1, 1, 1, 0.2 * cloudAlpha);
+                cloudPS.color2 = new Color4(0.9, 0.92, 0.95, 0.1 * cloudAlpha);
+            } else {
+                cloudPS.emitRate = 5; // Minimal when not passing through
             }
 
             // ── ENGINE FIRE (visible from nozzles!) ──
@@ -222,7 +293,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             }
 
             // Landing burn reignition flash
-            if (state.phase === 'landing-burn' && t > 120 && t < 123) {
+            if (state.phase === 'landing-burn' && t > 135 && t < 138) {
                 shipExhaust.emitRate = 5000; shipExhaust.maxSize = 20;
                 shipCore.emitRate = 2000;
                 engineLight.intensity = 8;
@@ -300,23 +371,27 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, 1, dt * 3); });
             }
 
-            // ── MOON APPROACH ──
+            // ── MOON APPROACH: bring Moon closer during coast/approach phases ──
             if (['coast', 'lunar-approach', 'landing-burn', 'touchdown'].includes(state.phase)) {
-                const aT = Math.min(1, (t - 100) / 50); // Faster approach with 5s coast
-                moonRoot.position.z = lerp(EM_DIST, M_R * 3, aT);
-                moonRoot.position.y = lerp(EM_DIST * 0.15, shipRoot.position.y - M_R - 50, aT);
+                // Moon moves from far away to nearby the ship
+                const aT = Math.min(1, (t - 95) / 35);
+                moonRoot.position.z = lerp(moonRoot.position.z, 0, dt * 0.5);
+                if (state.phase === 'coast') {
+                    // Moon approaches from distance
+                    moonRoot.position.y = lerp(moonRoot.position.y, shipRoot.position.y + M_R * 3 + 500, dt * 0.8);
+                }
                 const ms = 1 + aT * 1.5;
                 moonSphere.scaling.set(ms, ms, ms);
             }
 
-            // Near Moon: land on sphere surface (ship is flipped 180°, engines down)
+            // Near Moon: set up surface for landing
             if (['landing-burn', 'touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase)) {
                 moonBase.setEnabled(true);
                 const moonScale = moonSphere.scaling.y;
                 moonLandingY = moonRoot.position.y + M_R * moonScale + 2;
                 moonBase.position.y = moonLandingY;
                 if (['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase)) {
-                    // Ship descends to Moon sphere surface (engines first since rotated PI)
+                    shipRoot.position.x = lerp(shipRoot.position.x, moonRoot.position.x, dt * 3);
                     shipRoot.position.y = lerp(shipRoot.position.y, moonLandingY + 30, dt * 2);
                     cam.radius = lerp(cam.radius, 200, dt * 1.5);
                 }

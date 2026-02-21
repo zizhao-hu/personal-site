@@ -67,15 +67,15 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     const shipCore = makeExhaust(scene, exEmit, 3000, 1, 4, 120, 200, 0.15, 0.6, new Color4(0.6, 0.75, 1, 1), new Color4(1, 1, 0.9, 0.9));
 
     // Glowing exhaust cone mesh (translucent, visible during thrust)
-    // Cone starts at engine nozzles (y=-37) and extends 60m downward
-    const exhaustCone = MeshBuilder.CreateCylinder('exCone', { diameterTop: 10, diameterBottom: 0.5, height: 60, tessellation: 16 }, scene);
+    // Narrow end at engine nozzles (top), wide end extends downward (bottom)
+    const exhaustCone = MeshBuilder.CreateCylinder('exCone', { diameterTop: 1, diameterBottom: 12, height: 60, tessellation: 16 }, scene);
     const coneMat = new StandardMaterial('coneMat', scene);
     coneMat.diffuseColor = new Color3(1, 0.5, 0.1);
     coneMat.emissiveColor = new Color3(0.6, 0.25, 0.02);
     coneMat.alpha = 0;
     coneMat.backFaceCulling = false;
     exhaustCone.material = coneMat;
-    exhaustCone.parent = shipRoot; exhaustCone.position.y = -37 - 30; // Center of 60m cone, starts at engines
+    exhaustCone.parent = shipRoot; exhaustCone.position.y = -37 - 30; // Top of cone at engines (-37), extends 60 down
 
     // Launch smoke/steam (water deluge)
     const smokeEmit = MeshBuilder.CreateBox('smE', { size: 8 }, scene);

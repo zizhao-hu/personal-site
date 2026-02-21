@@ -7,6 +7,7 @@ import { ArchitectureResearch } from './pages/research/architecture'
 import { ContinualLearningResearch } from './pages/research/continual-learning'
 import { SyntheticDataResearch } from './pages/research/synthetic-data'
 import { Projects } from './pages/projects/projects'
+import { ProjectDetail } from './pages/projects/project-detail'
 import { Blogs } from './pages/blogs/blogs'
 import { BlogPost } from './pages/blogs/blog-post'
 import { Tutorials } from './pages/tutorials/tutorials'
@@ -32,6 +33,7 @@ function AppContent() {
         <Route path="/research/continual-learning" element={<ContinualLearningResearch />} />
         <Route path="/research/synthetic-data" element={<SyntheticDataResearch />} />
         <Route path="/projects" element={<Projects />} />
+        <Route path="/projects/:slug" element={<ProjectDetail />} />
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:slug" element={<BlogPost />} />
         <Route path="/tutorials" element={<Tutorials />} />

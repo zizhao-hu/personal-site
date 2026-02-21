@@ -1,157 +1,9 @@
 import { Header } from "@/components/custom/header";
 import { useState } from "react";
-import { Bot, Brain, Globe, Cpu, Shield, Sparkles, ExternalLink, Github, Eye, Zap, Network, LayoutGrid, List, ScanEye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bot, Brain, Globe, Cpu, Sparkles, ExternalLink, Github, LayoutGrid, List } from "lucide-react";
 import { tagPillClass, tagBadgeClass } from "@/lib/tag-colors";
-
-interface Project {
-  title: string;
-  description: string;
-  details: string[];
-  tags: string[];
-  status: "active" | "research" | "prototype" | "concept" | "completed";
-  icon: React.ElementType;
-  color: string;
-  link?: string;
-  github?: string;
-  image?: string;
-}
-
-const projects: Project[] = [
-  {
-    title: "AgentForge: Multi-Agent Orchestration Framework",
-    description: "A framework for building autonomous multi-agent systems where specialized AI agents collaborate on complex tasks. One agent plans, another executes, and a third verifies—creating self-correcting workflows.",
-    details: [
-      "Agent specialization with role-based task delegation",
-      "Inter-agent communication protocol for knowledge sharing",
-      "Consensus mechanisms for conflict resolution",
-      "Built-in safety guardrails and human-in-the-loop checkpoints"
-    ],
-    tags: ["Multi-Agent", "LLM Orchestration", "Python", "Autonomous Systems"],
-    status: "active",
-    icon: Network,
-    color: "blue",
-    github: "https://github.com/zizhao-hu/agentforge",
-    image: "/images/projects/agentforge.png",
-  },
-  {
-    title: "VLMDraw: Physics-Based AI Image Detection",
-    description: "Detecting AI-generated images through physics-based reasoning — analyzing depth maps, brightness-depth consistency, and light estimation to expose how AI fails to model real-world physics. A 3-feature classifier achieves 68.3% accuracy with just depth gradients and brightness edge analysis.",
-    details: [
-      "Key finding: AI images are paradoxically too physically consistent — overly smooth brightness-depth relationships and symmetric depth distributions",
-      "Yet AI images show sharper depth gradients (d=0.653), revealing lack of true 3D understanding",
-      "3-feature model (grad_mean, brightness_at_depth_edges, n_valid_patches) outperforms full 27-feature model by 13.3pp",
-      "27 physics features across depth statistics, brightness-depth coupling, and light estimation pipelines",
-      "PCA reveals real/fake signal is not dominant — scene complexity dominates, requiring targeted feature selection"
-    ],
-    tags: ["Computer Vision", "AI Detection", "Physics-Based", "Depth Estimation", "Research"],
-    status: "active",
-    icon: ScanEye,
-    color: "rose",
-    github: "https://github.com/zizhao-hu/vlmdraw",
-    image: "/images/projects/vlmdraw-depth.png",
-  },
-  {
-    title: "DREAM-C2L: Continual Learning Framework",
-    description: "Open-source framework for continual learning research. Enabling AI systems to learn continuously without catastrophic forgetting, adapting to new data while preserving prior knowledge.",
-    details: [
-      "Difficulty-aware sample ordering algorithms",
-      "Replay-based and regularization methods for knowledge retention",
-      "Reproducible experiment pipelines for HPC clusters",
-      "Integration with PyTorch Lightning and Weights & Biases"
-    ],
-    tags: ["Continual Learning", "PyTorch", "Open Source", "Research"],
-    status: "active",
-    icon: Brain,
-    color: "green",
-    github: "https://github.com/zizhao-hu/dream-c2l",
-    image: "/images/projects/dream.png",
-  },
-  {
-    title: "ReasonChain: Test-Time Compute Scaling",
-    description: "Research prototype exploring how to make LLMs 'think longer' before responding. Implementing chain-of-thought verification where models check their own reasoning before committing to an answer.",
-    details: [
-      "Multi-step reasoning with self-verification loops",
-      "Confidence calibration and uncertainty quantification",
-      "Dynamic compute allocation based on problem complexity",
-      "Hallucination detection through reasoning trace analysis"
-    ],
-    tags: ["Test-Time Compute", "Reasoning", "LLM Safety", "Research"],
-    status: "research",
-    icon: Zap,
-    color: "yellow",
-  },
-  {
-    title: "VisionGround: World Models for Physical AI",
-    description: "Building AI that understands cause-and-effect in the physical world. Training models on video data to predict outcomes—if a glass falls, it breaks. Critical foundation for robotics applications.",
-    details: [
-      "Video prediction models for physical dynamics",
-      "Cause-effect reasoning from visual observations",
-      "Sim-to-real transfer for robotic manipulation",
-      "Multimodal fusion of vision, language, and proprioception"
-    ],
-    tags: ["World Models", "Robotics", "Video Understanding", "Embodied AI"],
-    status: "research",
-    icon: Globe,
-    color: "cyan",
-    image: "/images/projects/visionground.png",
-  },
-  {
-    title: "Project Canary",
-    description: "Foundational MOVE Fellowship project (Sept-Oct 2025) — a community-driven effort to train and refine frontier AI models. Completed 15,000+ tasks across 15 domains, improving Review 1 approval rates from 10% to 40%.",
-    details: [
-      "High-volume task generation across CS, Math, Medicine, Physics domains",
-      "Core contributor in Computer Science domain",
-      "Quality improvement: raised approval rates from 10% to 40%",
-      "Precursor to Project Orion's specialized refinement phase"
-    ],
-    tags: ["AI Training", "Data Generation", "Handshake AI", "MOVE Fellowship"],
-    status: "completed",
-    icon: Shield,
-    color: "green",
-  },
-  {
-    title: "Project Orion",
-    description: "Advanced MOVE Fellowship phase (Nov 2025) — specialized refinement of frontier AI models. Focused on high-quality reasoning chains, safety injections, and red-teaming through jailbreak testing. One-month intensive following Project Canary.",
-    details: [
-      "High-quality reasoning refinement and chain-of-thought improvement",
-      "Safety injection tasks: embedding guardrails into model behavior",
-      "Red-teaming and jailbreak testing for frontier models",
-      "Built on Canary foundations with deeper specialization in CS domain"
-    ],
-    tags: ["AI Safety", "Reasoning", "Red-Teaming", "Handshake AI", "MOVE Fellowship"],
-    status: "completed",
-    icon: Sparkles,
-    color: "orange",
-  },
-  {
-    title: "EdgeLLM: Sovereign AI on Device",
-    description: "Exploring efficient small language models that run entirely on-device. Privacy-preserving AI that never sends data to the cloud—your AI assistant that respects your data sovereignty.",
-    details: [
-      "Model quantization and pruning for edge deployment",
-      "On-device fine-tuning with federated learning",
-      "Specialized domain adapters for legal, medical, code",
-      "Offline-first architecture with optional cloud sync"
-    ],
-    tags: ["Edge AI", "Privacy", "Small Models", "Mobile"],
-    status: "prototype",
-    icon: Cpu,
-    color: "indigo",
-  },
-  {
-    title: "SynthVision: Multimodal Data Generation",
-    description: "Pipeline for generating high-quality synthetic vision-language training data. Creating diverse, balanced datasets without the privacy concerns of web-scraped data.",
-    details: [
-      "Controllable image-text pair generation",
-      "Automatic quality assessment and filtering",
-      "Bias detection and mitigation in generated data",
-      "Scalable generation with GPU-efficient diffusion models"
-    ],
-    tags: ["Synthetic Data", "Vision-Language", "Data Generation", "Diffusion"],
-    status: "prototype",
-    icon: Eye,
-    color: "pink",
-  },
-];
+import { projects } from "@/data/projects";
 
 const futureVision = [
   {
@@ -180,7 +32,7 @@ const futureVision = [
   },
 ];
 
-const statusConfig = {
+const statusConfig: Record<string, { label: string; class: string }> = {
   active: { label: "Active", class: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
   research: { label: "Research", class: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
   prototype: { label: "Prototype", class: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
@@ -206,6 +58,7 @@ export const Projects = () => {
   const [activeStatus, setActiveStatus] = useState<string>("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const navigate = useNavigate();
 
   const filteredProjects = projects.filter((project) => {
     const statusMatch = activeStatus === "all" || project.status === activeStatus;
@@ -215,6 +68,10 @@ export const Projects = () => {
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  const handleProjectClick = (slug: string) => {
+    navigate(`/projects/${slug}`);
   };
 
   return (
@@ -384,7 +241,8 @@ export const Projects = () => {
                   return viewMode === "list" ? (
                     <div
                       key={project.title}
-                      className="group bg-card border border-border rounded-xl p-4 hover:shadow-elevation-2 dark:hover:shadow-elevation-2-dark hover:border-brand-orange/20 transition-all flex flex-col md:flex-row gap-4"
+                      onClick={() => handleProjectClick(project.slug)}
+                      className="group bg-card border border-border rounded-xl p-4 hover:shadow-elevation-2 dark:hover:shadow-elevation-2-dark hover:border-brand-orange/20 transition-all flex flex-col md:flex-row gap-4 cursor-pointer"
                     >
                       {project.image && (
                         <div className="w-full md:w-36 h-32 md:h-auto rounded-lg overflow-hidden flex-shrink-0 border border-border">
@@ -397,7 +255,7 @@ export const Projects = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h3 className="font-semibold font-heading text-foreground text-sm">
+                            <h3 className="font-semibold font-heading text-foreground text-sm group-hover:text-brand-orange transition-colors">
                               {project.title}
                             </h3>
                             <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${status.class}`}>
@@ -422,12 +280,24 @@ export const Projects = () => {
                           </div>
                           <div className="flex gap-3">
                             {project.github && (
-                              <a href={project.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                              <a
+                                href={project.github}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <Github className="w-3 h-3" /> GitHub
                               </a>
                             )}
                             {project.link && (
-                              <a href={project.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-brand-orange hover:underline">
+                              <a
+                                href={project.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-brand-orange hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 Learn more <ExternalLink className="w-2.5 h-2.5" />
                               </a>
                             )}
@@ -438,7 +308,8 @@ export const Projects = () => {
                   ) : (
                     <div
                       key={project.title}
-                      className="group bg-card border border-border rounded-xl p-4 hover:shadow-elevation-2 dark:hover:shadow-elevation-2-dark hover:border-brand-orange/20 transition-all flex flex-col"
+                      onClick={() => handleProjectClick(project.slug)}
+                      className="group bg-card border border-border rounded-xl p-4 hover:shadow-elevation-2 dark:hover:shadow-elevation-2-dark hover:border-brand-orange/20 transition-all flex flex-col cursor-pointer"
                     >
                       {project.image && (
                         <div className="w-full h-32 rounded-lg overflow-hidden border border-border mb-3">
@@ -453,7 +324,7 @@ export const Projects = () => {
                           {status.label}
                         </span>
                       </div>
-                      <h3 className="font-semibold font-heading text-foreground text-sm mb-1">{project.title}</h3>
+                      <h3 className="font-semibold font-heading text-foreground text-sm mb-1 group-hover:text-brand-orange transition-colors">{project.title}</h3>
                       <p className="text-xs text-muted-foreground mb-3 line-clamp-2 flex-1">{project.description}</p>
                       <div className="flex flex-wrap gap-1">
                         {project.tags.slice(0, 3).map((tag) => (

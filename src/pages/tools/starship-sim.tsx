@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { initStarshipScene, SimState, destroyScene } from './starship-engine';
 
-type Phase = 'prelaunch' | 'ignition' | 'liftoff' | 'maxq' | 'meco' | 'separation' | 'ses' | 'coast' | 'lunar-approach' | 'landing-burn' | 'touchdown' | 'landed' | 'eva' | 'exploration' | 'complete';
+type Phase = 'prelaunch' | 'ignition' | 'liftoff' | 'maxq' | 'meco' | 'separation' | 'ses' | 'orbit' | 'tli' | 'coast' | 'lunar-approach' | 'landing-burn' | 'touchdown' | 'landed' | 'eva' | 'exploration' | 'complete';
 
 const PHASE_LABELS: Record<Phase, string> = {
     prelaunch: 'PRE-LAUNCH',
@@ -13,6 +13,8 @@ const PHASE_LABELS: Record<Phase, string> = {
     meco: 'MECO',
     separation: 'STAGE SEPARATION',
     ses: 'SES-1 CONFIRMED',
+    orbit: 'EARTH ORBIT',
+    tli: 'TRANS-LUNAR INJECTION',
     coast: 'COAST PHASE',
     'lunar-approach': 'LUNAR APPROACH',
     'landing-burn': 'LANDING BURN',
@@ -82,9 +84,9 @@ export const StarshipSim = () => {
             {/* Phase Banner */}
             <div className="absolute top-12 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
                 <div className={`px-4 py-1 rounded text-xs font-mono uppercase tracking-[0.2em] transition-all duration-500 ${phase === 'prelaunch' ? 'bg-white/10 text-white/50' :
-                        DONE_PHASES.includes(phase) || phase === 'touchdown' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                            phase === 'eva' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-                                'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+                    DONE_PHASES.includes(phase) || phase === 'touchdown' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                        phase === 'eva' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                            'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
                     }`}>
                     {PHASE_LABELS[phase]}
                 </div>
@@ -121,7 +123,9 @@ export const StarshipSim = () => {
                         <MissionStep label="MAX-Q" done={AFTER(phase, 'maxq')} active={phase === 'maxq'} />
                         <MissionStep label="MECO" done={AFTER(phase, 'meco')} active={phase === 'meco'} />
                         <MissionStep label="SEPARATION" done={AFTER(phase, 'separation')} active={phase === 'separation'} />
-                        <MissionStep label="TRANS-LUNAR" done={AFTER(phase, 'coast')} active={phase === 'coast' || phase === 'ses'} />
+                        <MissionStep label="ORBIT" done={AFTER(phase, 'orbit')} active={phase === 'ses' || phase === 'orbit'} />
+                        <MissionStep label="TLI BURN" done={AFTER(phase, 'tli')} active={phase === 'tli'} />
+                        <MissionStep label="COAST" done={AFTER(phase, 'coast')} active={phase === 'coast'} />
                         <MissionStep label="LUNAR LANDING" done={AFTER(phase, 'touchdown')} active={phase === 'lunar-approach' || phase === 'landing-burn'} />
                         <MissionStep label="EVA" done={AFTER(phase, 'eva')} active={phase === 'eva'} />
                         <MissionStep label="EXPLORATION" done={phase === 'complete'} active={phase === 'exploration'} />

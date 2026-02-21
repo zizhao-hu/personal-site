@@ -19,6 +19,14 @@ const tools = [
         icon: '📊',
         tags: ['Slides', 'Presentations', 'Research'],
     },
+    {
+        id: 'starship-sim',
+        title: 'Starship Lunar Mission',
+        description: 'Ultra-realistic 3D simulation of a SpaceX Starship launch and Moon landing. Babylon.js powered with SpaceX broadcast-style telemetry HUD.',
+        path: '/tools/starship-sim',
+        icon: '🚀',
+        tags: ['3D', 'Simulation', 'Babylon.js'],
+    },
 ];
 
 export const Tools = () => {

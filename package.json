@@ -12,6 +12,10 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@babylonjs/core": "^8.52.0",
+    "@babylonjs/gui": "^8.52.0",
+    "@babylonjs/loaders": "^8.52.0",
+    "@babylonjs/materials": "^8.52.0",
     "@mlc-ai/web-llm": "^0.2.80",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-label": "^2.1.0",

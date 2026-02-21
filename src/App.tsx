@@ -15,6 +15,7 @@ import { TutorialDetail } from './pages/tutorials/tutorial-detail'
 import { Tools } from './pages/tools/tools'
 import { PipelineDesigner } from './pages/tools/pipeline-designer'
 import { SlideMaker } from './pages/tools/slide-maker'
+import { StarshipSim } from './pages/tools/starship-sim'
 import { FloatingChat } from './components/custom/floating-chat'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext'
@@ -42,6 +43,7 @@ function AppContent() {
         <Route path="/tools" element={<Tools />} />
         <Route path="/tools/pipeline-designer" element={<PipelineDesigner />} />
         <Route path="/tools/slide-maker" element={<SlideMaker />} />
+        <Route path="/tools/starship-sim" element={<StarshipSim />} />
       </Routes>
       {showFloatingChat && <FloatingChat />}
     </div>

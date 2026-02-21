@@ -42,11 +42,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     siteRoot.position.y = E_R; // Sits on north pole of Earth
     const launchSite = buildLaunchSite(scene, siteRoot);
 
-    // Local ground patch (tangent to sphere at launch site)
-    const ground = MeshBuilder.CreateGround('ground', { width: 2000, height: 2000, subdivisions: 2 }, scene);
-    const gMat = new StandardMaterial('gm', scene);
-    gMat.diffuseColor = new Color3(0.18, 0.15, 0.12); gMat.specularColor = Color3.Black();
-    ground.material = gMat; ground.parent = siteRoot; ground.receiveShadows = true;
+    // No flat ground — launch directly from Earth sphere surface
 
     // ── SHIP on pad ──
     const shipRoot = new TransformNode('shipRoot', scene);
@@ -164,13 +160,19 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             const targetY = E_R + 28 + 35.5 + sceneAlt;
             shipRoot.position.y = lerp(shipRoot.position.y, targetY, dt * 4);
 
-            // Gravity turn
+            // Gravity turn + lunar flip
             if (['liftoff', 'maxq'].includes(state.phase)) {
                 shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.min((t - 3) * 0.003, 0.2), dt * 2);
             } else if (['orbit', 'tli'].includes(state.phase)) {
                 shipRoot.rotation.z = lerp(shipRoot.rotation.z, 0.6, dt * 0.5); // Nearly horizontal
+            } else if (state.phase === 'coast') {
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, 0, dt * 0.3); // Settle for coast
+            } else if (state.phase === 'lunar-approach') {
+                // 180° flip: rotate so engines face Moon (downward toward surface)
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI, dt * 1.2);
             } else if (['landing-burn', 'touchdown', 'landed'].includes(state.phase)) {
-                shipRoot.rotation.z = lerp(shipRoot.rotation.z, 0, dt * 2);
+                // Keep engines facing down (PI rotation = upside down = engines toward Moon)
+                shipRoot.rotation.z = lerp(shipRoot.rotation.z, Math.PI, dt * 3);
             }
 
             // ── ENGINE FIRE (visible from nozzles!) ──
@@ -275,19 +277,15 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             const skyT = Math.min(1, state.altitude / 100);
             scene!.clearColor = new Color4(0.28 * (1 - skyT), 0.52 * (1 - skyT), 0.82 * (1 - skyT * 0.8), 1);
 
-            // ── GROUND FADE (as Earth sphere takes over) ──
-            // But keep launch pad visible if booster is returning!
+            // ── LAUNCH SITE FADE (as Earth sphere takes over) ──
+            // But keep pad visible if booster is returning!
             const boosterReturning = boosterDetached && t < 105;
-            if (state.altitude > 40 && !boosterReturning) {
-                ground.visibility = lerp(ground.visibility, 0, dt * 2);
-            }
             if (state.altitude > 20 && !boosterReturning) {
-                siteRoot.getChildMeshes().forEach(m => { if (m.name !== 'ground') m.visibility = lerp(m.visibility, Math.max(0, 1 - (state.altitude - 20) / 80), dt * 2); });
+                siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, Math.max(0, 1 - (state.altitude - 20) / 80), dt * 2); });
             }
             // Restore pad visibility when booster is returning
             if (boosterReturning && t > 65) {
                 siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, 1, dt * 3); });
-                ground.visibility = lerp(ground.visibility, 1, dt * 2);
             }
 
             // ── MOON APPROACH ──
@@ -299,19 +297,17 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 moonSphere.scaling.set(ms, ms, ms);
             }
 
-            // Near Moon: land on sphere surface
+            // Near Moon: land on sphere surface (ship is flipped 180°, engines down)
             if (['landing-burn', 'touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase)) {
                 moonBase.setEnabled(true);
-                // Landing Y = top of Moon sphere (accounting for scaling)
                 const moonScale = moonSphere.scaling.y;
                 moonLandingY = moonRoot.position.y + M_R * moonScale + 2;
                 moonBase.position.y = moonLandingY;
                 if (['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase)) {
-                    shipRoot.position.y = lerp(shipRoot.position.y, moonLandingY + 25, dt * 2);
-                    // Camera zoom in for landing
+                    // Ship descends to Moon sphere surface (engines first since rotated PI)
+                    shipRoot.position.y = lerp(shipRoot.position.y, moonLandingY + 30, dt * 2);
                     cam.radius = lerp(cam.radius, 200, dt * 1.5);
                 }
-                ground.visibility = 0;
             }
 
             // ── EVA + ROVER ──

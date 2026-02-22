@@ -24,7 +24,7 @@ export const ChatInput = ({ question, setQuestion, onSubmit, isLoading, disabled
     // Derive the new ModelSelector props from the old interface
     const aiLoadState: 'idle' | 'loading' | 'ready' | 'failed' = isModelLoading ? 'loading' : disabled ? 'idle' : 'ready';
     const aiProgress = modelProgressPercentage || 0;
-    const activeMode: 'smart-match' | 'ai' = disabled || isModelLoading ? 'smart-match' : 'ai';
+    const activeMode: 'prism' | 'ai' = disabled || isModelLoading ? 'prism' : 'ai';
 
     return (
         <div className="relative w-full flex flex-col gap-4">

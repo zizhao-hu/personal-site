@@ -4,14 +4,14 @@ import { Textarea } from "../ui/textarea";
 import { ArrowUpIcon, SparklesIcon } from "./icons";
 import { ModelSelector } from "./model-selector";
 import { Markdown } from "./markdown";
-import { smartMatchService, type ChatMessage } from "@/lib/smart-match-service";
+import { prismService, type ChatMessage } from "@/lib/prism-service";
 import { webLLMService } from "@/lib/webllm-service";
 import { message } from "@/interfaces/interfaces";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MessageSquare, ChevronDown, Minus, Zap, Brain } from "lucide-react";
 
 // ── Mode types ──────────────────────────────────────────────────
-type ChatMode = "smart-match" | "ai";
+type ChatMode = "prism" | "ai";
 type AILoadState = "idle" | "loading" | "ready" | "failed";
 
 export const FloatingChat = () => {
@@ -22,7 +22,7 @@ export const FloatingChat = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // ── Mode state ────────────────────────────────────────────────
-  const [activeMode, setActiveMode] = useState<ChatMode>("smart-match");
+  const [activeMode, setActiveMode] = useState<ChatMode>("prism");
   const [aiLoadState, setAILoadState] = useState<AILoadState>("idle");
   const [aiProgress, setAIProgress] = useState(0);
   const [selectedModel, setSelectedModel] = useState("Qwen2.5-0.5B-Instruct-q4f16_1-MLC");
@@ -72,7 +72,7 @@ export const FloatingChat = () => {
       setActiveMode("ai");
       console.log("✅ AI model loaded — switching to AI mode");
     } catch (err) {
-      console.warn("⚠️ AI model failed to load, staying in smart-match mode:", err);
+      console.warn("⚠️ AI model failed to load, staying in PRISM mode:", err);
       setAILoadState("failed");
     }
   }, []);
@@ -93,7 +93,7 @@ export const FloatingChat = () => {
   const handleModelSelect = async (modelId: string) => {
     if (modelId === selectedModel && aiLoadState === 'ready') return;
     setSelectedModel(modelId);
-    setActiveMode("smart-match"); // Fall back while loading
+    setActiveMode("prism"); // Fall back while loading
     await loadAIInBackground(modelId);
   };
 
@@ -143,8 +143,8 @@ export const FloatingChat = () => {
           );
         }
       } else {
-        // ── Smart Match Mode: instant response ────────────────
-        const response = smartMatchService.generateResponse(chatHistory);
+        // ── PRISM Mode: instant response ──────────────────────
+        const response = prismService.generateResponse(chatHistory);
         const words = response.split(" ");
         let built = "";
         for (let i = 0; i < words.length; i += 3) {
@@ -241,7 +241,7 @@ export const FloatingChat = () => {
                       <div className="flex items-center gap-1">
                         <ModeIcon className="w-3 h-3 text-brand-orange" />
                         <span className="text-[10px] font-medium font-heading text-foreground tracking-wide">
-                          {activeMode === "ai" ? "AI" : "Smart Match"}
+                          {activeMode === "ai" ? "AI" : "PRISM"}
                         </span>
                       </div>
 

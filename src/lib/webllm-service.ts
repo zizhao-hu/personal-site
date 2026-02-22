@@ -76,7 +76,7 @@ export class WebLLMService {
       const msg = error instanceof Error ? error.message : String(error);
       if (msg.includes('WebGPU') || msg.includes('GPU') || msg.includes('adapter')) {
         this.gpuUnavailable = true;
-        console.warn("WebLLM: GPU unavailable — using PRISM mode");
+        console.warn("WebLLM: GPU unavailable — using Smart Match mode");
       } else {
         console.warn("WebLLM initialization failed:", msg);
       }

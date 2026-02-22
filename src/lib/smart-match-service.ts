@@ -1,5 +1,5 @@
 /**
- * PRISM — Personal Response & Intelligent Semantic Matching
+ * Smart Vector Matching Service
  * 
  * Provides instant responses by matching user queries against a knowledge base
  * using TF-IDF cosine similarity. No model loading required — works immediately.
@@ -123,7 +123,7 @@ const TOPIC_KNOWLEDGE: Omit<KnowledgeEntry, 'tfidf'>[] = [
 
 // ── TF-IDF VECTOR MATCHING ─────────────────────────────────────
 
-class PrismService {
+class SmartMatchService {
     private entries: KnowledgeEntry[] = [];
     private vocabulary: Map<string, number> = new Map();
     private idf: number[] = [];
@@ -306,4 +306,4 @@ class PrismService {
 }
 
 // Export singleton
-export const prismService = new PrismService();
+export const smartMatchService = new SmartMatchService();

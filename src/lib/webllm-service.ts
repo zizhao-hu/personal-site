@@ -12,6 +12,7 @@ export class WebLLMService {
   private worker: Worker | null = null;
   private isInitialized = false;
   private isInitializing = false;
+  private gpuUnavailable = false; // Once GPU fails, don't retry
   private progressCallback: ((progress: string) => void) | null = null;
   private loadingProgress: number = 0;
   private currentModel: string = "SmolLM2-360M-Instruct-q4f16_1-MLC";
@@ -22,6 +23,11 @@ export class WebLLMService {
   private systemPrompt = ZIZHAO_CONTEXT;
 
   async initialize(progressCallback?: (progress: string) => void, modelId?: string): Promise<void> {
+    // If GPU already known to be unavailable, fail fast and quietly
+    if (this.gpuUnavailable) {
+      throw new Error("WebLLM not available - using demo mode");
+    }
+
     if (this.isInitializing) {
       return;
     }
@@ -63,15 +69,19 @@ export class WebLLMService {
         timeoutPromise
       ]);
     } catch (error) {
-      console.error("WebLLM failed:", error);
+      this.isInitializing = false;
       await this.cleanup();
 
-      if (import.meta.env.PROD || isMobile) {
-        console.warn("WebLLM failed - falling back to demo mode", { isMobile, isProd: import.meta.env.PROD });
-        throw new Error("WebLLM not available - using demo mode");
+      // Mark GPU as permanently unavailable if it's a GPU/WebGPU issue
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes('WebGPU') || msg.includes('GPU') || msg.includes('adapter')) {
+        this.gpuUnavailable = true;
+        console.warn("WebLLM: GPU unavailable — using Smart Match mode");
       } else {
-        throw error;
+        console.warn("WebLLM initialization failed:", msg);
       }
+
+      throw new Error("WebLLM not available - using demo mode");
     }
   }
 

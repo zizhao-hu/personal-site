@@ -133,6 +133,12 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     const GM_E = G_SURFACE * E_R * E_R;   // 39,240,000 — gives g=9.81 at surface
     const GM_M = GM_E / 81.3;             // ~482,657 — Moon g≈1.62
 
+    // ═══ GAME → REAL-LIFE CONVERSION ═══
+    // Earth radius: game=2000, real=6,371,000m. Display telemetry in real units.
+    const DIST_SCALE = 6_371_000 / E_R;      // 3185.5 meters per game unit
+    const VEL_SCALE = Math.sqrt(DIST_SCALE);  // 56.44 m/s per game unit/s (physics-consistent)
+    let rawAlt = 0; // Raw game-unit altitude for internal use (camera, clouds, etc.)
+
     // Rocket thrust (TWR-based, like KSP)
     const BOOSTER_DRY = 200, BOOSTER_PROP = 3400;
     const SHIP_DRY = 120, SHIP_PROP = 1200;
@@ -304,11 +310,12 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                     if (rv < 0) { vx -= rv * rX; vy -= rv * rY; }
                 }
 
-                // ── TELEMETRY ──
+                // ── TELEMETRY (converted to real-life units) ──
                 const alt = inMoonSOI ? rM - M_R : rE - E_R;
-                state.altitude = Math.max(0, alt);
-                state.velocity = speed;
-                state.downrange += speed * dt * 0.7;
+                rawAlt = Math.max(0, alt);
+                state.altitude = rawAlt * DIST_SCALE / 1000;          // km
+                state.velocity = speed * VEL_SCALE / 1000;            // km/s
+                state.downrange += (speed * VEL_SCALE / 1000) * dt;   // km
                 state.fuel = separated ? fuelFracShip * 100 : fuelFracBooster * 100;
                 state.thrust = state.throttle;
             }
@@ -328,9 +335,9 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             // ── CLOUD LAYER: follows ship horizontally, fades with altitude ──
             cloudEmit.position.x = shipRoot.position.x;
             cloudEmit.position.z = shipRoot.position.z;
-            if (state.altitude > 30 && state.altitude < 120) {
+            if (rawAlt > 30 && rawAlt < 120) {
                 cloudPS.emitRate = 40;
-                const cloudAlpha = 1 - Math.abs(state.altitude - 75) / 45;
+                const cloudAlpha = 1 - Math.abs(rawAlt - 75) / 45;
                 cloudPS.color1 = new Color4(1, 1, 1, 0.2 * cloudAlpha);
                 cloudPS.color2 = new Color4(0.9, 0.92, 0.95, 0.1 * cloudAlpha);
             } else {
@@ -414,14 +421,14 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
 
             // ── CAMERA (stays close during launch, slowly zooms out) ──
             if (state.phase !== 'prelaunch') {
-                const cTargetY = (boosterDetached && t > 42 && t < 100 && state.altitude < 200)
+                const cTargetY = (boosterDetached && t > 42 && t < 100 && rawAlt < 200)
                     ? (py + boosterY) / 2
                     : py;
                 cam.target.x = lerp(cam.target.x, px, dt * 2);
                 cam.target.y = lerp(cam.target.y, cTargetY, dt * 2);
                 // Gentle zoom out — stay focused on ship
-                if (state.altitude > 30) {
-                    const desiredR = 200 + state.altitude * 0.5;
+                if (rawAlt > 30) {
+                    const desiredR = 200 + rawAlt * 0.5;
                     cam.radius = lerp(cam.radius, Math.min(desiredR, 800), dt * 0.5);
                 }
             }
@@ -433,14 +440,14 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             }
 
             // ── SKY: blue → dark → black ──
-            const skyT = Math.min(1, state.altitude / 100);
+            const skyT = Math.min(1, rawAlt / 100);
             scene!.clearColor = new Color4(0.28 * (1 - skyT), 0.52 * (1 - skyT), 0.82 * (1 - skyT * 0.8), 1);
 
             // ── LAUNCH SITE FADE (as Earth sphere takes over) ──
             // But keep pad visible if booster is returning!
             const boosterReturning = boosterDetached && t < 105;
-            if (state.altitude > 20 && !boosterReturning) {
-                siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, Math.max(0, 1 - (state.altitude - 20) / 80), dt * 2); });
+            if (rawAlt > 20 && !boosterReturning) {
+                siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, Math.max(0, 1 - (rawAlt - 20) / 80), dt * 2); });
             }
             // Restore pad visibility when booster is returning
             if (boosterReturning && t > 65) {

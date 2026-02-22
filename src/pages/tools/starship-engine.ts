@@ -48,7 +48,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
 
     // ── EARTH (sphere centered at origin) ──
     const earth = buildEarth(scene);
-    earth.clouds.rotation.y = 0; // Will animate in loop
+    let earthRotation = 0; // Accumulates rotation during orbit
 
     // ── Launch site at north pole (physics simplicity) ──
     // Earth is rotated so Starbase Texas appears at the top
@@ -294,10 +294,9 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                     // Vertical ascent — clear the pad
                     targetHeading = 0;
                 } else if (t < 35) {
-                    // Gravity turn: gradually pitch from vertical toward prograde
-                    // The turn rate determines orbit shape — this gives a nice arc
+                    // Gravity turn: gradually pitch from vertical to fully horizontal
                     const turnProgress = (t - 5) / 30; // 0→1 over 30 seconds
-                    const targetPitch = turnProgress * (Math.PI / 2) * 0.85; // Up to ~77°
+                    const targetPitch = turnProgress * (Math.PI / 2); // Full 90° pitch-over
                     targetHeading = targetPitch;
                 } else if (['separation'].includes(state.phase)) {
                     targetHeading = prograde; // Coast in current direction
@@ -489,6 +488,19 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             if (shake > 0) {
                 cam.target.x += (Math.random() - 0.5) * shake;
                 cam.target.y += (Math.random() - 0.5) * shake * 0.5;
+            }
+
+            // ── EARTH ROTATION during orbit ──
+            // Rotate the Earth mesh so the planet visually spins beneath the orbiting ship
+            const orbitPhases = ['ses', 'orbit', 'tli', 'coast'];
+            if (orbitPhases.includes(state.phase)) {
+                const speed = Math.sqrt(vx * vx + vy * vy);
+                const rE = Math.sqrt(px * px + py * py);
+                // Angular velocity = v/r (orbital mechanics)
+                const angVel = speed / Math.max(rE, E_R + 50);
+                earthRotation += angVel * dt * 0.4; // Scale down for visual feel
+                earth.earth.rotation.z = earthRotation;
+                earth.clouds.rotation.z = earthRotation * 1.15; // Clouds drift slightly faster
             }
 
             // ── SKY: blue → dark → black ──

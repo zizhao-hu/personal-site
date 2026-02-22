@@ -1,4 +1,4 @@
-import { Linkedin, Github, Mail, BookOpen, Sparkles, Brain } from 'lucide-react';
+import { Linkedin, Github, Mail, BookOpen, Sparkles, Brain, Rocket } from 'lucide-react';
 
 export const Overview = () => {
   return (
@@ -100,7 +100,24 @@ export const Overview = () => {
         </div>
       </div>
 
-      {/* Links */}
+      {/* My Vision */}
+      <div className="mb-6">
+        <div className="relative p-4 rounded-xl border border-border bg-gradient-to-r from-brand-orange/5 to-brand-blue/5">
+          <div className="flex items-start gap-3">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-orange/20 to-brand-blue/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Rocket className="w-3.5 h-3.5 text-brand-orange" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground font-heading mb-1.5">My Vision</h3>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                <span className="text-foreground font-medium">Specialized AI</span> — models trained for coding, STEM, and scientific reasoning — will drive civilization forward.{' '}
+                <span className="text-foreground font-medium">Embodied, instruction-tuned AI</span> with emotional intelligence will balance society through human-centered interaction.{' '}
+                The bridge between the two: <span className="text-foreground font-medium">task-specific synthetic data and verified curricula</span> that make training specialized models fast, cheap, and accessible to everyone.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="flex items-center justify-center gap-2 flex-wrap">
         <a
           href="https://scholar.google.com/citations?user=A8J42tQAAAAJ"

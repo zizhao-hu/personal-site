@@ -1,0 +1,11 @@
+﻿Add Starship Lunar Mission: Babylon.js 3D launch sim with SpaceX-style telemetry HUD
+
+
+ package-lock.json                  |  46 ++++
+ package.json                       |   4 +
+ src/App.tsx                        |   2 +
+ src/pages/tools/starship-engine.ts | 460 +++++++++++++++++++++++++++++++++++++
+ src/pages/tools/starship-sim.tsx   | 168 ++++++++++++++
+ src/pages/tools/tools.tsx          |   8 +
+ tsconfig.app.tsbuildinfo           |   2 +-
+ 7 files changed, 689 insertions(+), 1 deletion(-)

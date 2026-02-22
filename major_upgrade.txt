@@ -1,0 +1,6 @@
+﻿Major upgrade: spherical Earth with atmosphere and clouds, spherical Moon, moon base, astronaut EVA, driveable rover, engine fire effects, sky color transitions
+
+
+ src/pages/tools/starship-engine.ts | 1159 ++++++++++++++++--------------------
+ src/pages/tools/starship-sim.tsx   |  105 ++--
+ 2 files changed, 563 insertions(+), 701 deletions(-)

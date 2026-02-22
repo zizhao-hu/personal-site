@@ -195,6 +195,39 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             else if (t < 435) { state.phase = 'exploration'; state.throttle = 0; }
             else { state.phase = 'complete'; state.throttle = 0; }
 
+            // ═══ VELOCITY-TARGETED GUIDANCE ═══
+            // Override phase throttle based on actual physics (like KSP maneuver nodes)
+            {
+                const speedNow = Math.sqrt(vx * vx + vy * vy);
+                const rENow = Math.sqrt(px * px + py * py);
+                const moonDist = Math.sqrt(moonRoot.position.x ** 2 + moonRoot.position.y ** 2);
+
+                if (['ses', 'orbit'].includes(state.phase)) {
+                    // Circularize: target circular orbit velocity at current radius
+                    const vCirc = Math.sqrt(GM_E / rENow);
+                    if (speedNow > vCirc * 1.02) state.throttle = 0; // Already fast enough
+                } else if (state.phase === 'tli') {
+                    // Hohmann transfer: burn to transfer orbit velocity, then coast
+                    const transferA = (rENow + moonDist) / 2;
+                    const vTransfer = Math.sqrt(GM_E * (2 / rENow - 1 / transferA));
+                    if (speedNow > vTransfer) state.throttle = 0; // Target velocity reached
+                    else state.throttle = Math.min(state.throttle, 80); // Moderate burn
+                } else if (state.phase === 'lunar-approach') {
+                    // LOI: retrograde burn to capture into lunar orbit
+                    const dxM = px - moonRoot.position.x, dyM = py - moonRoot.position.y;
+                    const rMNow = Math.sqrt(dxM * dxM + dyM * dyM);
+                    const vLunarOrbit = Math.sqrt(GM_M / rMNow) * 1.1;
+                    if (speedNow < vLunarOrbit) state.throttle = 0; // Slow enough
+                } else if (state.phase === 'landing-burn') {
+                    // Suicide burn: kill velocity relative to Moon surface
+                    const dxM = px - moonRoot.position.x, dyM = py - moonRoot.position.y;
+                    const rMNow = Math.sqrt(dxM * dxM + dyM * dyM);
+                    const altAboveMoon = rMNow - M_R;
+                    // Reduce throttle as we approach surface with low velocity
+                    if (altAboveMoon < 50 && speedNow < 5) state.throttle = Math.min(state.throttle, 20);
+                }
+            }
+
             // ═══ PURE NEWTONIAN PHYSICS ═══
             const stopped = ['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase);
             const separated = boosterDetached;

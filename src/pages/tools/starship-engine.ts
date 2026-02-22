@@ -18,7 +18,19 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * Math.min(1, Math
 let engine: Engine | null = null, scene: Scene | null = null;
 export function destroyScene() { scene?.dispose(); engine?.dispose(); engine = null; scene = null; }
 
+export function isWebGLAvailable(): boolean {
+    try {
+        const testCanvas = document.createElement('canvas');
+        return !!(testCanvas.getContext('webgl2') || testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl'));
+    } catch {
+        return false;
+    }
+}
+
 export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: SimState) => void): () => void {
+    if (!isWebGLAvailable()) {
+        throw new Error('WebGL not supported: Your browser or device does not support WebGL, which is required for the 3D simulation.');
+    }
     engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
     scene = new Scene(engine);
     scene.clearColor = new Color4(0.28, 0.52, 0.82, 1);

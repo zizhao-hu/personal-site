@@ -89,13 +89,18 @@
 }
 
 @layer base {
-  @font-face {
-    font-family: 'geist';
-    src: url(./assets/fonts/geist.woff2) format('woff2');
+
+  /* Hide scrollbar across all browsers */
+  ::-webkit-scrollbar {
+    display: none;
   }
 
   * {
     @apply border-border;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 
   body {

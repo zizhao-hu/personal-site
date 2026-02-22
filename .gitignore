@@ -1,5 +1,20 @@
+# Dependencies
 node_modules/
 venv/
+
+# Build output
 dist/
-__pycache__/
 gh-pages-deploy/
+
+# Cache & build artifacts
+__pycache__/
+*.tsbuildinfo
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,31 +1,35 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Textarea } from "../ui/textarea";
 import { ArrowUpIcon, SparklesIcon } from "./icons";
 import { ModelSelector } from "./model-selector";
 import { Markdown } from "./markdown";
+import { smartMatchService, type ChatMessage } from "@/lib/smart-match-service";
 import { webLLMService } from "@/lib/webllm-service";
-import { mockLLMService } from "@/lib/mock-llm-service";
-import { testWebLLMImport } from "@/lib/webllm-import-test";
 import { message } from "@/interfaces/interfaces";
-import { ChatMessage } from "@/lib/webllm-service";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MessageSquare, ChevronDown, AlertTriangle, Minus } from "lucide-react";
-import { toast } from "sonner";
+import { X, MessageSquare, ChevronDown, Minus, Zap, Brain, Loader2 } from "lucide-react";
+
+// ── Mode types ──────────────────────────────────────────────────
+type ChatMode = "smart-match" | "ai";
+type AILoadState = "idle" | "loading" | "ready" | "failed";
 
 export const FloatingChat = () => {
+  // ── Core chat state ───────────────────────────────────────────
   const [messages, setMessages] = useState<message[]>([]);
   const [question, setQuestion] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
-  const [useMockService, setUseMockService] = useState(false);
-  const [progressPercentage, setProgressPercentage] = useState<number | undefined>(undefined);
-  const [selectedModel, setSelectedModel] = useState("Qwen2.5-0.5B-Instruct-q4f16_1-MLC");
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // ── Mode state ────────────────────────────────────────────────
+  const [activeMode, setActiveMode] = useState<ChatMode>("smart-match");
+  const [aiLoadState, setAILoadState] = useState<AILoadState>("idle");
+  const [aiProgress, setAIProgress] = useState(0);
+  const [selectedModel, setSelectedModel] = useState("Qwen2.5-0.5B-Instruct-q4f16_1-MLC");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const aiLoadAttempted = useRef(false);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -44,129 +48,93 @@ export const FloatingChat = () => {
     return () => window.removeEventListener('chat-question', handleChatQuestion as EventListener);
   }, []);
 
-  // Initialize services
-  useEffect(() => {
-    const initializeServices = async () => {
-      if (webLLMService.isReady() || mockLLMService.isReady()) {
-        setUseMockService(!webLLMService.isReady());
-        return;
-      }
+  // ── Background AI Loading ─────────────────────────────────────
+  // Start loading AI silently after a short delay (don't block first paint)
+  const loadAIInBackground = useCallback(async (modelId: string) => {
+    // Skip on GPU-heavy pages
+    if (window.location.pathname.includes('starship-sim')) return;
 
-      setIsInitializing(true);
+    // Skip on mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) return;
 
-      // Skip WebLLM on GPU-heavy pages (e.g. 3D sims) to avoid GPU OOM
-      const isGPUHeavyPage = window.location.pathname.includes('starship-sim');
-      if (isGPUHeavyPage) {
-        try {
-          await mockLLMService.initialize();
-          setUseMockService(true);
-        } catch {
-          console.error("Failed to initialize mock service");
-        }
-        setIsInitializing(false);
-        return;
-      }
-
-      try {
-        const importResult = await testWebLLMImport();
-        if (!importResult.success) throw new Error("WebLLM import failed");
-
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        if (!isMobile) {
-          try {
-            await webLLMService.initialize((progress) => {
-              const percentageMatch = progress.match(/(\d+)%/);
-              if (percentageMatch) setProgressPercentage(parseInt(percentageMatch[1]));
-            }, selectedModel);
-            setUseMockService(false);
-          } catch {
-            setUseMockService(true);
-          }
-        } else {
-          setUseMockService(true);
-        }
-      } catch {
-        try {
-          await mockLLMService.initialize();
-          setUseMockService(true);
-        } catch {
-          console.error("Failed to initialize any service");
-        }
-      } finally {
-        setIsInitializing(false);
-      }
-    };
-
-    initializeServices();
-  }, [selectedModel]);
-
-  // Handle model selection
-  const handleModelSelect = async (modelId: string) => {
-    if (modelId === selectedModel) return;
-
-    setSelectedModel(modelId);
-    setIsInitializing(true);
-    setProgressPercentage(undefined);
+    setAILoadState("loading");
+    setAIProgress(0);
 
     try {
       await webLLMService.initialize((progress) => {
         const percentageMatch = progress.match(/(\d+)%/);
-        if (percentageMatch) setProgressPercentage(parseInt(percentageMatch[1]));
+        if (percentageMatch) {
+          setAIProgress(parseInt(percentageMatch[1]));
+        }
       }, modelId);
-      setUseMockService(false);
-    } catch {
-      console.error("Failed to initialize model");
-    } finally {
-      setIsInitializing(false);
+
+      setAILoadState("ready");
+      setActiveMode("ai");
+      console.log("✅ AI model loaded — switching to AI mode");
+    } catch (err) {
+      console.warn("⚠️ AI model failed to load, staying in smart-match mode:", err);
+      setAILoadState("failed");
     }
+  }, []);
+
+  // Trigger background AI load on mount (with delay)
+  useEffect(() => {
+    if (aiLoadAttempted.current) return;
+    aiLoadAttempted.current = true;
+
+    // Wait 2s before starting AI load so the page renders first
+    const timer = setTimeout(() => {
+      loadAIInBackground(selectedModel);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Model Switching ───────────────────────────────────────────
+  const handleModelSelect = async (modelId: string) => {
+    if (modelId === selectedModel) return;
+    setSelectedModel(modelId);
+    setActiveMode("smart-match"); // Fall back while loading
+    await loadAIInBackground(modelId);
   };
 
+  // ── Submit Handler ────────────────────────────────────────────
   const handleSubmit = async () => {
-    const currentService = useMockService ? mockLLMService : webLLMService;
-
-    if (!currentService.isReady()) {
-      toast.error("AI model is still loading...");
-      return;
-    }
-
-    if (isLoading || isStreaming || !question.trim()) return;
+    if (isStreaming || !question.trim()) return;
 
     const userMessage: message = {
       id: uuidv4(),
       role: "user",
-      content: question
+      content: question,
     };
 
     setMessages(prev => [...prev, userMessage]);
     setQuestion("");
-    setIsLoading(true);
     setDrawerOpen(true);
 
+    const chatHistory: ChatMessage[] = messages
+      .filter(msg => msg.role !== "system")
+      .map(msg => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+      }));
+    chatHistory.push({ role: "user", content: userMessage.content });
+
+    const assistantMessageId = uuidv4();
+    const assistantMessage: message = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+    };
+    setMessages(prev => [...prev, assistantMessage]);
+
     try {
-      const chatMessages: ChatMessage[] = messages
-        .filter(msg => msg.role !== "system")
-        .map(msg => ({
-          role: msg.role as "user" | "assistant",
-          content: msg.content
-        }));
-
-      chatMessages.push({ role: "user", content: userMessage.content });
-
-      const assistantMessageId = uuidv4();
-      const assistantMessage: message = {
-        id: assistantMessageId,
-        role: "assistant",
-        content: ""
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsLoading(false);
-      setIsStreaming(true);
-
-      if (!useMockService && webLLMService.isReady()) {
+      if (activeMode === "ai" && webLLMService.isReady()) {
+        // ── AI Mode: stream tokens ────────────────────────────
+        setIsStreaming(true);
         let fullContent = "";
-        for await (const chunk of webLLMService.generateStreamingResponse(chatMessages)) {
+        for await (const chunk of webLLMService.generateStreamingResponse(chatHistory)) {
           fullContent += chunk;
           setMessages(prev =>
             prev.map(msg =>
@@ -177,31 +145,44 @@ export const FloatingChat = () => {
           );
         }
       } else {
-        const response = await currentService.generateResponse(chatMessages);
-        setMessages(prev =>
-          prev.map(msg =>
-            msg.id === assistantMessageId
-              ? { ...msg, content: response }
-              : msg
-          )
-        );
+        // ── Smart Match Mode: instant response ────────────────
+        const response = smartMatchService.generateResponse(chatHistory);
+        // Simulate a very brief typing effect for natural feel
+        const words = response.split(" ");
+        let built = "";
+        for (let i = 0; i < words.length; i += 3) {
+          built += (built ? " " : "") + words.slice(i, i + 3).join(" ");
+          const snapshot = built;
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: snapshot }
+                : msg
+            )
+          );
+          await new Promise(r => setTimeout(r, 20));
+        }
       }
     } catch (error) {
-      console.error("Error:", error);
-      setMessages(prev => [...prev, {
-        id: uuidv4(),
-        role: "assistant",
-        content: "Sorry, I encountered an error. Please try again."
-      }]);
+      console.error("Error generating response:", error);
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === assistantMessageId
+            ? { ...msg, content: "Sorry, I encountered an error. Please try again." }
+            : msg
+        )
+      );
     } finally {
-      setIsLoading(false);
       setIsStreaming(false);
     }
   };
 
-  const isServiceReady = useMockService ? mockLLMService.isReady() : webLLMService.isReady();
-  const isDisabled = !isServiceReady || isInitializing;
+  // ── Derived state ─────────────────────────────────────────────
   const hasMessages = messages.length > 0;
+
+  // Mode badge info
+  const modeLabel = activeMode === "ai" ? "AI Model" : "Smart Match";
+  const ModeIcon = activeMode === "ai" ? Brain : Zap;
 
   return (
     <>
@@ -239,11 +220,11 @@ export const FloatingChat = () => {
                 style={{ transformOrigin: "bottom center" }}
                 className="mb-2 relative rounded-2xl"
               >
-                {/* Futuristic panel border effect */}
+                {/* Panel border effect */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-brand-orange/20 via-transparent to-brand-orange/10 pointer-events-none z-[1]" />
                 <div className="absolute inset-[1px] rounded-[15px] bg-background z-0" />
 
-                {/* Scan-line overlay for futuristic feel */}
+                {/* Scan-line overlay */}
                 <div
                   className="absolute inset-0 rounded-2xl pointer-events-none z-[2] opacity-[0.03]"
                   style={{
@@ -251,7 +232,7 @@ export const FloatingChat = () => {
                   }}
                 />
 
-                {/* Actual content */}
+                {/* Content */}
                 <div className="relative z-10 border border-brand-orange/20 dark:border-brand-orange/15 rounded-2xl shadow-elevation-4 dark:shadow-elevation-4-dark bg-background">
                   {/* Drawer Header */}
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/50">
@@ -261,10 +242,25 @@ export const FloatingChat = () => {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-50" />
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-orange" />
                       </span>
-                      <MessageSquare className="w-3.5 h-3.5 text-brand-orange" />
-                      <span className="text-xs font-medium font-heading text-foreground tracking-wide">
-                        AI Chat
-                      </span>
+
+                      {/* Mode badge */}
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted border border-border">
+                        <ModeIcon className="w-3 h-3 text-brand-orange" />
+                        <span className="text-[10px] font-medium font-heading text-foreground tracking-wide">
+                          {modeLabel}
+                        </span>
+                      </div>
+
+                      {/* Background AI loading indicator */}
+                      {aiLoadState === "loading" && activeMode === "smart-match" && (
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                          <Loader2 className="w-2.5 h-2.5 text-blue-500 animate-spin" />
+                          <span className="text-[9px] text-blue-500 font-heading font-medium">
+                            AI {aiProgress}%
+                          </span>
+                        </div>
+                      )}
+
                       <span className="text-[10px] text-muted-foreground font-heading">
                         ({messages.length} msg{messages.length !== 1 ? "s" : ""})
                       </span>
@@ -290,15 +286,14 @@ export const FloatingChat = () => {
                     </div>
                   </div>
 
-                  {/* Messages area — compact inline rendering */}
+                  {/* Messages area */}
                   <div className="overflow-y-auto max-h-[50vh] p-2 space-y-2 scroll-smooth">
                     {messages.map((msg, index) => (
                       <motion.div
                         key={msg.id || index}
                         initial={{ y: 4, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
-                        className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'
-                          }`}
+                        className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         {msg.role === 'assistant' && (
                           <div className="w-5 h-5 flex items-center justify-center rounded-full ring-1 ring-border shrink-0 mt-0.5">
@@ -324,26 +319,10 @@ export const FloatingChat = () => {
                         </div>
                       </motion.div>
                     ))}
-                    {isLoading && !isStreaming && (
-                      <motion.div
-                        initial={{ y: 4, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1, transition: { delay: 0.15 } }}
-                        className="flex gap-2 items-center"
-                      >
-                        <div className="w-5 h-5 flex items-center justify-center rounded-full ring-1 ring-border shrink-0">
-                          <SparklesIcon size={10} />
-                        </div>
-                        <div className="flex gap-1 py-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-bounce" style={{ animationDelay: '300ms' }} />
-                        </div>
-                      </motion.div>
-                    )}
                     <div ref={messagesEndRef} />
                   </div>
 
-                  {/* Bottom edge accent glow */}
+                  {/* Bottom edge accent */}
                   <div className="h-px bg-gradient-to-r from-transparent via-brand-orange/30 to-transparent" />
                 </div>
               </motion.div>
@@ -368,90 +347,99 @@ export const FloatingChat = () => {
             )}
           </AnimatePresence>
 
-          {/* ─ Input Bar / Loading State ────────────────────────── */}
+          {/* ─ Input Bar ─────────────────────────────────────────── */}
           <div className="relative bg-card rounded-xl shadow-elevation-3 dark:shadow-elevation-3-dark border border-border overflow-hidden">
             {/* Top edge accent */}
             <div className="h-[2px] bg-gradient-to-r from-transparent via-brand-orange/40 to-transparent" />
 
-            {isDisabled ? (
-              /* ── Compact Model Loading Bar ── */
-              <div className="flex items-center gap-2.5 px-3 py-2">
-                <motion.div
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-5 h-5 flex items-center justify-center rounded-full bg-brand-orange/10 flex-shrink-0 text-brand-orange"
+            <div className="flex items-center gap-1.5 p-1.5 relative z-30">
+              {/* Mode indicator pill */}
+              <div className="flex items-center gap-1 shrink-0">
+                <div
+                  className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-all duration-300 border text-[10px] font-medium font-heading ${activeMode === "ai"
+                    ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400"
+                    : "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400"
+                    }`}
+                  title={
+                    activeMode === "ai"
+                      ? "AI Model active — full generative responses"
+                      : aiLoadState === "loading"
+                        ? `Smart Match active — AI loading (${aiProgress}%)`
+                        : "Smart Match active — instant vector-matched responses"
+                  }
                 >
-                  <SparklesIcon size={10} />
-                </motion.div>
-                <span className="text-[11px] text-muted-foreground font-heading whitespace-nowrap">Loading…</span>
-                <div className="flex-1 bg-border rounded-full h-1 overflow-hidden min-w-[60px]">
-                  <motion.div
-                    className="bg-brand-orange h-full rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercentage || 0}%` }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                  />
-                </div>
-                <span className="text-[10px] text-brand-orange font-semibold font-heading tabular-nums min-w-[28px] text-right">
-                  {progressPercentage || 0}%
-                </span>
-              </div>
-            ) : (
-              /* ── Chat Input ── */
-              <div className="flex items-center gap-1.5 p-1.5 relative z-30">
-                <ModelSelector
-                  selectedModel={selectedModel}
-                  onModelSelect={handleModelSelect}
-                  isLoading={isInitializing}
-                  progressPercentage={progressPercentage}
-                />
-                <div className="relative group">
-                  <button className="p-0.5 text-brand-orange/60 hover:text-brand-orange transition-colors">
-                    <AlertTriangle className="w-3 h-3" />
-                  </button>
-                  <div className="absolute left-0 bottom-full mb-1 w-44 p-1.5 bg-brand-dark text-brand-light text-[10px] rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 font-heading">
-                    Small models may produce inaccurate information.
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <Textarea
-                    ref={textareaRef}
-                    placeholder="Ask me anything..."
-                    className="min-h-[28px] max-h-[60px] py-1.5 px-2.5 resize-none rounded-lg text-xs border-0 bg-muted focus:ring-1 focus:ring-brand-orange/50 font-sans"
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' && !event.shiftKey) {
-                        event.preventDefault();
-                        handleSubmit();
-                      }
-                    }}
-                    rows={1}
-                  />
+                  {activeMode === "ai" ? (
+                    <Brain className="w-3 h-3" />
+                  ) : (
+                    <Zap className="w-3 h-3" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {activeMode === "ai" ? "AI" : "Fast"}
+                  </span>
+                  {aiLoadState === "loading" && activeMode === "smart-match" && (
+                    <Loader2 className="w-2.5 h-2.5 animate-spin opacity-60" />
+                  )}
                 </div>
 
-                {/* Chat toggle when messages exist */}
-                {hasMessages && !drawerOpen && (
-                  <button
-                    onClick={() => setDrawerOpen(true)}
-                    className="relative p-1.5 rounded-lg text-brand-orange hover:bg-brand-orange/10 transition-colors"
-                    title="Show chat"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-brand-orange text-white text-[8px] rounded-full flex items-center justify-center font-heading">
-                      {messages.length}
-                    </span>
-                  </button>
+                {/* Model selector — only show when AI is ready or loading */}
+                {(aiLoadState === "ready" || aiLoadState === "loading") && (
+                  <ModelSelector
+                    selectedModel={selectedModel}
+                    onModelSelect={handleModelSelect}
+                    isLoading={aiLoadState === "loading"}
+                    progressPercentage={aiProgress}
+                  />
                 )}
-
-                <button
-                  className="rounded-lg h-7 w-7 flex-shrink-0 bg-brand-orange hover:bg-brand-orange/85 text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none"
-                  onClick={handleSubmit}
-                  disabled={!question.trim() || isLoading || isStreaming}
-                >
-                  <ArrowUpIcon size={12} />
-                </button>
               </div>
+
+              <div className="flex-1">
+                <Textarea
+                  ref={textareaRef}
+                  placeholder="Ask me anything..."
+                  className="min-h-[28px] max-h-[60px] py-1.5 px-2.5 resize-none rounded-lg text-xs border-0 bg-muted focus:ring-1 focus:ring-brand-orange/50 font-sans"
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault();
+                      handleSubmit();
+                    }
+                  }}
+                  rows={1}
+                />
+              </div>
+
+              {/* Chat toggle when messages exist */}
+              {hasMessages && !drawerOpen && (
+                <button
+                  onClick={() => setDrawerOpen(true)}
+                  className="relative p-1.5 rounded-lg text-brand-orange hover:bg-brand-orange/10 transition-colors"
+                  title="Show chat"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-brand-orange text-white text-[8px] rounded-full flex items-center justify-center font-heading">
+                    {messages.length}
+                  </span>
+                </button>
+              )}
+
+              <button
+                className="rounded-lg h-7 w-7 flex-shrink-0 bg-brand-orange hover:bg-brand-orange/85 text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                onClick={handleSubmit}
+                disabled={!question.trim() || isStreaming}
+              >
+                <ArrowUpIcon size={12} />
+              </button>
+            </div>
+
+            {/* Background AI loading progress bar — subtle, at bottom of input */}
+            {aiLoadState === "loading" && activeMode === "smart-match" && (
+              <motion.div
+                className="h-[2px] bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500"
+                initial={{ width: "0%" }}
+                animate={{ width: `${aiProgress}%` }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              />
             )}
           </div>
         </div>

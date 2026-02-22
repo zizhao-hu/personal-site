@@ -17,6 +17,7 @@ if (import.meta.env.PROD) {
     // Check if the error is related to WebLLM
     if (event.error && (
       event.error.message?.includes('WebLLM') ||
+      event.error.message?.includes('WebGL') ||
       event.error.message?.includes('Object.keys') ||
       event.error.message?.includes('Cannot convert undefined or null to object')
     )) {
@@ -30,6 +31,7 @@ if (import.meta.env.PROD) {
     // Check if the promise rejection is related to WebLLM
     if (event.reason && (
       event.reason.message?.includes('WebLLM') ||
+      event.reason.message?.includes('WebGL') ||
       event.reason.message?.includes('Object.keys') ||
       event.reason.message?.includes('Cannot convert undefined or null to object')
     )) {

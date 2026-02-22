@@ -1,4 +1,3 @@
-import './App.css'
 import { Home } from './pages/home/home'
 import { Chat } from './pages/chat/chat'
 import { Research } from './pages/research/research'

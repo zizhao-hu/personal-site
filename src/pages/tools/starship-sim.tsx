@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { initStarshipScene, SimState, destroyScene } from './starship-engine';
+import { initStarshipScene, SimState, destroyScene, isWebGLAvailable } from './starship-engine';
 
 type Phase = 'prelaunch' | 'ignition' | 'liftoff' | 'maxq' | 'meco' | 'separation' | 'ses' | 'orbit' | 'tli' | 'coast' | 'lunar-approach' | 'landing-burn' | 'touchdown' | 'landed' | 'eva' | 'exploration' | 'complete';
 
@@ -39,11 +39,21 @@ export const StarshipSim = () => {
         fuel: 100, thrust: 0, missionTime: -10, throttle: 0,
     });
     const [started, setStarted] = useState(false);
+    const [webglError, setWebglError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!canvasRef.current) return;
-        const cleanup = initStarshipScene(canvasRef.current, (s: SimState) => setSim({ ...s }));
-        return () => { cleanup(); destroyScene(); };
+        if (!isWebGLAvailable()) {
+            setWebglError('WebGL is not supported by your browser or device. The 3D simulation requires WebGL to render.');
+            return;
+        }
+        try {
+            const cleanup = initStarshipScene(canvasRef.current, (s: SimState) => setSim({ ...s }));
+            return () => { cleanup(); destroyScene(); };
+        } catch (err) {
+            console.error('Failed to initialize Starship simulation:', err);
+            setWebglError(err instanceof Error ? err.message : 'Failed to initialize 3D rendering engine.');
+        }
     }, []);
 
     const handleLaunch = useCallback(() => {
@@ -64,6 +74,27 @@ export const StarshipSim = () => {
     return (
         <div className="relative w-full h-screen bg-black overflow-hidden select-none">
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+
+            {/* WebGL Fallback */}
+            {webglError && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/90">
+                    <div className="max-w-md mx-4 p-6 bg-gray-900/90 border border-white/10 rounded-xl backdrop-blur-sm text-center">
+                        <div className="text-4xl mb-4">🚀</div>
+                        <h2 className="text-lg font-semibold text-white mb-2">3D Rendering Unavailable</h2>
+                        <p className="text-sm text-white/60 mb-4">{webglError}</p>
+                        <div className="text-xs text-white/40 space-y-1 mb-4">
+                            <p>Try the following:</p>
+                            <p>• Enable hardware acceleration in your browser settings</p>
+                            <p>• Use a WebGL-compatible browser (Chrome, Edge, Firefox)</p>
+                            <p>• Update your GPU drivers</p>
+                        </div>
+                        <button onClick={() => navigate('/tools')}
+                            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors">
+                            ← Back to Tools
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Top Bar */}
             <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">

@@ -26,6 +26,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     // Camera starts looking at rocket on pad
     const cam = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3.2, 200, new Vector3(0, E_R + 50, 0), scene);
     cam.lowerRadiusLimit = 10; cam.upperRadiusLimit = 50000;
+    cam.maxZ = EM_DIST * 3; // Far clip plane: always render Earth and Moon
     cam.attachControl(canvas, true); cam.wheelPrecision = 5;
 
     const hemi = new HemisphericLight('hemi', new Vector3(0, 1, 0), scene); hemi.intensity = 0.3;
@@ -108,10 +109,10 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
 
     createStarfield(scene);
 
-    // ── MOON (sphere) ──
+    // ── MOON (always visible in orbital plane) ──
     const moonRoot = new TransformNode('moonRoot', scene);
-    moonRoot.position.set(0, EM_DIST * 0.15, EM_DIST);
-    const moonSphere = buildMoon(scene, moonRoot);
+    moonRoot.position.set(EM_DIST * 0.3, EM_DIST * 0.95, 0); // In orbital plane (x-y)
+    buildMoon(scene, moonRoot);
 
     // Moon base (on Moon surface)
     const moonBase = buildMoonBase(scene); moonBase.setEnabled(false);
@@ -456,24 +457,12 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, 1, dt * 3); });
             }
 
-            // ── MOON APPROACH: bring Moon closer during coast/approach phases ──
-            if (['coast', 'lunar-approach', 'landing-burn', 'touchdown'].includes(state.phase)) {
-                // Moon moves from far away to nearby the ship
-                const aT = Math.min(1, (t - 95) / 35);
-                moonRoot.position.z = lerp(moonRoot.position.z, 0, dt * 0.5);
-                if (state.phase === 'coast') {
-                    // Moon approaches from distance
-                    moonRoot.position.y = lerp(moonRoot.position.y, shipRoot.position.y + M_R * 3 + 500, dt * 0.8);
-                }
-                const ms = 1 + aT * 1.5;
-                moonSphere.scaling.set(ms, ms, ms);
-            }
+            // Moon is always in the scene at its fixed position — no fake approach needed
 
             // Near Moon: set up surface for landing
             if (['landing-burn', 'touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase)) {
                 moonBase.setEnabled(true);
-                const moonScale = moonSphere.scaling.y;
-                moonLandingY = moonRoot.position.y + M_R * moonScale + 2;
+                moonLandingY = moonRoot.position.y + M_R + 2;
                 moonBase.position.y = moonLandingY;
                 if (['touchdown', 'landed', 'eva', 'exploration', 'complete'].includes(state.phase)) {
                     // Move physics state to Moon surface

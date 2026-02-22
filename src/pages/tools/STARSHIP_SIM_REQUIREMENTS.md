@@ -20,7 +20,7 @@ All user requirements for the Starship HLS mission simulation.
 ## Visual
 - Cloud layer the rocket punches through.
 - Atmosphere and cloud spheres proportional to Earth diameter.
-- Engine fire, exhaust plume, launch smoke.
+- **Earth and Moon always visible** in the environment from the start — no sudden appearing.
 - Sky transitions from blue → black in space.
 - Booster separation and return to pad.
 

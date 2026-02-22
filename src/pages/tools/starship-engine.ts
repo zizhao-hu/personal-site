@@ -126,6 +126,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     const state: SimState = { phase: 'prelaunch', altitude: 0, velocity: 0, downrange: 0, fuel: 100, thrust: 0, missionTime: -10, throttle: 0 };
     let lastTime = performance.now(), launched = false;
     let boosterDetached = false, sepY = 0, boosterY = 0, boosterRotZ = 0;
+    let boosterTimer = 0; // Wall-clock seconds since separation (not affected by time warp)
     let moonLandingY = 0;
 
     // ═══ KSP-STYLE PHYSICS ═══
@@ -162,6 +163,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
     engine.runRenderLoop(() => {
         const now = performance.now();
         let dt = Math.min((now - lastTime) / 1000, 0.1);
+        const rawDt = dt; // Save pre-warp dt for booster animations
         lastTime = now;
 
         if (!launched) { state.missionTime = -3 + (performance.now() % 3000) / 1000; }
@@ -378,7 +380,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             }
 
             // Landing burn reignition flash
-            if (state.phase === 'landing-burn' && t > 135 && t < 138) {
+            if (state.phase === 'landing-burn' && t > 310 && t < 313) {
                 shipExhaust.emitRate = 5000; shipExhaust.maxSize = 20;
                 shipCore.emitRate = 2000;
                 engineLight.intensity = 8;
@@ -399,18 +401,20 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 ship.booster.position.set(0, sepY, 0);
                 ship.booster.rotation.z = shipRoot.rotation.z;
                 boosterY = sepY; boosterRotZ = shipRoot.rotation.z;
+                boosterTimer = 0; // Start wall-clock timer
                 exEmit.setParent(ship.shipNode);
                 exEmit.position.y = -2;
             }
             if (boosterDetached) {
-                if (t < 75) { // Free fall — no flip, just descending
+                boosterTimer += rawDt; // Wall-clock time, unaffected by warp
+                if (boosterTimer < 33) { // 0-33s: free fall
                     boosterExhaust.stop();
                     boosterY = lerp(boosterY, E_R + 200, dt * 0.4);
-                } else if (t < 90) { // Landing burn — reignite engines
+                } else if (boosterTimer < 48) { // 33-48s: landing burn
                     boosterExhaust.start(); boosterExhaust.emitRate = 1200;
-                    boosterRotZ = lerp(boosterRotZ, 0, dt * 2); // Straighten for landing
+                    boosterRotZ = lerp(boosterRotZ, 0, dt * 2);
                     boosterY = lerp(boosterY, E_R + 36, dt * 1.2);
-                } else if (t < 100) { // Catch
+                } else if (boosterTimer < 58) { // 48-58s: catch
                     boosterExhaust.emitRate = lerp(boosterExhaust.emitRate, 0, dt * 3);
                     boosterY = lerp(boosterY, E_R + 35, dt * 2);
                     const cLP = launchSite.chopL.parent as TransformNode;
@@ -448,7 +452,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
 
             // ── LAUNCH SITE FADE (as Earth sphere takes over) ──
             // But keep pad visible if booster is returning!
-            const boosterReturning = boosterDetached && t < 105;
+            const boosterReturning = boosterDetached && boosterTimer < 63;
             if (rawAlt > 20 && !boosterReturning) {
                 siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, Math.max(0, 1 - (rawAlt - 20) / 80), dt * 2); });
             }
@@ -482,7 +486,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
             if (['eva', 'exploration', 'complete'].includes(state.phase)) {
                 astro.root.setEnabled(true);
                 if (state.phase === 'eva') {
-                    const ep = (t - 160) / 20;
+                    const ep = (t - 370) / 25;
                     astro.root.position.set(shipRoot.position.x + 15 + ep * 20, moonLandingY + 1.2 + Math.abs(Math.sin(t * 3)) * 0.3, 0);
                 }
             }

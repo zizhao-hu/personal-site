@@ -68,34 +68,47 @@ export const Overview = () => {
         </div>
       </div>
 
-      {/* Highlights */}
-      <div className="grid md:grid-cols-3 gap-3 mb-6">
-        <div className="p-3 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800">
-          <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1.5 font-heading">
-            <Brain className="w-3.5 h-3.5 text-blue-600" />
-            Research Focus
-          </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Multi-agent systems, self-improving AI via synthetic data, brain-inspired architectures, continual learning
-          </p>
-        </div>
-        <div className="p-3 rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-100 dark:border-purple-800">
-          <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1.5 font-heading">
-            <BookOpen className="w-3.5 h-3.5 text-purple-600" />
-            Featured Work
-          </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Published at ICMI, NeurIPS workshops. Reviewer for ICLR, ICML, NeurIPS.
-          </p>
-        </div>
-        <div className="p-3 rounded-lg bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 border border-orange-100 dark:border-orange-800">
-          <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1.5 font-heading">
-            <Sparkles className="w-3.5 h-3.5 text-orange-600" />
-            Beyond
-          </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Spade A K-pop dancer at USC, fitness enthusiast, Asian food connoisseur
-          </p>
+      {/* What I Do */}
+      <div className="mb-6">
+        <div className="grid md:grid-cols-3 gap-4">
+          {/* Pillar 1 */}
+          <div className="group relative p-4 rounded-xl border border-border bg-card hover:border-brand-orange/30 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Brain className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground font-heading">Make AI Smarter</h3>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Training paradigms — self-improving loops, synthetic data generation, continual learning without forgetting
+            </p>
+          </div>
+
+          {/* Pillar 2 */}
+          <div className="group relative p-4 rounded-xl border border-border bg-card hover:border-brand-orange/30 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground font-heading">Build AI Systems</h3>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Multi-agent orchestration — using current models to solve complex domain tasks through collaboration
+            </p>
+          </div>
+
+          {/* Pillar 3 */}
+          <div className="group relative p-4 rounded-xl border border-border bg-card hover:border-brand-orange/30 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground font-heading">Make AI Fast</h3>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Efficient multimodal architectures — low-latency transformers, novel attention, scalable model design
+            </p>
+          </div>
         </div>
       </div>
 

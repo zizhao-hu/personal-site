@@ -165,8 +165,10 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
 
         if (!launched) { state.missionTime = -3 + (performance.now() % 3000) / 1000; }
         else {
-            // TIME WARP during coast (like KSP!)
-            const timeWarp = state.phase === 'coast' ? 8.0 : 1.0;
+            // TIME WARP: real-time for launch & landing, fast-forward everything else
+            const realTimePhases = ['prelaunch', 'ignition', 'liftoff', 'maxq', 'meco', 'separation',
+                'landing-burn', 'touchdown', 'landed', 'eva', 'exploration', 'complete'];
+            const timeWarp = realTimePhases.includes(state.phase) ? 1.0 : 8.0;
             state.missionTime += dt * timeWarp;
             const t = state.missionTime;
             if (timeWarp > 1) dt *= timeWarp; // Physics also runs faster

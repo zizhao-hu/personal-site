@@ -428,7 +428,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
 
             // ── CAMERA (stays close during launch, slowly zooms out) ──
             if (state.phase !== 'prelaunch') {
-                const cTargetY = (boosterDetached && t > 42 && t < 100 && rawAlt < 200)
+                const cTargetY = (boosterDetached && boosterTimer > 0 && boosterTimer < 58 && rawAlt < 200)
                     ? (py + boosterY) / 2
                     : py;
                 cam.target.x = lerp(cam.target.x, px, dt * 2);
@@ -457,7 +457,7 @@ export function initStarshipScene(canvas: HTMLCanvasElement, onTelemetry: (s: Si
                 siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, Math.max(0, 1 - (rawAlt - 20) / 80), dt * 2); });
             }
             // Restore pad visibility when booster is returning
-            if (boosterReturning && t > 65) {
+            if (boosterReturning && boosterTimer > 23) {
                 siteRoot.getChildMeshes().forEach(m => { m.visibility = lerp(m.visibility, 1, dt * 3); });
             }
 

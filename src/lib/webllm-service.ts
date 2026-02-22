@@ -109,13 +109,33 @@ export class WebLLMService {
         throw new Error("WebAssembly is not supported in this browser");
       }
 
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-      if (typeof WebGPU === 'undefined') {
-        console.warn("WebGPU is not available, WebLLM may fall back to CPU");
-        if (isMobile) {
-          console.warn("Mobile device detected - WebGPU fallback may be slower");
+      // Proper WebGPU detection — the API is on navigator.gpu, not a global WebGPU
+      if (!navigator.gpu) {
+        console.warn("WebGPU API not found (navigator.gpu is undefined)");
+        throw new Error(
+          "WebGPU is not supported. Please enable hardware acceleration in Chrome:\n" +
+          "Settings → System → 'Use hardware acceleration when available'\n" +
+          "Then restart Chrome. Also try chrome://flags/#enable-unsafe-webgpu"
+        );
+      }
+
+      // Verify we can actually get a GPU adapter (can fail even when navigator.gpu exists)
+      try {
+        const adapter = await navigator.gpu.requestAdapter();
+        if (!adapter) {
+          throw new Error("No GPU adapter found");
         }
+        console.log("✅ WebGPU adapter available:", adapter.info || "adapter found");
+      } catch (gpuErr) {
+        console.warn("WebGPU adapter request failed:", gpuErr);
+        throw new Error(
+          "WebGPU is available but no compatible GPU was found. Possible fixes:\n" +
+          "1. Enable hardware acceleration: Chrome Settings → System → 'Use hardware acceleration'\n" +
+          "2. Update GPU drivers\n" +
+          "3. Try chrome://flags/#enable-unsafe-webgpu\n" +
+          "4. Restart Chrome after making changes"
+        );
       }
 
       this.updateProgress("Loading model configurations...");

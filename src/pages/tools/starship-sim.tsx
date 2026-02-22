@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Copy, CheckCheck } from 'lucide-react';
 import { initStarshipScene, SimState, destroyScene, isWebGLAvailable } from './starship-engine';
 
 type Phase = 'prelaunch' | 'ignition' | 'liftoff' | 'maxq' | 'meco' | 'separation' | 'ses' | 'orbit' | 'tli' | 'coast' | 'lunar-approach' | 'landing-burn' | 'touchdown' | 'landed' | 'eva' | 'exploration' | 'complete';
@@ -77,23 +77,7 @@ export const StarshipSim = () => {
 
             {/* WebGL Fallback */}
             {webglError && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/90">
-                    <div className="max-w-md mx-4 p-6 bg-gray-900/90 border border-white/10 rounded-xl backdrop-blur-sm text-center">
-                        <div className="text-4xl mb-4">🚀</div>
-                        <h2 className="text-lg font-semibold text-white mb-2">3D Rendering Unavailable</h2>
-                        <p className="text-sm text-white/60 mb-4">{webglError}</p>
-                        <div className="text-xs text-white/40 space-y-1 mb-4">
-                            <p>Try the following:</p>
-                            <p>• Enable hardware acceleration in your browser settings</p>
-                            <p>• Use a WebGL-compatible browser (Chrome, Edge, Firefox)</p>
-                            <p>• Update your GPU drivers</p>
-                        </div>
-                        <button onClick={() => navigate('/tools')}
-                            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors">
-                            ← Back to Tools
-                        </button>
-                    </div>
-                </div>
+                <WebGLErrorPanel error={webglError} onBack={() => navigate('/tools')} />
             )}
 
             {/* Top Bar */}
@@ -209,3 +193,67 @@ const MissionStep = ({ label, done, active }: { label: string; done: boolean; ac
         <span className={`text-[9px] ${done ? 'text-green-400/80' : active ? 'text-cyan-400' : 'text-white/20'}`}>{label}</span>
     </div>
 );
+
+const CHROME_FLAGS = [
+    { url: 'chrome://flags/#ignore-gpu-blocklist', label: 'Ignore GPU blocklist' },
+    { url: 'chrome://flags/#enable-unsafe-webgpu', label: 'Force-enable GPU rendering' },
+    { url: 'chrome://settings/system', label: 'Enable hardware acceleration' },
+];
+
+const WebGLErrorPanel = ({ error, onBack }: { error: string; onBack: () => void }) => {
+    const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+
+    const copyUrl = (url: string) => {
+        navigator.clipboard.writeText(url).then(() => {
+            setCopiedUrl(url);
+            setTimeout(() => setCopiedUrl(null), 2000);
+        });
+    };
+
+    return (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/90">
+            <div className="max-w-md mx-4 p-6 bg-gray-900/90 border border-white/10 rounded-xl backdrop-blur-sm">
+                <div className="text-center mb-5">
+                    <div className="text-4xl mb-3">🚀</div>
+                    <h2 className="text-lg font-semibold text-white mb-1">3D Rendering Unavailable</h2>
+                    <p className="text-xs text-white/50">{error}</p>
+                </div>
+
+                <div className="mb-4">
+                    <p className="text-[10px] uppercase tracking-widest text-amber-400/80 font-mono mb-2.5">
+                        Enable GPU in Chrome
+                    </p>
+                    <div className="space-y-1.5">
+                        {CHROME_FLAGS.map(({ url, label }) => (
+                            <button
+                                key={url}
+                                onClick={() => copyUrl(url)}
+                                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
+                            >
+                                <div className="flex flex-col items-start gap-0.5 min-w-0">
+                                    <span className="text-[10px] text-white/70 font-medium">{label}</span>
+                                    <span className="text-[9px] font-mono text-amber-400/60 truncate w-full text-left">{url}</span>
+                                </div>
+                                {copiedUrl === url ? (
+                                    <CheckCheck className="w-4 h-4 text-green-400 shrink-0" />
+                                ) : (
+                                    <Copy className="w-3.5 h-3.5 text-white/30 group-hover:text-white/60 transition-colors shrink-0" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                    <p className="text-[9px] text-white/30 mt-2 text-center font-mono">
+                        Click to copy → paste in address bar → Enable → Relaunch Chrome
+                    </p>
+                </div>
+
+                <div className="flex justify-center">
+                    <button onClick={onBack}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors">
+                        ← Back to Tools
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};

@@ -42,7 +42,7 @@ export const Overview = () => {
           </div>
 
           <p className="text-lg text-brand-orange font-medium mb-3 font-heading">
-            AI Researcher · PhD Student at USC · MOVE Fellow
+            AI Researcher · PhD Student at USC · GLAMOUR Lab · MINDS · MOVE Fellow
           </p>
 
           <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4 max-w-2xl">
@@ -53,18 +53,6 @@ export const Overview = () => {
             Former MOVE Fellow at Handshake AI, specializing in frontier model training and safety.
           </p>
 
-          {/* Quick Stats */}
-          <div className="flex flex-wrap justify-center md:justify-start gap-2">
-            <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] font-semibold uppercase tracking-tight">
-              🎓 USC PhD Student
-            </div>
-            <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-[10px] font-semibold uppercase tracking-tight">
-              🤖 GLAMOUR / MINDS Lab
-            </div>
-            <div className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 text-[10px] font-semibold uppercase tracking-tight">
-              🌐 Handshake AI (Alumni)
-            </div>
-          </div>
         </div>
       </div>
 

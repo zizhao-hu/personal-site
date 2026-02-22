@@ -93,7 +93,7 @@ export const Overview = () => {
               <h3 className="text-sm font-semibold text-foreground font-heading">Build AI Systems</h3>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Multi-agent orchestration — using current models to solve complex domain tasks through collaboration
+              Full training pipelines for LLM, VLM — domain-specific, task-oriented AI training and system building
             </p>
           </div>
 

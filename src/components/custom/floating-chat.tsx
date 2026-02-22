@@ -8,7 +8,7 @@ import { smartMatchService, type ChatMessage } from "@/lib/smart-match-service";
 import { webLLMService } from "@/lib/webllm-service";
 import { message } from "@/interfaces/interfaces";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MessageSquare, ChevronDown, Minus, Zap, Brain, Loader2 } from "lucide-react";
+import { X, MessageSquare, ChevronDown, Minus, Zap, Brain } from "lucide-react";
 
 // ── Mode types ──────────────────────────────────────────────────
 type ChatMode = "smart-match" | "ai";
@@ -49,7 +49,6 @@ export const FloatingChat = () => {
   }, []);
 
   // ── Background AI Loading ─────────────────────────────────────
-  // Start loading AI silently after a short delay (don't block first paint)
   const loadAIInBackground = useCallback(async (modelId: string) => {
     // Skip on GPU-heavy pages
     if (window.location.pathname.includes('starship-sim')) return;
@@ -83,7 +82,6 @@ export const FloatingChat = () => {
     if (aiLoadAttempted.current) return;
     aiLoadAttempted.current = true;
 
-    // Wait 2s before starting AI load so the page renders first
     const timer = setTimeout(() => {
       loadAIInBackground(selectedModel);
     }, 2000);
@@ -93,7 +91,7 @@ export const FloatingChat = () => {
 
   // ── Model Switching ───────────────────────────────────────────
   const handleModelSelect = async (modelId: string) => {
-    if (modelId === selectedModel) return;
+    if (modelId === selectedModel && aiLoadState === 'ready') return;
     setSelectedModel(modelId);
     setActiveMode("smart-match"); // Fall back while loading
     await loadAIInBackground(modelId);
@@ -147,7 +145,6 @@ export const FloatingChat = () => {
       } else {
         // ── Smart Match Mode: instant response ────────────────
         const response = smartMatchService.generateResponse(chatHistory);
-        // Simulate a very brief typing effect for natural feel
         const words = response.split(" ");
         let built = "";
         for (let i = 0; i < words.length; i += 3) {
@@ -179,9 +176,6 @@ export const FloatingChat = () => {
 
   // ── Derived state ─────────────────────────────────────────────
   const hasMessages = messages.length > 0;
-
-  // Mode badge info
-  const modeLabel = activeMode === "ai" ? "AI Model" : "Smart Match";
   const ModeIcon = activeMode === "ai" ? Brain : Zap;
 
   return (
@@ -204,7 +198,7 @@ export const FloatingChat = () => {
       <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center pointer-events-none">
         <div className="w-full max-w-xl px-2 md:px-4 pb-2 md:pb-3 pointer-events-auto">
 
-          {/* ─ Drawer (messages) ─ appears right above the input ── */}
+          {/* ─ Drawer (messages) ─ appears above the input ── */}
           <AnimatePresence>
             {drawerOpen && hasMessages && (
               <motion.div
@@ -235,7 +229,7 @@ export const FloatingChat = () => {
                 {/* Content */}
                 <div className="relative z-10 border border-brand-orange/20 dark:border-brand-orange/15 rounded-2xl shadow-elevation-4 dark:shadow-elevation-4-dark bg-background">
                   {/* Drawer Header */}
-                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/50">
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/50">
                     <div className="flex items-center gap-2">
                       {/* Pulsing status dot */}
                       <span className="relative flex h-2 w-2">
@@ -243,26 +237,16 @@ export const FloatingChat = () => {
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-orange" />
                       </span>
 
-                      {/* Mode badge */}
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted border border-border">
+                      {/* Mode label */}
+                      <div className="flex items-center gap-1">
                         <ModeIcon className="w-3 h-3 text-brand-orange" />
                         <span className="text-[10px] font-medium font-heading text-foreground tracking-wide">
-                          {modeLabel}
+                          {activeMode === "ai" ? "AI" : "Smart Match"}
                         </span>
                       </div>
 
-                      {/* Background AI loading indicator */}
-                      {aiLoadState === "loading" && activeMode === "smart-match" && (
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-                          <Loader2 className="w-2.5 h-2.5 text-blue-500 animate-spin" />
-                          <span className="text-[9px] text-blue-500 font-heading font-medium">
-                            AI {aiProgress}%
-                          </span>
-                        </div>
-                      )}
-
                       <span className="text-[10px] text-muted-foreground font-heading">
-                        ({messages.length} msg{messages.length !== 1 ? "s" : ""})
+                        · {messages.length} msg{messages.length !== 1 ? "s" : ""}
                       </span>
                     </div>
                     <div className="flex items-center gap-0.5">
@@ -353,44 +337,14 @@ export const FloatingChat = () => {
             <div className="h-[2px] bg-gradient-to-r from-transparent via-brand-orange/40 to-transparent" />
 
             <div className="flex items-center gap-1.5 p-1.5 relative z-30">
-              {/* Mode indicator pill */}
-              <div className="flex items-center gap-1 shrink-0">
-                <div
-                  className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-all duration-300 border text-[10px] font-medium font-heading ${activeMode === "ai"
-                    ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400"
-                    : "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400"
-                    }`}
-                  title={
-                    activeMode === "ai"
-                      ? "AI Model active — full generative responses"
-                      : aiLoadState === "loading"
-                        ? `Smart Match active — AI loading (${aiProgress}%)`
-                        : "Smart Match active — instant vector-matched responses"
-                  }
-                >
-                  {activeMode === "ai" ? (
-                    <Brain className="w-3 h-3" />
-                  ) : (
-                    <Zap className="w-3 h-3" />
-                  )}
-                  <span className="hidden sm:inline">
-                    {activeMode === "ai" ? "AI" : "Fast"}
-                  </span>
-                  {aiLoadState === "loading" && activeMode === "smart-match" && (
-                    <Loader2 className="w-2.5 h-2.5 animate-spin opacity-60" />
-                  )}
-                </div>
-
-                {/* Model selector — only show when AI is ready or loading */}
-                {(aiLoadState === "ready" || aiLoadState === "loading") && (
-                  <ModelSelector
-                    selectedModel={selectedModel}
-                    onModelSelect={handleModelSelect}
-                    isLoading={aiLoadState === "loading"}
-                    progressPercentage={aiProgress}
-                  />
-                )}
-              </div>
+              {/* Gemini-style model selector chip — contains everything */}
+              <ModelSelector
+                selectedModel={selectedModel}
+                onModelSelect={handleModelSelect}
+                aiLoadState={aiLoadState}
+                aiProgress={aiProgress}
+                activeMode={activeMode}
+              />
 
               <div className="flex-1">
                 <Textarea
@@ -431,16 +385,6 @@ export const FloatingChat = () => {
                 <ArrowUpIcon size={12} />
               </button>
             </div>
-
-            {/* Background AI loading progress bar — subtle, at bottom of input */}
-            {aiLoadState === "loading" && activeMode === "smart-match" && (
-              <motion.div
-                className="h-[2px] bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500"
-                initial={{ width: "0%" }}
-                animate={{ width: `${aiProgress}%` }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-              />
-            )}
           </div>
         </div>
       </div>

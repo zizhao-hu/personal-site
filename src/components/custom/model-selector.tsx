@@ -1,222 +1,298 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, Brain, Clock } from 'lucide-react';
+import { ChevronDown, Check, Sparkles, Zap, Brain, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface ModelInfo {
   id: string;
   name: string;
   size: string;
-  estimatedLoadTime: string;
   description: string;
 }
 
 interface ModelSelectorProps {
   selectedModel: string;
   onModelSelect: (modelId: string) => void;
-  isLoading: boolean;
-  progressPercentage?: number;
+  aiLoadState: 'idle' | 'loading' | 'ready' | 'failed';
+  aiProgress: number;
+  activeMode: 'smart-match' | 'ai';
 }
 
 const AVAILABLE_MODELS: ModelInfo[] = [
   {
     id: "SmolLM2-360M-Instruct-q4f16_1-MLC",
     name: "SmolLM2 360M",
-    size: "360M parameters (~200MB)",
-    estimatedLoadTime: "10-20 seconds",
-    description: "Fastest model, great for mobile & quick responses"
+    size: "~200MB",
+    description: "Fastest, great for mobile"
   },
   {
     id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
     name: "Qwen 2.5 0.5B",
-    size: "0.5B parameters (~350MB)",
-    estimatedLoadTime: "15-30 seconds",
-    description: "Fast and capable, excellent default choice"
+    size: "~350MB",
+    description: "Fast & capable, default"
   },
   {
     id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC",
     name: "Qwen 2.5 1.5B",
-    size: "1.5B parameters (~900MB)",
-    estimatedLoadTime: "30-60 seconds",
-    description: "Better quality, still fast"
+    size: "~900MB",
+    description: "Better quality, still quick"
   },
   {
     id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
     name: "Llama 3.2 1B",
-    size: "1B parameters (~700MB)",
-    estimatedLoadTime: "25-45 seconds",
-    description: "Meta's latest small model, great quality"
+    size: "~700MB",
+    description: "Meta's latest small model"
   },
   {
     id: "Llama-3.2-3B-Instruct-q4f16_1-MLC",
     name: "Llama 3.2 3B",
-    size: "3B parameters (~2GB)",
-    estimatedLoadTime: "60-120 seconds",
-    description: "Excellent quality, recommended for detailed responses"
+    size: "~2GB",
+    description: "Excellent quality"
   },
   {
     id: "Phi-3.5-mini-instruct-q4f16_1-MLC",
     name: "Phi 3.5 Mini",
-    size: "3.8B parameters (~2GB)",
-    estimatedLoadTime: "60-120 seconds",
-    description: "Microsoft's best small model, superior reasoning"
+    size: "~2GB",
+    description: "Superior reasoning"
   },
   {
     id: "gemma-2-2b-it-q4f16_1-MLC",
     name: "Gemma 2 2B",
-    size: "2B parameters (~1.5GB)",
-    estimatedLoadTime: "45-90 seconds",
-    description: "Google's efficient instruction-tuned model"
+    size: "~1.5GB",
+    description: "Google's efficient model"
   }
 ];
 
-export const ModelSelector = ({ selectedModel, onModelSelect, isLoading, progressPercentage }: ModelSelectorProps) => {
+export const ModelSelector = ({
+  selectedModel,
+  onModelSelect,
+  aiLoadState,
+  aiProgress,
+  activeMode,
+}: ModelSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentModel, setCurrentModel] = useState<ModelInfo | null>(null);
-  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  // Close dropdown when clicking outside
+  const currentModel = AVAILABLE_MODELS.find(m => m.id === selectedModel) || AVAILABLE_MODELS[1];
+  const isLoading = aiLoadState === 'loading';
+  const isReady = aiLoadState === 'ready';
+
+  // Close dropdown on outside click
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.model-selector') && !target.closest('.model-selector-portal')) {
-        setIsOpen(false);
-      }
+    if (!isOpen) return;
+    const handle = (e: MouseEvent) => {
+      const t = e.target as Element;
+      if (!t.closest('.gemini-selector') && !t.closest('.gemini-dropdown')) setIsOpen(false);
     };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
   }, [isOpen]);
 
-  useEffect(() => {
-    const model = AVAILABLE_MODELS.find(m => m.id === selectedModel);
-    setCurrentModel(model || AVAILABLE_MODELS[0]);
-  }, [selectedModel]);
-
-  // Calculate position when opening
+  // Compute dropdown position
   useEffect(() => {
     if (isOpen && btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      setDropdownPos({
-        top: rect.top, // dropdown will be positioned bottom-anchored to this point
-        left: rect.left,
-      });
+      const r = btnRef.current.getBoundingClientRect();
+      setDropdownPos({ top: r.top, left: r.left, width: Math.max(r.width, 260) });
     }
   }, [isOpen]);
 
-  const handleModelSelect = (modelId: string) => {
-    onModelSelect(modelId);
+  const handleSelect = (id: string) => {
+    onModelSelect(id);
     setIsOpen(false);
   };
 
-  if (!currentModel) return null;
+  // ── Derive the chip display ────────────────────────────────────
+  let chipLabel: string;
+  let ChipIcon: typeof Zap;
+  let chipStyle: string;
+
+  if (isReady && activeMode === 'ai') {
+    chipLabel = currentModel.name;
+    ChipIcon = Sparkles;
+    chipStyle = 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border-blue-200/60 dark:border-blue-700/40 text-blue-700 dark:text-blue-300';
+  } else if (isLoading) {
+    chipLabel = currentModel.name;
+    ChipIcon = Loader2;
+    chipStyle = 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200/60 dark:border-amber-700/40 text-amber-700 dark:text-amber-400';
+  } else {
+    chipLabel = 'Smart Match';
+    ChipIcon = Zap;
+    chipStyle = 'bg-muted border-border text-muted-foreground';
+  }
 
   return (
-    <div className="relative model-selector">
+    <>
+      {/* ─── Gemini-style Chip Button ─────────────────────────── */}
       <button
         ref={btnRef}
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1.5 px-2 py-1.5 backdrop-blur-sm rounded-lg transition-all duration-200 border shadow-sm ${isLoading
-          ? 'bg-blue-100/90 dark:bg-blue-900/50 border-blue-300 dark:border-blue-600'
-          : 'bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 border-gray-200 dark:border-gray-600'
-          }`}
+        className={`gemini-selector relative flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-full border transition-all duration-300 hover:shadow-sm group ${chipStyle}`}
       >
-        <Brain className={`w-3.5 h-3.5 ${isLoading ? 'text-blue-700 dark:text-blue-300' : 'text-blue-600 dark:text-blue-400'}`} />
-        <span className={`text-xs font-medium ${isLoading ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300'}`}>
-          {isLoading ? 'Loading...' : currentModel.name}
-        </span>
+        {/* Loading shimmer overlay */}
         {isLoading && (
-          <div className="w-2.5 h-2.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <div
+            className="absolute inset-0 rounded-full overflow-hidden pointer-events-none"
+            style={{ zIndex: 0 }}
+          >
+            <div
+              className="absolute inset-0 opacity-20"
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, rgba(245,158,11,0.4) 50%, transparent 100%)',
+                backgroundSize: '200% 100%',
+                animation: 'gemini-shimmer 2s ease-in-out infinite',
+              }}
+            />
+          </div>
         )}
-        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${isLoading ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`} />
+
+        {/* Chip content */}
+        <div className="relative z-10 flex items-center gap-1.5">
+          <ChipIcon className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+          <span className="text-[11px] font-medium font-heading whitespace-nowrap">
+            {chipLabel}
+          </span>
+
+          {/* Inline progress — Gemini loading dot style */}
+          {isLoading && (
+            <span className="text-[9px] font-heading font-semibold tabular-nums opacity-70">
+              {aiProgress}%
+            </span>
+          )}
+
+          {/* Ready checkmark */}
+          {isReady && activeMode === 'ai' && (
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          )}
+        </div>
+
+        <ChevronDown className={`relative z-10 w-3 h-3 transition-transform duration-200 opacity-50 group-hover:opacity-80 ${isOpen ? 'rotate-180' : ''}`} />
+
+        {/* Loading progress bar — fills bottom edge of chip */}
+        {isLoading && (
+          <motion.div
+            className="absolute bottom-0 left-0 h-[2px] rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400"
+            initial={{ width: '0%' }}
+            animate={{ width: `${aiProgress}%` }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            style={{ zIndex: 10 }}
+          />
+        )}
       </button>
 
+      {/* ─── Dropdown Portal ──────────────────────────────────── */}
       {createPortal(
         <AnimatePresence>
           {isOpen && dropdownPos && (
             <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="model-selector-portal fixed w-80 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700"
+              exit={{ opacity: 0, y: 8, scale: 0.96 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="gemini-dropdown fixed rounded-xl shadow-2xl border border-border bg-card/95 backdrop-blur-xl overflow-hidden"
               style={{
                 zIndex: 99999,
                 bottom: `${window.innerHeight - dropdownPos.top + 8}px`,
-                left: `${Math.min(dropdownPos.left, window.innerWidth - 330)}px`,
+                left: `${Math.min(dropdownPos.left, window.innerWidth - 280)}px`,
+                width: '268px',
               }}
             >
-              <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">
-                  Select AI Model
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Choose a model based on your needs
+              {/* Header */}
+              <div className="px-3 py-2.5 border-b border-border bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-brand-orange" />
+                  <span className="text-xs font-semibold font-heading text-foreground">Model</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-0.5 font-heading">
+                  Runs locally in your browser
                 </p>
               </div>
 
-              <div className="max-h-64 overflow-y-auto">
-                {AVAILABLE_MODELS.map((model) => (
-                  <button
-                    key={model.id}
-                    onClick={() => handleModelSelect(model.id)}
-                    className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ${model.id === selectedModel ? 'bg-blue-50 dark:bg-blue-900/20 border-r-2 border-blue-500' : ''
-                      }`}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                          {model.name}
-                        </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {model.description}
-                        </p>
-                      </div>
-                      {model.id === selectedModel && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1" />
-                      )}
-                    </div>
+              {/* Smart Match option (always available) */}
+              <button
+                onClick={() => handleSelect(selectedModel)}
+                className={`w-full px-3 py-2 flex items-center gap-2.5 text-left transition-colors hover:bg-muted/50 ${activeMode === 'smart-match' && !isLoading ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''
+                  }`}
+                disabled={activeMode === 'smart-match' && !isLoading}
+              >
+                <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                  <Zap className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-medium text-foreground">Smart Match</span>
+                    <span className="text-[9px] px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 font-heading font-medium">INSTANT</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground truncate">Vector-matched responses, no loading</p>
+                </div>
+                {activeMode === 'smart-match' && !isLoading && (
+                  <Check className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                )}
+              </button>
 
-                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                      <span>{model.size}</span>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{model.estimatedLoadTime}</span>
+              <div className="h-px bg-border mx-3" />
+
+              {/* AI Models */}
+              <div className="max-h-52 overflow-y-auto py-0.5">
+                {AVAILABLE_MODELS.map((model) => {
+                  const isSelected = model.id === selectedModel && (isReady || isLoading);
+                  const isCurrentlyLoading = isLoading && model.id === selectedModel;
+
+                  return (
+                    <button
+                      key={model.id}
+                      onClick={() => handleSelect(model.id)}
+                      disabled={isCurrentlyLoading}
+                      className={`w-full px-3 py-2 flex items-center gap-2.5 text-left transition-colors hover:bg-muted/50 ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''
+                        }`}
+                    >
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${isSelected
+                          ? 'bg-blue-100 dark:bg-blue-900/30'
+                          : 'bg-muted'
+                        }`}>
+                        {isCurrentlyLoading ? (
+                          <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
+                        ) : (
+                          <Brain className={`w-3 h-3 ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`} />
+                        )}
                       </div>
-                    </div>
-                  </button>
-                ))}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[11px] font-medium ${isSelected ? 'text-foreground' : 'text-foreground/80'}`}>
+                            {model.name}
+                          </span>
+                          <span className="text-[9px] text-muted-foreground">{model.size}</span>
+                        </div>
+                        {isCurrentlyLoading ? (
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+                              <motion.div
+                                className="h-full rounded-full bg-gradient-to-r from-blue-400 to-indigo-400"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${aiProgress}%` }}
+                                transition={{ duration: 0.4 }}
+                              />
+                            </div>
+                            <span className="text-[9px] text-blue-500 font-heading font-semibold tabular-nums">
+                              {aiProgress}%
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-muted-foreground truncate">{model.description}</p>
+                        )}
+                      </div>
+                      {isReady && isSelected && (
+                        <Check className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
-              {isLoading && progressPercentage !== undefined && (
-                <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                      Loading {currentModel?.name}...
-                    </p>
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                      {progressPercentage}%
-                    </p>
-                  </div>
-                  <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
-                    <motion.div
-                      className="bg-blue-600 h-2 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progressPercentage}%` }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </div>
-                </div>
-              )}
-              <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Models are loaded in your browser for privacy and speed
+              {/* Footer */}
+              <div className="px-3 py-2 border-t border-border bg-muted/20">
+                <p className="text-[9px] text-muted-foreground font-heading">
+                  Private · No data leaves your device
                 </p>
               </div>
             </motion.div>
@@ -224,6 +300,14 @@ export const ModelSelector = ({ selectedModel, onModelSelect, isLoading, progres
         </AnimatePresence>,
         document.body
       )}
-    </div>
+
+      {/* ─── Shimmer keyframes ────────────────────────────────── */}
+      <style>{`
+        @keyframes gemini-shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
+    </>
   );
-}; 
+};

@@ -56,7 +56,7 @@ const TOPIC_KNOWLEDGE: Omit<KnowledgeEntry, 'tfidf'>[] = [
     {
         id: 'topic-current-projects',
         keywords: ['current', 'project', 'building', 'working on', 'now', 'today', 'recent'],
-        answer: "I'm working on several interconnected projects: (1) **AgentForge** — Multi-agent orchestration framework with self-correction. (2) **DREAM-C2L** — Open-source continual learning framework. (3) **ReasonChain** — Test-time compute scaling research. (4) **Static Key Attention** — Novel attention mechanisms for vision transformers. All tied to my core thesis: building AI systems that improve themselves while remaining under control.",
+        answer: "I'm working on several interconnected projects: (1) **AgentForge** — Multi-agent orchestration framework with self-correction. (2) **DREAM-C2L** — Open-source continual learning framework. (3) **Static Key Attention** — Novel attention mechanisms for vision transformers. All tied to my core thesis: building AI systems that improve themselves while remaining under control.",
         category: 'research'
     },
     {

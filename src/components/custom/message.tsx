@@ -1,3 +1,5 @@
+'use client';
+
 import { motion } from 'framer-motion';
 import { cx } from 'classix';
 import { SparklesIcon } from './icons';

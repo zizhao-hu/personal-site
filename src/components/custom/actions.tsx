@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from "@/components/ui/button"
 import { Copy, ThumbsUp, ThumbsDown, Check } from 'lucide-react'
 import { useState } from "react"

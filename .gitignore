@@ -5,6 +5,7 @@ venv/
 # Build output
 dist/
 gh-pages-deploy/
+.next/
 
 # Cache & build artifacts
 __pycache__/
@@ -18,3 +19,7 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Build logs
+build_*.txt
+build_*.log

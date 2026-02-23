@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Check, Sparkles, Zap, Brain, Loader2 } from 'lucide-react';
@@ -183,7 +185,7 @@ export const ModelSelector = ({
       </button>
 
       {/* ─── Dropdown Portal ──────────────────────────────────── */}
-      {createPortal(
+      {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {isOpen && dropdownPos && (
             <motion.div

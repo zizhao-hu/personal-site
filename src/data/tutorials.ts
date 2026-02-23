@@ -9,6 +9,7 @@ export interface Tutorial {
     series?: string;
     content: string;
     prerequisites?: string[];
+    componentKey?: string;
 }
 
 export const tutorials: Tutorial[] = [
@@ -318,17 +319,17 @@ In the next tutorial, we'll build a complete React chat interface with WebLLM.
 *This tutorial is part of the WebLLM Fundamentals series.*
     `
     },
-  {
-    id: "2",
-    slug: "llm-from-scratch",
-    title: "Train Your LLM from Scratch",
-    description: "A comprehensive guide to training a language model from scratch � from data preparation and tokenization through pretraining, instruction tuning, and reasoning with RLHF/DPO.",
-    difficulty: "advanced",
-    estimatedTime: "2 hours",
-    topics: ["LLM Training", "PyTorch", "Pretraining", "SFT", "LoRA", "RLHF", "DPO"],
-    series: "Train Your LLM from Scratch",
-    prerequisites: ["Python proficiency", "PyTorch basics", "Understanding of transformer architecture"],
-    content: `
+    {
+        id: "2",
+        slug: "llm-from-scratch",
+        title: "Train Your LLM from Scratch",
+        description: "A comprehensive guide to training a language model from scratch � from data preparation and tokenization through pretraining, instruction tuning, and reasoning with RLHF/DPO.",
+        difficulty: "advanced",
+        estimatedTime: "2 hours",
+        topics: ["LLM Training", "PyTorch", "Pretraining", "SFT", "LoRA", "RLHF", "DPO"],
+        series: "Train Your LLM from Scratch",
+        prerequisites: ["Python proficiency", "PyTorch basics", "Understanding of transformer architecture"],
+        content: `
 # Stage 0: Preparation
 
 Before writing a single training loop, you need three things: an environment that won't crash mid-run, a tokenizer that can represent your data, and a data pipeline that feeds batches efficiently. Skip any of these and you'll waste GPU hours debugging.
@@ -1291,7 +1292,7 @@ This is the same pipeline used by frontier models — just at a smaller scale. T
 
 *This completes the "Train Your LLM from Scratch" series. For production-scale training, explore DeepSpeed, FSDP, and multi-node distributed training.*
     `
-  },
+    },
 
     {
         id: "3",
@@ -1640,29 +1641,29 @@ Now that you understand the architecture:
 *This tutorial is part of the ML Fundamentals series. Understanding transformers is essential for working with modern LLMs.*
     `
     },
-  {
-    id: "4",
-    slug: "antigravity-fast-prototyping",
-    title: "Antigravity: Try, Fail, Fix — The Fastest Way to Build",
-    description: "Stop watching tutorials. Just try it, fail fast, and ask AI. The anti-tutorial manifesto for vibe coders.",
-    difficulty: "beginner",
-    estimatedTime: "5 min",
-    topics: ["Antigravity", "AI Tools", "Developer Workflow", "Vibe Coding"],
-    series: "Developer Workflow",
-    prerequisites: ["VS Code", "Curiosity"],
-    content: "# Antigravity: Try, Fail, Fix — The Fastest Way to Build\n\n> Stop watching tutorials. Stop reading docs. **Just try it, fail, and ask AI.**\n\n<div style=\"position:relative;padding-bottom:56.25%;height:0;overflow:hidden;margin:1.5rem 0;border-radius:12px\">\n<iframe style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:0\" src=\"https://www.youtube.com/embed/bV4ON7KODYM\" title=\"Antigravity Demo\" allow=\"accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture\" allowfullscreen></iframe>\n</div>\n\n---\n\n## The Philosophy\n\nThe best engineers don't learn by reading — they learn by **breaking things**.\n\nSpaceX doesn't simulate rockets for 10 years. They build one, launch it, watch it explode, learn from the debris, and build the next one faster. That cycle — **build → launch → explode → learn → rebuild** — is the fastest path to mastery.\n\nAntigravity brings this philosophy to software development. Instead of spending hours fumbling through documentation and tutorials:\n\n1. **Try it.** Tell the AI what you want.\n2. **Fail fast.** It won't be perfect. That's the point.\n3. **Ask AI.** Describe the problem. Get a fix in seconds.\n4. **Repeat.** Each cycle takes minutes, not hours.\n\n**You will learn more from 10 fast failures than from 10 tutorials.**\n\n---\n\n## Get Antigravity\n\nDownload and install directly from the VS Code Marketplace:\n\n👉 **[Install Antigravity Extension](https://marketplace.visualstudio.com/items?itemName=AntaresAI.antigravity)**\n\nThat's it. Open VS Code, install the extension, and start building.\n\n---\n\n## How to Use It\n\nYou don't need a guide. You need to **start**.\n\n| Instead of... | Do this |\n|---------------|---------|\n| Reading the React docs for 2 hours | Tell Antigravity \"build me a dashboard with charts\" |\n| Watching a Docker tutorial | Say \"containerize my app with Docker\" |\n| Googling \"how to deploy to Vercel\" | Say \"deploy this to Vercel\" |\n| Debugging for 45 minutes | Paste the error and say \"fix this\" |\n\n**The AI has read every tutorial so you don't have to.**\n\n---\n\n## The Rules\n\n1. **Never spend more than 2 minutes stuck.** If you're stuck, ask.\n2. **Don't be afraid to break things.** Git exists. You can always roll back.\n3. **Describe what you WANT, not HOW to do it.** Let AI figure out the how.\n4. **Fail deliberately.** Try ambitious things. The worst that happens is you learn something.\n5. **Speed over perfection.** Ship something ugly, then make it beautiful. A working prototype beats a perfect plan.\n\n---\n\n## The Anti-Tutorial Manifesto\n\nMost tutorials teach you to copy-paste someone else's solution to a problem you don't have yet.\n\n**Real learning happens when:**\n- You try to build something YOU care about\n- It breaks in a way you didn't expect\n- You have to understand WHY it broke\n- You fix it and feel that click of understanding\n\nAntigravity accelerates this loop from days to minutes. Every error message becomes a learning opportunity, every failed build becomes a lesson, and every \"it works!\" becomes genuine understanding.\n\n**Stop preparing. Start building. Fail fast. Ask AI. Repeat.**\n\n---\n\n*This tutorial is part of the Developer Workflow series. Next: [The CS Vocabulary You Need for Vibe Coding](/tutorials/cs-vocabulary-for-vibe-coders)*"
-  },
-  {
-    id: "5",
-    slug: "cs-vocabulary-for-vibe-coders",
-    title: "The CS Vocabulary You Need for Vibe Coding",
-    description: "Every term, concept, and piece of jargon you need to understand what AI is doing and to express what you want � no code required. Organized by domain: OS, networking, web dev, hardware, Linux, clusters, AI/ML, databases, security, and more.",
-    difficulty: "beginner",
-    estimatedTime: "40 min",
-    topics: ["Computer Science", "Vocabulary", "Vibe Coding", "Developer Fundamentals"],
-    series: "Developer Workflow",
-    prerequisites: ["Curiosity", "An AI coding assistant"],
-    content: `
+    {
+        id: "4",
+        slug: "antigravity-fast-prototyping",
+        title: "Antigravity: Try, Fail, Fix — The Fastest Way to Build",
+        description: "Stop watching tutorials. Just try it, fail fast, and ask AI. The anti-tutorial manifesto for vibe coders.",
+        difficulty: "beginner",
+        estimatedTime: "5 min",
+        topics: ["Antigravity", "AI Tools", "Developer Workflow", "Vibe Coding"],
+        series: "Developer Workflow",
+        prerequisites: ["VS Code", "Curiosity"],
+        content: "# Antigravity: Try, Fail, Fix — The Fastest Way to Build\n\n> Stop watching tutorials. Stop reading docs. **Just try it, fail, and ask AI.**\n\n<div style=\"position:relative;padding-bottom:56.25%;height:0;overflow:hidden;margin:1.5rem 0;border-radius:12px\">\n<iframe style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:0\" src=\"https://www.youtube.com/embed/bV4ON7KODYM\" title=\"Antigravity Demo\" allow=\"accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture\" allowfullscreen></iframe>\n</div>\n\n---\n\n## The Philosophy\n\nThe best engineers don't learn by reading — they learn by **breaking things**.\n\nSpaceX doesn't simulate rockets for 10 years. They build one, launch it, watch it explode, learn from the debris, and build the next one faster. That cycle — **build → launch → explode → learn → rebuild** — is the fastest path to mastery.\n\nAntigravity brings this philosophy to software development. Instead of spending hours fumbling through documentation and tutorials:\n\n1. **Try it.** Tell the AI what you want.\n2. **Fail fast.** It won't be perfect. That's the point.\n3. **Ask AI.** Describe the problem. Get a fix in seconds.\n4. **Repeat.** Each cycle takes minutes, not hours.\n\n**You will learn more from 10 fast failures than from 10 tutorials.**\n\n---\n\n## Get Antigravity\n\nDownload and install directly from the VS Code Marketplace:\n\n👉 **[Install Antigravity Extension](https://marketplace.visualstudio.com/items?itemName=AntaresAI.antigravity)**\n\nThat's it. Open VS Code, install the extension, and start building.\n\n---\n\n## How to Use It\n\nYou don't need a guide. You need to **start**.\n\n| Instead of... | Do this |\n|---------------|---------|\n| Reading the React docs for 2 hours | Tell Antigravity \"build me a dashboard with charts\" |\n| Watching a Docker tutorial | Say \"containerize my app with Docker\" |\n| Googling \"how to deploy to Vercel\" | Say \"deploy this to Vercel\" |\n| Debugging for 45 minutes | Paste the error and say \"fix this\" |\n\n**The AI has read every tutorial so you don't have to.**\n\n---\n\n## The Rules\n\n1. **Never spend more than 2 minutes stuck.** If you're stuck, ask.\n2. **Don't be afraid to break things.** Git exists. You can always roll back.\n3. **Describe what you WANT, not HOW to do it.** Let AI figure out the how.\n4. **Fail deliberately.** Try ambitious things. The worst that happens is you learn something.\n5. **Speed over perfection.** Ship something ugly, then make it beautiful. A working prototype beats a perfect plan.\n\n---\n\n## The Anti-Tutorial Manifesto\n\nMost tutorials teach you to copy-paste someone else's solution to a problem you don't have yet.\n\n**Real learning happens when:**\n- You try to build something YOU care about\n- It breaks in a way you didn't expect\n- You have to understand WHY it broke\n- You fix it and feel that click of understanding\n\nAntigravity accelerates this loop from days to minutes. Every error message becomes a learning opportunity, every failed build becomes a lesson, and every \"it works!\" becomes genuine understanding.\n\n**Stop preparing. Start building. Fail fast. Ask AI. Repeat.**\n\n---\n\n*This tutorial is part of the Developer Workflow series. Next: [The CS Vocabulary You Need for Vibe Coding](/tutorials/cs-vocabulary-for-vibe-coders)*"
+    },
+    {
+        id: "5",
+        slug: "cs-vocabulary-for-vibe-coders",
+        title: "The CS Vocabulary You Need for Vibe Coding",
+        description: "Every term, concept, and piece of jargon you need to understand what AI is doing and to express what you want � no code required. Organized by domain: OS, networking, web dev, hardware, Linux, clusters, AI/ML, databases, security, and more.",
+        difficulty: "beginner",
+        estimatedTime: "40 min",
+        topics: ["Computer Science", "Vocabulary", "Vibe Coding", "Developer Fundamentals"],
+        series: "Developer Workflow",
+        prerequisites: ["Curiosity", "An AI coding assistant"],
+        content: `
 # The CS Vocabulary You Need for Vibe Coding
 
 > You don't need to write code anymore. But you DO need to speak the language.
@@ -2000,7 +2001,59 @@ How modern software is built from thousands of smaller pieces.
 
 *This reference is part of the Developer Workflow series. Bookmark it � you'll come back to this more often than you think. And remember: you don't need to memorize everything here. You just need to recognize the terms when AI uses them, and know enough to ask the right follow-up questions.*
     `
-  },
+    },
+    {
+        id: "4",
+        slug: "git-save-game",
+        title: "Git Save Game — 用游戏存档理解 Git",
+        description: "An interactive game that teaches Git internals (Blob, Tree, Commit, Branch, Merge) using the perfect metaphor: RPG game saves.",
+        difficulty: "beginner",
+        estimatedTime: "10 min",
+        topics: ["Git", "Version Control", "Interactive"],
+        series: "Developer Workflow",
+        prerequisites: ["No coding experience required — just curiosity!"],
+        componentKey: "git-save-game",
+        content: `
+# Git = 游戏存档系统
+
+你有没有想过，Git 到底是怎么工作的？其实它的设计和游戏存档系统**完全一致**：随时可以回到过去，也可以开辟平行宇宙（支线任务），搞砸了还能读档重来。
+
+上面的交互式游戏会带你一步步理解 Git 的四个核心概念：
+
+## 🎯 Core Concepts Recap
+
+| Git Concept | Game Save Analogy | What It Actually Stores |
+|-------------|-------------------|------------------------|
+| **Blob** | 道具数据 (Item Data) | Pure file content — no name, no path |
+| **Tree** | 背包结构 (Inventory Map) | Directory structure — maps names to Blobs |
+| **Commit** | 存档封面 (Save Record) | Metadata + pointer to Tree + parent link |
+| **Branch** | 存档槽位 (Save Slot) | Lightweight label pointing to a Commit |
+| **Merge** | 合并平行宇宙 (Combine Timelines) | A special Commit with two parents |
+
+## 🔑 Key Insight
+
+When you run \`git commit\`, here's what actually happens:
+
+1. **Blobs** are created for each file's content
+2. **Trees** are created to record the directory structure
+3. A **Commit** object is created with metadata and a pointer to the root Tree
+4. The current **Branch** label moves forward to point at the new Commit
+
+That's it! The entire Git system is built from these four simple objects.
+
+## 💡 Why This Matters
+
+Because everything is linked by hash pointers:
+- Switching branches is **instant** (just moving a label)
+- Git can detect if **anything** changed (hash mismatch)
+- Old data is **never lost** until you explicitly garbage-collect
+- Merging is just creating a new Commit that points to **two parents**
+
+---
+
+*This tutorial is part of the Developer Workflow series.*
+    `
+    },
 ];
 
 export function getTutorialBySlug(slug: string): Tutorial | undefined {

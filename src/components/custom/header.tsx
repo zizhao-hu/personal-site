@@ -1,6 +1,9 @@
+'use client';
+
 import { ThemeToggle } from "./theme-toggle";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useRouter, usePathname } from 'next/navigation';
+
 import { useState, useRef, useEffect } from "react";
 
 interface HeaderProps {
@@ -24,20 +27,20 @@ const researchSubItems = [
 ];
 
 export const Header = ({ onHomeClick }: HeaderProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [researchDropdownOpen, setResearchDropdownOpen] = useState(false);
   const [mobileResearchOpen, setMobileResearchOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    if (path === "/research") return location.pathname === "/research";
-    return location.pathname.startsWith(path);
+    if (path === "/") return pathname === "/";
+    if (path === "/research") return pathname === "/research";
+    return pathname.startsWith(path);
   };
 
-  const isResearchActive = location.pathname.startsWith("/research");
+  const isResearchActive = pathname.startsWith("/research");
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -56,7 +59,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
         {/* Logo */}
         <button
           onClick={() => {
-            navigate('/');
+            router.push('/');
             if (onHomeClick) onHomeClick();
           }}
           className="flex items-center gap-1.5 hover:opacity-80 transition-opacity py-2"
@@ -73,7 +76,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
         <nav className="hidden md:flex items-center h-full">
           {/* About tab */}
           <button
-            onClick={() => navigate("/")}
+            onClick={() => router.push("/")}
             className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 font-heading ${isActive("/")
               ? "text-brand-orange"
               : "text-muted-foreground hover:text-foreground"
@@ -94,7 +97,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
           >
             <button
               onClick={() => {
-                navigate("/research");
+                router.push("/research");
                 setResearchDropdownOpen(false);
               }}
               className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 flex items-center gap-0.5 font-heading ${isResearchActive
@@ -118,7 +121,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
                     <button
                       key={item.path}
                       onClick={() => {
-                        navigate(item.path);
+                        router.push(item.path);
                         setResearchDropdownOpen(false);
                       }}
                       className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-150 font-heading ${active
@@ -140,7 +143,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
             return (
               <button
                 key={item.path}
-                onClick={() => navigate(item.path)}
+                onClick={() => router.push(item.path)}
                 className={`relative px-3 py-2.5 text-xs font-medium transition-colors duration-200 font-heading ${active
                   ? "text-brand-orange"
                   : "text-muted-foreground hover:text-foreground"
@@ -175,7 +178,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
           {/* About */}
           <button
             onClick={() => {
-              navigate("/");
+              router.push("/");
               setMobileMenuOpen(false);
             }}
             className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 font-heading ${isActive("/")
@@ -206,7 +209,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
                   <button
                     key={item.path}
                     onClick={() => {
-                      navigate(item.path);
+                      router.push(item.path);
                       setMobileMenuOpen(false);
                     }}
                     className={`relative w-full text-left pl-4 pr-3 py-1.5 text-xs font-medium transition-colors duration-200 font-heading ${active
@@ -228,7 +231,7 @@ export const Header = ({ onHomeClick }: HeaderProps) => {
               <button
                 key={item.path}
                 onClick={() => {
-                  navigate(item.path);
+                  router.push(item.path);
                   setMobileMenuOpen(false);
                 }}
                 className={`relative w-full text-left px-3 py-2 text-xs font-medium transition-colors duration-200 font-heading ${active

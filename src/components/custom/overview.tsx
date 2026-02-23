@@ -1,3 +1,5 @@
+'use client';
+
 import { Linkedin, Github, Mail, BookOpen, Sparkles, Brain, Rocket } from 'lucide-react';
 
 export const Overview = () => {

@@ -53,7 +53,7 @@ export class WebLLMService {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     // Set timeout based on environment and device
-    const timeout = import.meta.env.PROD
+    const timeout = false
       ? (isMobile ? 120000 : 90000)  // 2 min mobile, 1.5 min desktop in prod
       : (isMobile ? 180000 : 120000); // 3 min mobile, 2 min desktop in dev
 

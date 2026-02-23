@@ -38,7 +38,7 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'current-project',
     question: "What are you building right now?",
-    answer: "I'm working on several interconnected projects: (1) **AgentForge** — A multi-agent orchestration framework where specialized agents collaborate on complex tasks with self-correction. (2) **Project Orion** (completed) — My MOVE Fellowship project at Handshake AI, focused on high-quality reasoning refinement, safety injections, and jailbreak testing. (3) **Project Canary** (completed) — The foundational MOVE Fellowship phase where I contributed to 15,000+ tasks across 15 domains, raising approval rates from 10% to 40%. (4) **DREAM-C2L** — Open-source continual learning framework. (5) **ReasonChain** — Test-time compute scaling research. All tied to my core thesis: building AI systems that improve themselves while remaining under control.",
+    answer: "I'm working on several interconnected projects: (1) **AgentForge** — A multi-agent orchestration framework where specialized agents collaborate on complex tasks with self-correction. (2) **Project Orion** (completed) — My MOVE Fellowship project at Handshake AI, focused on high-quality reasoning refinement, safety injections, and jailbreak testing. (3) **Project Canary** (completed) — The foundational MOVE Fellowship phase where I contributed to 15,000+ tasks across 15 domains, raising approval rates from 10% to 40%. (4) **DREAM-C2L** — Open-source continual learning framework. All tied to my core thesis: building AI systems that improve themselves while remaining under control.",
     category: 'research',
     icon: 'Code'
   },

@@ -1,3 +1,5 @@
+'use client';
+
 import { Textarea } from "../ui/textarea";
 import { cx } from 'classix';
 import { Button } from "../ui/button";

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Header } from '@/components/custom/header';
 import { useEffect, useRef, useCallback, useState } from 'react';
@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { jsPDF } from 'jspdf';
 
-/* ─── Brand Palette ─── */
+/* â”€â”€â”€ Brand Palette â”€â”€â”€ */
 const brand = {
     dark: '#141413',
     light: '#faf9f5',
@@ -28,7 +28,7 @@ const colorSchemes: Record<string, { head: string; body: string; border: string;
     clay: { head: brand.clay, body: brand.light, border: brand.clay, textTitle: brand.light, textBody: brand.dark },
 };
 
-/* ─── Types ─── */
+/* â”€â”€â”€ Types â”€â”€â”€ */
 type ShapeKind = 'rect' | 'rounded-rect' | 'circle' | 'diamond' | 'hexagon';
 
 interface PNode {
@@ -82,88 +82,133 @@ function saveTemplatesToStorage(templates: SavedTemplate[]) {
 const GRID = 10;
 const snap = (v: number) => Math.round(v / GRID) * GRID;
 
-/* ─── Default Layout ─── */
+/* â”€â”€â”€ Default Layout â”€â”€â”€ */
 function createDefaultNodes(): PNode[] {
+    // Position constants
+    const A1_X = 20;   // Approach 1 left edge
+    const A2_X = 450;  // Approach 2 left edge
+    const CT_Y = 285;  // PRISM container top
+    const PH_Y = CT_Y + 35;  // phase label row y
+    const COL_Y = PH_Y + 20; // column-label row y
+    const R_Y = COL_Y + 20;  // node row start y
+
+    // Phase X offsets (inside container, relative to canvas)
+    const P1X = 30;
+    const P2X = 390;
+    const P3X = 780;
+
     return [
-        { id: 'label_a', x: 40, y: 20, w: 180, h: 20, type: 'title', title: 'Approach A: Inference (Explicit)' },
-        { id: 'a_q1', x: 20, y: 120, w: 100, h: 45, type: 'headerNode', variant: 'neutral', title: 'User Prompt', content: '"Integral of x^2"' },
-        { id: 'a_r1', x: 140, y: 110, w: 40, h: 65, type: 'minimal', variant: 'orange', title: 'Router' },
-        { id: 'col_sys_a', x: 220, y: 30, w: 80, h: 15, type: 'colLabel', title: 'SYSTEM PROMPT' },
-        { id: 'a_p1', x: 220, y: 50, w: 80, h: 40, type: 'headerNode', variant: 'neutral', title: 'Scientist', content: 'System Prompt' },
-        { id: 'a_p2', x: 220, y: 100, w: 80, h: 40, type: 'headerNode', variant: 'neutral', title: 'Counselor', content: 'System Prompt' },
-        { id: 'a_p3', x: 220, y: 150, w: 80, h: 40, type: 'headerNode', variant: 'neutral', title: 'Default', content: 'System Prompt' },
-        { id: 'a_q2', x: 320, y: 100, w: 100, h: 45, type: 'headerNode', variant: 'neutral', title: 'User Prompt', content: '"Integral of x^2"' },
-        { id: 'a_llm', x: 440, y: 90, w: 40, h: 65, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
-        { id: 'col_ans_a', x: 500, y: 30, w: 80, h: 15, type: 'colLabel', title: 'ANSWER' },
-        { id: 'a_out1', x: 500, y: 50, w: 80, h: 35, type: 'plain', variant: 'green', content: '"x^3/3 + C"' },
-        { id: 'a_out2', x: 500, y: 100, w: 80, h: 35, type: 'plain', variant: 'neutral', content: '"Helpful msg"' },
-        { id: 'a_out3', x: 500, y: 150, w: 80, h: 35, type: 'plain', variant: 'neutral', content: '"Assistant reply"' },
-        { id: 'label_b', x: 650, y: 20, w: 220, h: 20, type: 'title', title: 'Approach B: Inference (Distilled)' },
-        { id: 'bi_q', x: 650, y: 100, w: 100, h: 45, type: 'headerNode', variant: 'neutral', title: 'User Prompt', content: '"Integral of x^2"' },
-        { id: 'bi_llm', x: 790, y: 95, w: 50, h: 65, type: 'minimal', variant: 'orange', title: 'PESD LLM' },
-        { id: 'bi_ans', x: 880, y: 105, w: 100, h: 45, type: 'plain', variant: 'green', content: '"x^3/3 + C"' },
-        { id: 'bt_container', x: 20, y: 280, w: 1060, h: 420, type: 'container', title: 'Approach B: Training (PESD Framework)' },
-        { id: 'label_bt1', x: 40, y: 320, w: 220, h: 15, type: 'title', title: '1. Synthetic Query Generation', size: 9 },
-        { id: 'label_bt2', x: 380, y: 320, w: 220, h: 15, type: 'title', title: '2. Synthetic Answer Generation', size: 9 },
-        { id: 'label_bt3', x: 740, y: 320, w: 220, h: 15, type: 'title', title: '3. Data Pairs Distillation', size: 9 },
-        { id: 'col_sys_b1', x: 160, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYSTEM PROMPT' },
-        { id: 'col_sq_b1', x: 320, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYNTHETIC QUERY' },
-        { id: 'bt1_q', x: 40, y: 400, w: 100, h: 45, type: 'headerNode', variant: 'neutral', title: 'User Prompt', content: '"User Query"' },
-        { id: 'bt1_sys1', x: 160, y: 370, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Scientist', content: 'System Prompt' },
-        { id: 'bt1_sys2', x: 160, y: 410, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Counselor', content: 'System Prompt' },
-        { id: 'bt1_sys3', x: 160, y: 450, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Default', content: 'System Prompt' },
-        { id: 'bt1_llm', x: 260, y: 395, w: 40, h: 60, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
-        { id: 'bt1_sq1', x: 320, y: 370, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q1"', stacked: true },
-        { id: 'bt1_sq2', x: 320, y: 405, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q2"', stacked: true },
-        { id: 'bt1_sq3', x: 320, y: 440, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q3"', stacked: true },
-        { id: 'col_sys_b2', x: 420, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYSTEM PROMPT' },
-        { id: 'col_sq_b2', x: 520, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYNTHETIC QUERY' },
-        { id: 'col_sa_b2', x: 680, y: 345, w: 85, h: 15, type: 'colLabel', title: 'SYNTHETIC ANSWER' },
-        { id: 'bt2_sys1', x: 420, y: 370, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Scientist', content: 'System Prompt' },
-        { id: 'bt2_sys2', x: 420, y: 410, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Counselor', content: 'System Prompt' },
-        { id: 'bt2_sys3', x: 420, y: 450, w: 80, h: 35, type: 'headerNode', variant: 'neutral', title: 'Default', content: 'System Prompt' },
-        { id: 'bt2_sq1', x: 520, y: 370, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q1"', stacked: true },
-        { id: 'bt2_sq2', x: 520, y: 405, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q2"', stacked: true },
-        { id: 'bt2_sq3', x: 520, y: 440, w: 80, h: 25, type: 'plain', variant: 'blue', content: '"Synth Q3"', stacked: true },
-        { id: 'bt2_llm', x: 620, y: 395, w: 40, h: 60, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
-        { id: 'bt2_sa1', x: 680, y: 370, w: 85, h: 30, type: 'plain', variant: 'blue', content: '"Synth Ans 1"', stacked: true },
-        { id: 'bt2_sa2', x: 680, y: 405, w: 85, h: 30, type: 'plain', variant: 'blue', content: '"Synth Ans 2"', stacked: true },
-        { id: 'bt2_sa3', x: 680, y: 440, w: 85, h: 30, type: 'plain', variant: 'blue', content: '"Synth Ans 3"', stacked: true },
-        { id: 'col_sq_b3', x: 790, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYNTHETIC QUERY' },
-        { id: 'col_sa_b3', x: 950, y: 345, w: 80, h: 15, type: 'colLabel', title: 'SYNTHETIC ANSWER' },
-        { id: 'bt3_sq1', x: 790, y: 370, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Q1"', stacked: true },
-        { id: 'bt3_sq2', x: 790, y: 405, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Q2"', stacked: true },
-        { id: 'bt3_sq3', x: 790, y: 440, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Q3"', stacked: true },
-        { id: 'bt3_llm', x: 890, y: 395, w: 40, h: 60, type: 'minimal', variant: 'orange', title: 'Base LLM' },
-        { id: 'bt3_sa1', x: 950, y: 370, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Ans 1"', stacked: true },
-        { id: 'bt3_sa2', x: 950, y: 405, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Ans 2"', stacked: true },
-        { id: 'bt3_sa3', x: 950, y: 440, w: 80, h: 28, type: 'plain', variant: 'blue', content: '"Synth Ans 3"', stacked: true },
+        // --- Approach 1: Inference with PRISM ---
+        { id: 'lbl_a1', x: A1_X, y: 20, w: 300, h: 18, type: 'title', title: 'Approach 1: Inference with PRISM' },
+        { id: 'a1_col_usr', x: A1_X, y: 42, w: 80, h: 14, type: 'colLabel', title: 'User' },
+        { id: 'a1_col_ans', x: A1_X + 200, y: 42, w: 80, h: 14, type: 'colLabel', title: 'Answer' },
+        { id: 'a1_u1', x: A1_X, y: 60, w: 110, h: 32, type: 'plain', variant: 'neutral', content: '"What is the integral of x^2"' },
+        { id: 'a1_u2', x: A1_X, y: 100, w: 110, h: 32, type: 'plain', variant: 'neutral', content: '"I feel stressed for exams..."' },
+        { id: 'a1_u3', x: A1_X, y: 140, w: 110, h: 32, type: 'plain', variant: 'neutral', content: '"How to use a rice cooker..."' },
+        { id: 'a1_llm', x: A1_X + 130, y: 85, w: 50, h: 70, type: 'minimal', variant: 'orange', title: 'PRISMEd LLM' },
+        { id: 'a1_ans1', x: A1_X + 200, y: 60, w: 110, h: 32, type: 'plain', variant: 'green', content: '"x^3/3 + C"' },
+        { id: 'a1_ans2', x: A1_X + 200, y: 100, w: 110, h: 32, type: 'plain', variant: 'neutral', content: '"I totally understand..."' },
+        { id: 'a1_ans3', x: A1_X + 200, y: 140, w: 110, h: 32, type: 'plain', variant: 'neutral', content: '"Here is the step by step..."' },
+
+        // --- Approach 2: Inference with Training-free Persona Routing ---
+        { id: 'lbl_a2', x: A2_X, y: 20, w: 390, h: 18, type: 'title', title: 'Approach 2: Inference with Training-free Persona Routing' },
+        { id: 'a2_col_pp', x: A2_X, y: 42, w: 110, h: 14, type: 'colLabel', title: 'Persona Prompt' },
+        { id: 'a2_col_usr', x: A2_X + 230, y: 42, w: 60, h: 14, type: 'colLabel', title: 'User' },
+        { id: 'a2_col_ans', x: A2_X + 380, y: 42, w: 80, h: 14, type: 'colLabel', title: 'Answer' },
+        { id: 'a2_p1', x: A2_X, y: 60, w: 110, h: 35, type: 'headerNode', variant: 'neutral', title: 'Scientist', content: 'Be concise...' },
+        { id: 'a2_p2', x: A2_X, y: 100, w: 110, h: 35, type: 'headerNode', variant: 'neutral', title: 'Counselor', content: 'Show empathy...' },
+        { id: 'a2_p3', x: A2_X, y: 140, w: 110, h: 35, type: 'headerNode', variant: 'neutral', title: 'Default', content: 'Helpful assistant' },
+        { id: 'a2_usr', x: A2_X + 130, y: 95, w: 100, h: 34, type: 'plain', variant: 'neutral', content: '"What is the integral of x^2"' },
+        { id: 'a2_rtr', x: A2_X + 244, y: 90, w: 40, h: 38, type: 'minimal', variant: 'orange', title: 'Router' },
+        { id: 'a2_usr2', x: A2_X + 296, y: 95, w: 100, h: 34, type: 'plain', variant: 'neutral', content: '"What is the integral of x^2"' },
+        { id: 'a2_llm', x: A2_X + 408, y: 84, w: 40, h: 50, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
+        { id: 'a2_ans1', x: A2_X + 460, y: 60, w: 90, h: 32, type: 'plain', variant: 'green', content: '"x^3/3 + C"' },
+        { id: 'a2_ans2', x: A2_X + 460, y: 100, w: 90, h: 32, type: 'plain', variant: 'neutral', content: '"Sure! We first apply..."' },
+        { id: 'a2_ans3', x: A2_X + 460, y: 140, w: 90, h: 32, type: 'plain', variant: 'neutral', content: '"Here is the integral..."' },
+
+        // --- PRISM Training Container ---
+        { id: 'prism_box', x: 20, y: CT_Y, w: 1060, h: 390, type: 'container', title: 'Persona Routing via Intent-based Self-Modeling (PRISM)' },
+        { id: 'lbl_ph1', x: P1X + 20, y: PH_Y, w: 280, h: 14, type: 'title', title: '1. Synthetic Query (SQ) Generation', size: 9 },
+        { id: 'lbl_ph2', x: P2X + 20, y: PH_Y, w: 280, h: 14, type: 'title', title: '2. Synthetic Answer (SA) Generation', size: 9 },
+        { id: 'lbl_ph3', x: P3X + 20, y: PH_Y, w: 220, h: 14, type: 'title', title: '3. Self-Distillation via PEFT', size: 9 },
+
+        // Phase 1 column labels
+        { id: 'p1_col_pp', x: P1X + 85, y: COL_Y, w: 110, h: 14, type: 'colLabel', title: 'Persona Prompt' },
+        { id: 'p1_col_sq', x: P1X + 250, y: COL_Y, w: 60, h: 14, type: 'colLabel', title: 'SQ' },
+        // Phase 1 nodes
+        { id: 'p1_trig', x: P1X, y: R_Y + 30, w: 80, h: 50, type: 'plain', variant: 'neutral', content: '"Create questions related to persona..."' },
+        { id: 'p1_pp1', x: P1X + 85, y: R_Y, w: 110, h: 32, type: 'headerNode', variant: 'neutral', title: 'Scientist', content: 'Be concise...' },
+        { id: 'p1_pp2', x: P1X + 85, y: R_Y + 40, w: 110, h: 32, type: 'headerNode', variant: 'neutral', title: 'Counselor', content: 'Show empathy...' },
+        { id: 'p1_pp3', x: P1X + 85, y: R_Y + 80, w: 110, h: 32, type: 'headerNode', variant: 'neutral', title: 'Default', content: 'Helpful assistant' },
+        { id: 'p1_llm', x: P1X + 205, y: R_Y + 28, w: 40, h: 60, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
+        { id: 'p1_sq1', x: P1X + 254, y: R_Y, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"Calculate x, y, z..."', stacked: true },
+        { id: 'p1_sq2', x: P1X + 254, y: R_Y + 36, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"I have stress..."', stacked: true },
+        { id: 'p1_sq3', x: P1X + 254, y: R_Y + 72, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"How to swim..."', stacked: true },
+
+        // Phase 2 column labels
+        { id: 'p2_col_pp', x: P2X, y: COL_Y, w: 110, h: 14, type: 'colLabel', title: 'Persona Prompt' },
+        { id: 'p2_col_sq', x: P2X + 120, y: COL_Y, w: 60, h: 14, type: 'colLabel', title: 'SQ' },
+        { id: 'p2_col_sa', x: P2X + 265, y: COL_Y, w: 60, h: 14, type: 'colLabel', title: 'SA' },
+        // Phase 2 nodes
+        { id: 'p2_pp1', x: P2X, y: R_Y, w: 110, h: 32, type: 'headerNode', variant: 'neutral', title: 'Scientist', content: 'Be concise...' },
+        { id: 'p2_pp2', x: P2X, y: R_Y + 40, w: 110, h: 32, type: 'headerNode', variant: 'neutral', title: 'Counselor', content: 'Show empathy...' },
+        { id: 'p2_pp3', x: P2X, y: R_Y + 80, w: 110, h: 32, type: 'headerNode', variant: 'neutral', title: 'Default', content: 'Helpful assistant' },
+        { id: 'p2_sq1', x: P2X + 120, y: R_Y, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"Calculate x, y, z..."', stacked: true },
+        { id: 'p2_sq2', x: P2X + 120, y: R_Y + 36, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"I have stress..."', stacked: true },
+        { id: 'p2_sq3', x: P2X + 120, y: R_Y + 72, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"How to swim..."', stacked: true },
+        { id: 'p2_llm', x: P2X + 215, y: R_Y + 28, w: 40, h: 60, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
+        { id: 'p2_selfverify', x: P2X + 162, y: R_Y + 12, w: 100, h: 14, type: 'title', title: 'Self-verify', size: 8 },
+        { id: 'p2_sa1', x: P2X + 265, y: R_Y, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"x^3/3 + C"', stacked: true },
+        { id: 'p2_sa2', x: P2X + 265, y: R_Y + 36, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"I feel sorry..."', stacked: true },
+        { id: 'p2_sa3', x: P2X + 265, y: R_Y + 72, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"Here are steps..."', stacked: true },
+
+        // Phase 3 column labels
+        { id: 'p3_col_sq', x: P3X, y: COL_Y, w: 60, h: 14, type: 'colLabel', title: 'SQ' },
+        { id: 'p3_col_sa', x: P3X + 220, y: COL_Y, w: 60, h: 14, type: 'colLabel', title: 'SA' },
+        // Phase 3 nodes
+        { id: 'p3_sq1', x: P3X, y: R_Y, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"Calculate x, y, z..."', stacked: true },
+        { id: 'p3_sq2', x: P3X, y: R_Y + 36, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"I have stress..."', stacked: true },
+        { id: 'p3_sq3', x: P3X, y: R_Y + 72, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"How to swim..."', stacked: true },
+        { id: 'p3_base', x: P3X + 95, y: R_Y + 14, w: 40, h: 60, type: 'minimal', variant: 'neutral', title: 'Base LLM' },
+        { id: 'p3_distill', x: P3X + 143, y: R_Y + 28, w: 70, h: 14, type: 'title', title: 'Distill', size: 8 },
+        { id: 'p3_prism', x: P3X + 148, y: R_Y + 44, w: 54, h: 60, type: 'minimal', variant: 'orange', title: 'PRISMEd LLM' },
+        { id: 'p3_sa1', x: P3X + 212, y: R_Y, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"x^3/3 + C"', stacked: true },
+        { id: 'p3_sa2', x: P3X + 212, y: R_Y + 36, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"I feel sorry..."', stacked: true },
+        { id: 'p3_sa3', x: P3X + 212, y: R_Y + 72, w: 85, h: 28, type: 'plain', variant: 'blue', content: '"Here are steps..."', stacked: true },
     ];
 }
 
 function createDefaultConnections(): PConnection[] {
     return [
-        { from: 'a_r1', to: ['a_p1', 'a_p2', 'a_p3'], type: 'split' },
-        { from: ['a_p1', 'a_p2', 'a_p3'], to: 'a_q2', type: 'merge' },
-        { from: 'a_q2', to: 'a_llm', type: 'direct' },
-        { from: 'a_llm', to: ['a_out1', 'a_out2', 'a_out3'], type: 'split' },
-        { from: 'bi_q', to: 'bi_llm', type: 'direct' },
-        { from: 'bi_llm', to: 'bi_ans', type: 'direct' },
-        { from: 'bi_llm', to: 'bt_container', type: 'direct', dash: [5, 5], orientation: 'vertical' },
-        { from: 'bt1_q', to: ['bt1_sys1', 'bt1_sys2', 'bt1_sys3'], type: 'split' },
-        { from: ['bt1_sys1', 'bt1_sys2', 'bt1_sys3'], to: 'bt1_llm', type: 'merge' },
-        { from: 'bt1_llm', to: ['bt1_sq1', 'bt1_sq2', 'bt1_sq3'], type: 'split' },
-        { from: 'bt2_sys1', to: 'bt2_sq1', type: 'direct' },
-        { from: 'bt2_sys2', to: 'bt2_sq2', type: 'direct' },
-        { from: 'bt2_sys3', to: 'bt2_sq3', type: 'direct' },
-        { from: ['bt2_sq1', 'bt2_sq2', 'bt2_sq3'], to: 'bt2_llm', type: 'merge' },
-        { from: 'bt2_llm', to: ['bt2_sa1', 'bt2_sa2', 'bt2_sa3'], type: 'split' },
-        { from: ['bt3_sq1', 'bt3_sq2', 'bt3_sq3'], to: 'bt3_llm', type: 'merge' },
-        { from: 'bt3_llm', to: ['bt3_sa1', 'bt3_sa2', 'bt3_sa3'], type: 'split' },
+        // Approach 1
+        { from: ['a1_u1', 'a1_u2', 'a1_u3'], to: 'a1_llm', type: 'merge' },
+        { from: 'a1_llm', to: ['a1_ans1', 'a1_ans2', 'a1_ans3'], type: 'split' },
+        // Approach 2
+        { from: ['a2_p1', 'a2_p2', 'a2_p3'], to: 'a2_rtr', type: 'merge' },
+        { from: 'a2_usr', to: 'a2_rtr', type: 'direct' },
+        { from: 'a2_rtr', to: 'a2_usr2', type: 'direct' },
+        { from: 'a2_usr2', to: 'a2_llm', type: 'direct' },
+        { from: 'a2_llm', to: ['a2_ans1', 'a2_ans2', 'a2_ans3'], type: 'split' },
+        // Phase 1: SQ Generation
+        { from: 'p1_trig', to: ['p1_pp1', 'p1_pp2', 'p1_pp3'], type: 'split' },
+        { from: ['p1_pp1', 'p1_pp2', 'p1_pp3'], to: 'p1_llm', type: 'merge' },
+        { from: 'p1_llm', to: ['p1_sq1', 'p1_sq2', 'p1_sq3'], type: 'split' },
+        // Phase 2: SA Generation
+        { from: 'p2_pp1', to: 'p2_sq1', type: 'direct' },
+        { from: 'p2_pp2', to: 'p2_sq2', type: 'direct' },
+        { from: 'p2_pp3', to: 'p2_sq3', type: 'direct' },
+        { from: ['p2_sq1', 'p2_sq2', 'p2_sq3'], to: 'p2_llm', type: 'merge' },
+        { from: 'p2_llm', to: ['p2_sa1', 'p2_sa2', 'p2_sa3'], type: 'split' },
+        // Phase 3: Self-Distillation
+        { from: ['p3_sq1', 'p3_sq2', 'p3_sq3'], to: 'p3_base', type: 'merge' },
+        { from: 'p3_base', to: 'p3_prism', type: 'direct' },
+        { from: ['p3_sq1', 'p3_sq2', 'p3_sq3'], to: 'p3_prism', type: 'merge' },
+        { from: 'p3_prism', to: ['p3_sa1', 'p3_sa2', 'p3_sa3'], type: 'split' },
     ];
 }
 
-/* ─── Drawing helpers ─── */
+
+/* â”€â”€â”€ Drawing helpers â”€â”€â”€ */
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, fill: boolean, fs?: string | null, ss?: string | null) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -246,11 +291,11 @@ function drawLine(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: num
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
 }
 
-/* ─── Add-element helpers ─── */
+/* â”€â”€â”€ Add-element helpers â”€â”€â”€ */
 let _addCounter = 0;
 function genId(prefix: string) { return `${prefix}_${Date.now()}_${++_addCounter}`; }
 
-/* ─── Component ─── */
+/* â”€â”€â”€ Component â”€â”€â”€ */
 export const PipelineDesigner = () => {
     const router = useRouter();
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -279,6 +324,8 @@ export const PipelineDesigner = () => {
     const [showSaveDialog, setShowSaveDialog] = useState(false);
     const [renamingId, setRenamingId] = useState<string | null>(null);
     const [showAddMenu, setShowAddMenu] = useState(false);
+    const showGridRef = useRef(true);
+    const [showGrid, setShowGrid] = useState(true);
     const [renameValue, setRenameValue] = useState('');
 
     const W = 1150;
@@ -291,7 +338,7 @@ export const PipelineDesigner = () => {
 
     const getNode = useCallback((id: string) => nodesRef.current.find((n) => n.id === id), []);
 
-    /* ── Template Storage ── */
+    /* â”€â”€ Template Storage â”€â”€ */
     useEffect(() => {
         const loaded = loadTemplatesFromStorage();
         if (loaded.length === 0) {
@@ -363,7 +410,7 @@ export const PipelineDesigner = () => {
         showToast(`Updated "${tmpl.name}"`);
     }, [templates, showToast]);
 
-    /* ── Rendering ── */
+    /* â”€â”€ Rendering â”€â”€ */
     const render = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -376,6 +423,18 @@ export const PipelineDesigner = () => {
         canvas.style.height = H + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, W, H);
+
+        // Grid dots
+        if (showGridRef.current) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(0,0,0,0.13)';
+            for (let gx = 0; gx <= W; gx += GRID) {
+                for (let gy = 0; gy <= H; gy += GRID) {
+                    ctx.fillRect(gx - 0.5, gy - 0.5, 1, 1);
+                }
+            }
+            ctx.restore();
+        }
 
         const nodes = nodesRef.current;
         const connections = connsRef.current;
@@ -495,10 +554,6 @@ export const PipelineDesigner = () => {
             }
         });
 
-        // Manual arrow from a_q1 -> a_r1
-        const aq1 = getNode('a_q1');
-        const ar1 = getNode('a_r1');
-        if (aq1 && ar1) drawArrow(ctx, aq1.x + aq1.w, aq1.y + aq1.h / 2, ar1.x, ar1.y + ar1.h / 2);
 
         // Connection preview
         if (connectRef.current.active && connectRef.current.sourceId) {
@@ -521,7 +576,7 @@ export const PipelineDesigner = () => {
         }
     }, [getNode]);
 
-    /* ── Animation loop ── */
+    /* â”€â”€ Animation loop â”€â”€ */
     useEffect(() => {
         let raf: number;
         const loop = () => { render(); raf = requestAnimationFrame(loop); };
@@ -529,7 +584,7 @@ export const PipelineDesigner = () => {
         return () => cancelAnimationFrame(raf);
     }, [render]);
 
-    /* ── Mouse position helper ── */
+    /* â”€â”€ Mouse position helper â”€â”€ */
     const getMouse = useCallback((e: MouseEvent | React.MouseEvent) => {
         const canvas = canvasRef.current;
         if (!canvas) return { x: 0, y: 0 };
@@ -537,7 +592,7 @@ export const PipelineDesigner = () => {
         return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     }, []);
 
-    /* ── Event handlers ── */
+    /* â”€â”€ Event handlers â”€â”€ */
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -618,6 +673,8 @@ export const PipelineDesigner = () => {
         };
 
         const onMouseUp = () => {
+            if (draggedRef.current) { nodesRef.current.forEach((n) => { if (selectedRef.current.has(n.id)) { n.x = snap(n.x); n.y = snap(n.y); } }); }
+            if (resizedRef.current) { resizedRef.current.w = snap(resizedRef.current.w); resizedRef.current.h = snap(resizedRef.current.h); }
             draggedRef.current = null;
             resizedRef.current = null;
             selBoxRef.current = null;
@@ -726,7 +783,7 @@ export const PipelineDesigner = () => {
         };
     }, [getMouse, showToast, getNode]);
 
-    /* ── Editor ── */
+    /* â”€â”€ Editor â”€â”€ */
     const openEditor = (node: PNode, field: string) => {
         editingRef.current = { node, field };
         const ed = editorRef.current;
@@ -797,13 +854,15 @@ export const PipelineDesigner = () => {
         showToast('Exported PDF');
     };
 
+    const toggleGrid = () => { const next = !showGridRef.current; showGridRef.current = next; setShowGrid(next); };
+
     const toggleConnect = () => {
         const next = !connectRef.current.active;
         connectRef.current = { active: next, sourceId: null };
         setConnectMode(next);
     };
 
-    /* ── Add elements ── */
+    /* â”€â”€ Add elements â”€â”€ */
     const addShape = (kind: ShapeKind) => {
         const size = kind === 'circle' ? 60 : kind === 'diamond' ? 70 : 80;
         const h = kind === 'diamond' ? 60 : kind === 'circle' ? 60 : 50;
@@ -901,7 +960,7 @@ export const PipelineDesigner = () => {
                     <div className="mb-4">
                         <h1 className="text-xl font-bold font-heading text-foreground">AI Pipeline Designer</h1>
                         <p className="text-xs text-muted-foreground mt-1">
-                            Drag nodes to reposition • Double-click to edit text • Right-click to change color • Ctrl+C/V to copy/paste
+                            Drag nodes to reposition â€¢ Double-click to edit text â€¢ Right-click to change color â€¢ Ctrl+C/V to copy/paste
                         </p>
                     </div>
 
@@ -1037,6 +1096,9 @@ export const PipelineDesigner = () => {
                         >
                             Export PDF
                         </button>
+                        <button onClick={toggleGrid} className={`px-4 py-2 rounded-lg text-xs font-semibold font-heading transition-all ${showGrid ? 'bg-brand-blue text-white' : 'bg-foreground text-background hover:opacity-90'}`}>
+                            {showGrid ? 'Grid: On' : 'Grid: Off'}
+                        </button>
                     </div>
 
                     {/* Save Dialog */}
@@ -1053,7 +1115,7 @@ export const PipelineDesigner = () => {
                                     type="text"
                                     value={saveName}
                                     onChange={e => setSaveName(e.target.value)}
-                                    placeholder="Template name…"
+                                    placeholder="Template nameâ€¦"
                                     className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-heading outline-none focus:border-brand-orange transition-colors"
                                     autoFocus
                                     onKeyDown={e => { if (e.key === 'Enter') saveTemplate(saveName); }}
@@ -1114,7 +1176,7 @@ export const PipelineDesigner = () => {
                                                     <>
                                                         <p className="text-xs font-semibold font-heading text-foreground truncate">{tmpl.name}</p>
                                                         <p className="text-[10px] text-muted-foreground font-heading mt-0.5">
-                                                            {tmpl.nodes.length} nodes · {tmpl.connections.length} connections · {new Date(tmpl.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                            {tmpl.nodes.length} nodes Â· {tmpl.connections.length} connections Â· {new Date(tmpl.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                         </p>
                                                     </>
                                                 )}

@@ -51,6 +51,7 @@ interface Slide {
     label: string;
     elements: SlideElement[];
     bg: string;
+    bgImage?: string; // data URL for uploaded background image
 }
 
 let _id = 0;
@@ -290,7 +291,9 @@ export const SlideMaker = () => {
             const pSlide = pres.addSlide();
 
             // Background
-            if (isViterbiBg(s.bg) && viterbiBgUrl) {
+            if (s.bgImage) {
+                pSlide.background = { data: s.bgImage };
+            } else if (isViterbiBg(s.bg) && viterbiBgUrl) {
                 pSlide.background = { data: viterbiBgUrl };
             } else if (isViterbiBg(s.bg)) {
                 pSlide.background = { color: hexClean(VITERBI.bg) };
@@ -394,7 +397,9 @@ export const SlideMaker = () => {
         slides.forEach((s, si) => {
             if (si > 0) pdf.addPage([SW, SH], 'landscape');
             // Background
-            if (isViterbiBg(s.bg)) {
+            if (s.bgImage) {
+                try { pdf.addImage(s.bgImage, 'PNG', 0, 0, SW, SH); } catch { /* fallback */ }
+            } else if (isViterbiBg(s.bg)) {
                 // Use the rendered PDF background image
                 if (viterbiBgUrl) {
                     try { pdf.addImage(viterbiBgUrl, 'PNG', 0, 0, SW, SH); } catch { /* fallback */ }
@@ -649,8 +654,12 @@ export const SlideMaker = () => {
                                 className={`relative group rounded-lg border-2 transition-all ${i === currentIdx ? 'border-brand-orange shadow-md' : 'border-border hover:border-muted-foreground/30'}`}>
                                 <div className="text-[8px] font-heading text-muted-foreground px-1 pt-1 truncate">{i + 1}. {s.label}</div>
                                 <div className="aspect-video rounded-b-md" style={{ background: isViterbiBg(s.bg) ? VITERBI.bg : s.bg, position: 'relative', overflow: 'hidden' }}>
+                                    {/* Custom uploaded background image */}
+                                    {s.bgImage && (
+                                        <img src={s.bgImage} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+                                    )}
                                     {/* Viterbi theme — use actual PDF image */}
-                                    {isViterbiBg(s.bg) && viterbiBgUrl && (
+                                    {!s.bgImage && isViterbiBg(s.bg) && viterbiBgUrl && (
                                         <img src={viterbiBgUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
                                     )}
                                     {/* Mini preview — simplified */}
@@ -702,8 +711,12 @@ export const SlideMaker = () => {
                         {/* Slide Canvas */}
                         <div ref={slideRef} className="relative shadow-2xl" onClick={e => { if (e.target === e.currentTarget) { setSelected(null); setEditing(null); } }}
                             style={{ width: '100%', maxWidth: 960, aspectRatio: '16/9', background: isViterbiBg(slide.bg) ? VITERBI.bg : slide.bg, borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
+                            {/* Custom uploaded background image */}
+                            {slide.bgImage && (
+                                <img src={slide.bgImage} alt="Custom background" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', zIndex: 0 }} />
+                            )}
                             {/* Viterbi theme — actual PDF background */}
-                            {isViterbiBg(slide.bg) && viterbiBgUrl && (
+                            {!slide.bgImage && isViterbiBg(slide.bg) && viterbiBgUrl && (
                                 <img src={viterbiBgUrl} alt="Viterbi template" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', zIndex: 0 }} />
                             )}
                             {slide.elements.map(renderElement)}
@@ -753,6 +766,32 @@ export const SlideMaker = () => {
                                     <span style={{ color: VITERBI.cardinal }}>V</span>
                                 </button>
                             </div>
+                            <label className="text-[10px] font-heading text-muted-foreground uppercase block mb-1 mt-2">BG Image</label>
+                            {slide.bgImage && (
+                                <div className="relative mb-1">
+                                    <img src={slide.bgImage} alt="bg preview" className="w-full rounded border border-border" style={{ maxHeight: 60, objectFit: 'cover' }} />
+                                    <button
+                                        onClick={() => setSlides(p => p.map((s, i) => i === currentIdx ? { ...s, bgImage: undefined } : s))}
+                                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[8px] hover:bg-red-600 transition-colors"
+                                        title="Remove background image"
+                                    >×</button>
+                                </div>
+                            )}
+                            <label className="flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-heading rounded border border-dashed border-border hover:border-brand-orange text-muted-foreground hover:text-brand-orange cursor-pointer transition-colors">
+                                <Upload className="w-3 h-3" />
+                                {slide.bgImage ? 'Replace BG Image' : 'Upload BG Image'}
+                                <input type="file" accept="image/*" className="hidden"
+                                    onChange={e => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onload = ev => {
+                                                setSlides(p => p.map((s, i) => i === currentIdx ? { ...s, bgImage: ev.target?.result as string } : s));
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }} />
+                            </label>
                         </div>
 
                         {selectedEl && (

@@ -47,13 +47,14 @@ export const Overview = () => {
             AI Researcher · PhD Student at USC · GLAMOUR Lab · MINDS · MOVE Fellow
           </p>
 
-          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4 max-w-2xl">
-            I build AI systems that improve themselves while remaining under control. My work spans
-            <span className="text-gray-900 dark:text-white font-semibold"> multi-agent systems & synthetic data</span>,
-            <span className="text-gray-900 dark:text-white font-semibold"> brain-inspired neural architectures</span>, and
-            <span className="text-gray-900 dark:text-white font-semibold"> continual learning</span>.
-            Former MOVE Fellow at Handshake AI, specializing in frontier model training and safety.
-          </p>
+          <blockquote className="relative pl-4 border-l-2 border-brand-orange/40 mb-4 max-w-2xl">
+            <p className="text-sm italic text-gray-600 dark:text-gray-400 leading-relaxed">
+              &ldquo;Building AI systems that improve themselves through multi-agent collaboration and synthetic curricula&mdash;while keeping humans in the loop.&rdquo;
+            </p>
+            <cite className="block mt-1 text-[11px] not-italic text-gray-500 dark:text-gray-500">
+              &mdash; Zizhao Hu, PhD Student at USC &middot; GLAMOUR Lab &amp; MINDS Group
+            </cite>
+          </blockquote>
 
         </div>
       </div>

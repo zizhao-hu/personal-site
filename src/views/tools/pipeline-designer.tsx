@@ -2,7 +2,7 @@
 
 import { Header } from '@/components/custom/header';
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Save, FolderOpen, Trash2, Pencil, X, Check, Square, Circle, Diamond, Type, RectangleHorizontal, Hexagon, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { jsPDF } from 'jspdf';
@@ -29,15 +29,22 @@ const colorSchemes: Record<string, { head: string; body: string; border: string;
 };
 
 /* ─── Types ─── */
+type ShapeKind = 'rect' | 'rounded-rect' | 'circle' | 'diamond' | 'hexagon';
+
 interface PNode {
     id: string;
     x: number; y: number; w: number; h: number;
-    type: 'title' | 'colLabel' | 'headerNode' | 'minimal' | 'plain' | 'container';
+    type: 'title' | 'colLabel' | 'headerNode' | 'minimal' | 'plain' | 'container' | 'shape' | 'textbox';
     variant?: string;
     title?: string;
     content?: string;
     stacked?: boolean;
     size?: number;
+    shapeKind?: ShapeKind;
+    fontSize?: number;
+    fontWeight?: string;
+    textAlign?: CanvasTextAlign;
+    filled?: boolean;
 }
 
 interface PConnection {
@@ -46,6 +53,30 @@ interface PConnection {
     type: 'direct' | 'split' | 'merge';
     dash?: number[];
     orientation?: string;
+}
+
+interface SavedTemplate {
+    id: string;
+    name: string;
+    nodes: PNode[];
+    connections: PConnection[];
+    createdAt: number;
+    updatedAt: number;
+}
+
+const STORAGE_KEY = 'pipeline-designer-templates';
+
+function loadTemplatesFromStorage(): SavedTemplate[] {
+    if (typeof window === 'undefined') return [];
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+}
+
+function saveTemplatesToStorage(templates: SavedTemplate[]) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
 }
 
 const GRID = 10;
@@ -145,9 +176,45 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
     if (ss && ss !== 'transparent') { ctx.strokeStyle = ss; ctx.lineWidth = 1; ctx.stroke(); }
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, t: string, x: number, y: number, mw: number, lh: number, fs: number, align: CanvasTextAlign = 'left') {
+function drawDiamond(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, fill: boolean, fs?: string | null, ss?: string | null) {
+    const cx = x + w / 2, cy = y + h / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, y);
+    ctx.lineTo(x + w, cy);
+    ctx.lineTo(cx, y + h);
+    ctx.lineTo(x, cy);
+    ctx.closePath();
+    if (fill && fs) { ctx.fillStyle = fs; ctx.fill(); }
+    if (ss && ss !== 'transparent') { ctx.strokeStyle = ss; ctx.lineWidth = 1.5; ctx.stroke(); }
+}
+
+function drawHexagon(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, fill: boolean, fs?: string | null, ss?: string | null) {
+    const cx = x + w / 2, cy = y + h / 2;
+    const inset = w * 0.25;
+    ctx.beginPath();
+    ctx.moveTo(x + inset, y);
+    ctx.lineTo(x + w - inset, y);
+    ctx.lineTo(x + w, cy);
+    ctx.lineTo(x + w - inset, y + h);
+    ctx.lineTo(x + inset, y + h);
+    ctx.lineTo(x, cy);
+    ctx.closePath();
+    if (fill && fs) { ctx.fillStyle = fs; ctx.fill(); }
+    if (ss && ss !== 'transparent') { ctx.strokeStyle = ss; ctx.lineWidth = 1.5; ctx.stroke(); }
+}
+
+function drawEllipse(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, fill: boolean, fs?: string | null, ss?: string | null) {
+    const cx = x + w / 2, cy = y + h / 2;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
+    ctx.closePath();
+    if (fill && fs) { ctx.fillStyle = fs; ctx.fill(); }
+    if (ss && ss !== 'transparent') { ctx.strokeStyle = ss; ctx.lineWidth = 1.5; ctx.stroke(); }
+}
+
+function wrapText(ctx: CanvasRenderingContext2D, t: string, x: number, y: number, mw: number, lh: number, fs: number, align: CanvasTextAlign = 'left', weight: string = '400', font: string = 'Lora') {
     if (!t) return;
-    ctx.font = `400 ${fs}px 'Lora'`;
+    ctx.font = `${weight} ${fs}px '${font}'`;
     ctx.textAlign = align;
     const words = t.split(' ');
     const lines: string[] = [];
@@ -179,6 +246,10 @@ function drawLine(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: num
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
 }
 
+/* ─── Add-element helpers ─── */
+let _addCounter = 0;
+function genId(prefix: string) { return `${prefix}_${Date.now()}_${++_addCounter}`; }
+
 /* ─── Component ─── */
 export const PipelineDesigner = () => {
     const router = useRouter();
@@ -202,6 +273,13 @@ export const PipelineDesigner = () => {
 
     const [connectMode, setConnectMode] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
+    const [templates, setTemplates] = useState<SavedTemplate[]>([]);
+    const [showTemplates, setShowTemplates] = useState(false);
+    const [saveName, setSaveName] = useState('');
+    const [showSaveDialog, setShowSaveDialog] = useState(false);
+    const [renamingId, setRenamingId] = useState<string | null>(null);
+    const [showAddMenu, setShowAddMenu] = useState(false);
+    const [renameValue, setRenameValue] = useState('');
 
     const W = 1150;
     const H = 750;
@@ -212,6 +290,78 @@ export const PipelineDesigner = () => {
     }, []);
 
     const getNode = useCallback((id: string) => nodesRef.current.find((n) => n.id === id), []);
+
+    /* ── Template Storage ── */
+    useEffect(() => {
+        const loaded = loadTemplatesFromStorage();
+        if (loaded.length === 0) {
+            // Seed with the default template
+            const defaultTemplate: SavedTemplate = {
+                id: 'default_' + Date.now(),
+                name: 'Default Pipeline',
+                nodes: createDefaultNodes(),
+                connections: createDefaultConnections(),
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+            };
+            saveTemplatesToStorage([defaultTemplate]);
+            setTemplates([defaultTemplate]);
+        } else {
+            setTemplates(loaded);
+        }
+    }, []);
+
+    const saveTemplate = useCallback((name: string) => {
+        const newTemplate: SavedTemplate = {
+            id: 'tmpl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+            name: name.trim() || 'Untitled',
+            nodes: nodesRef.current.map(n => ({ ...n })),
+            connections: connsRef.current.map(c => ({ ...c })),
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        };
+        const updated = [newTemplate, ...templates];
+        saveTemplatesToStorage(updated);
+        setTemplates(updated);
+        showToast(`Saved "${newTemplate.name}"`);
+        setShowSaveDialog(false);
+        setSaveName('');
+    }, [templates, showToast]);
+
+    const loadTemplate = useCallback((tmpl: SavedTemplate) => {
+        nodesRef.current = tmpl.nodes.map(n => ({ ...n }));
+        connsRef.current = tmpl.connections.map(c => ({ ...c }));
+        selectedRef.current.clear();
+        setShowTemplates(false);
+        showToast(`Loaded "${tmpl.name}"`);
+    }, [showToast]);
+
+    const deleteTemplate = useCallback((id: string) => {
+        const updated = templates.filter(t => t.id !== id);
+        saveTemplatesToStorage(updated);
+        setTemplates(updated);
+        showToast('Template deleted');
+    }, [templates, showToast]);
+
+    const renameTemplate = useCallback((id: string, newName: string) => {
+        const updated = templates.map(t => t.id === id ? { ...t, name: newName.trim() || t.name, updatedAt: Date.now() } : t);
+        saveTemplatesToStorage(updated);
+        setTemplates(updated);
+        setRenamingId(null);
+        setRenameValue('');
+    }, [templates]);
+
+    const overwriteTemplate = useCallback((tmpl: SavedTemplate) => {
+        const updated = templates.map(t => t.id === tmpl.id ? {
+            ...t,
+            nodes: nodesRef.current.map(n => ({ ...n })),
+            connections: connsRef.current.map(c => ({ ...c })),
+            updatedAt: Date.now(),
+        } : t);
+        saveTemplatesToStorage(updated);
+        setTemplates(updated);
+        showToast(`Updated "${tmpl.name}"`);
+    }, [templates, showToast]);
 
     /* ── Rendering ── */
     const render = useCallback(() => {
@@ -275,6 +425,39 @@ export const PipelineDesigner = () => {
                 roundRect(ctx, node.x, node.y, node.w, node.h, 6, true, brand.light, color.border);
                 ctx.fillStyle = brand.dark; ctx.font = "400 8.5px 'Lora'";
                 wrapText(ctx, node.content || '', node.x + node.w / 2, node.y + node.h / 2, node.w - 10, 10, 8.5, 'center');
+            } else if (node.type === 'shape') {
+                const fillColor = node.filled !== false ? color.head : 'transparent';
+                const strokeColor = color.border;
+                const kind = node.shapeKind || 'rect';
+                if (kind === 'rect') {
+                    roundRect(ctx, node.x, node.y, node.w, node.h, 0, true, fillColor, strokeColor);
+                } else if (kind === 'rounded-rect') {
+                    roundRect(ctx, node.x, node.y, node.w, node.h, 10, true, fillColor, strokeColor);
+                } else if (kind === 'circle') {
+                    drawEllipse(ctx, node.x, node.y, node.w, node.h, true, fillColor, strokeColor);
+                } else if (kind === 'diamond') {
+                    drawDiamond(ctx, node.x, node.y, node.w, node.h, true, fillColor, strokeColor);
+                } else if (kind === 'hexagon') {
+                    drawHexagon(ctx, node.x, node.y, node.w, node.h, true, fillColor, strokeColor);
+                }
+                // Label inside shape
+                if (node.title) {
+                    const textColor = node.filled !== false ? color.textTitle : brand.dark;
+                    ctx.fillStyle = textColor;
+                    const fs = node.fontSize || 9;
+                    wrapText(ctx, node.title, node.x + node.w / 2, node.y + node.h / 2, node.w - 12, fs + 3, fs, 'center', '600', 'Poppins');
+                }
+            } else if (node.type === 'textbox') {
+                // optional light background
+                if (node.filled) {
+                    roundRect(ctx, node.x, node.y, node.w, node.h, 4, true, brand.light, brand.lightGray);
+                }
+                const fs = node.fontSize || 11;
+                const weight = node.fontWeight || '400';
+                const align = node.textAlign || 'left';
+                ctx.fillStyle = brand.dark;
+                const tx = align === 'center' ? node.x + node.w / 2 : align === 'right' ? node.x + node.w - 6 : node.x + 6;
+                wrapText(ctx, node.content || node.title || '', tx, node.y + node.h / 2, node.w - 12, fs + 4, fs, align, weight, 'Poppins');
             }
 
             if (isSelected || draggedRef.current === node || isSource) {
@@ -385,7 +568,7 @@ export const PipelineDesigner = () => {
             }
 
             if (clicked) {
-                if (['headerNode', 'minimal', 'plain', 'container'].includes(clicked.type) &&
+                if (['headerNode', 'minimal', 'plain', 'container', 'shape', 'textbox'].includes(clicked.type) &&
                     mouse.x > clicked.x + clicked.w - 15 && mouse.y > clicked.y + clicked.h - 15) {
                     resizedRef.current = clicked;
                     return;
@@ -445,8 +628,14 @@ export const PipelineDesigner = () => {
             for (let i = nodesRef.current.length - 1; i >= 0; i--) {
                 const n = nodesRef.current[i];
                 if (mouse.x > n.x && mouse.x < n.x + n.w && mouse.y > n.y && mouse.y < n.y + n.h) {
-                    const field = (n.type === 'headerNode' && mouse.y < n.y + 16) ? 'title' : 'content';
-                    openEditor(n, field);
+                    if (n.type === 'shape') {
+                        openEditor(n, 'title');
+                    } else if (n.type === 'textbox') {
+                        openEditor(n, 'content');
+                    } else {
+                        const field = (n.type === 'headerNode' && mouse.y < n.y + 16) ? 'title' : 'content';
+                        openEditor(n, field);
+                    }
                     return;
                 }
             }
@@ -547,9 +736,15 @@ export const PipelineDesigner = () => {
         ed.style.top = node.y + 'px';
         ed.style.width = node.w + 'px';
         ed.style.height = node.h + 'px';
-        ed.value = (field === 'title' || ['title', 'colLabel', 'minimal', 'container'].includes(node.type))
-            ? (node.title || '')
-            : (node.content || '');
+        if (node.type === 'textbox') {
+            ed.value = node.content || '';
+        } else if (node.type === 'shape') {
+            ed.value = node.title || '';
+        } else {
+            ed.value = (field === 'title' || ['title', 'colLabel', 'minimal', 'container'].includes(node.type))
+                ? (node.title || '')
+                : (node.content || '');
+        }
         ed.focus();
     };
 
@@ -558,7 +753,11 @@ export const PipelineDesigner = () => {
         const { node, field } = editingRef.current;
         const ed = editorRef.current;
         if (!ed) return;
-        if (field === 'title' || ['title', 'colLabel', 'minimal', 'container'].includes(node.type)) {
+        if (node.type === 'textbox') {
+            node.content = ed.value;
+        } else if (node.type === 'shape') {
+            node.title = ed.value;
+        } else if (field === 'title' || ['title', 'colLabel', 'minimal', 'container'].includes(node.type)) {
             node.title = ed.value;
         } else {
             node.content = ed.value;
@@ -602,6 +801,77 @@ export const PipelineDesigner = () => {
         const next = !connectRef.current.active;
         connectRef.current = { active: next, sourceId: null };
         setConnectMode(next);
+    };
+
+    /* ── Add elements ── */
+    const addShape = (kind: ShapeKind) => {
+        const size = kind === 'circle' ? 60 : kind === 'diamond' ? 70 : 80;
+        const h = kind === 'diamond' ? 60 : kind === 'circle' ? 60 : 50;
+        const node: PNode = {
+            id: genId('shape'),
+            x: snap(W / 2 - size / 2),
+            y: snap(H / 2 - h / 2),
+            w: size,
+            h,
+            type: 'shape',
+            shapeKind: kind,
+            variant: 'neutral',
+            title: kind.charAt(0).toUpperCase() + kind.slice(1),
+            filled: true,
+        };
+        nodesRef.current.push(node);
+        selectedRef.current.clear();
+        selectedRef.current.add(node.id);
+        setShowAddMenu(false);
+        showToast(`Added ${kind}`);
+    };
+
+    const addTextBox = () => {
+        const node: PNode = {
+            id: genId('text'),
+            x: snap(W / 2 - 60),
+            y: snap(H / 2 - 15),
+            w: 120,
+            h: 30,
+            type: 'textbox',
+            content: 'Text',
+            fontSize: 11,
+            fontWeight: '400',
+            textAlign: 'center',
+            filled: false,
+        };
+        nodesRef.current.push(node);
+        selectedRef.current.clear();
+        selectedRef.current.add(node.id);
+        setShowAddMenu(false);
+        showToast('Added text box');
+    };
+
+    const addNodeOfType = (type: PNode['type'], variant: string = 'neutral') => {
+        const defaults: Record<string, Partial<PNode>> = {
+            headerNode: { w: 100, h: 50, title: 'Header', content: 'Content' },
+            minimal: { w: 50, h: 60, title: 'Label' },
+            plain: { w: 80, h: 35, content: '"value"' },
+            container: { w: 300, h: 200, title: 'Group' },
+            colLabel: { w: 80, h: 15, title: 'LABEL' },
+            title: { w: 180, h: 20, title: 'Section Title' },
+        };
+        const d = defaults[type] || { w: 80, h: 40 };
+        const node: PNode = {
+            id: genId(type),
+            x: snap(W / 2 - (d.w || 80) / 2),
+            y: snap(H / 2 - (d.h || 40) / 2),
+            w: d.w || 80,
+            h: d.h || 40,
+            type,
+            variant,
+            ...d,
+        };
+        nodesRef.current.push(node);
+        selectedRef.current.clear();
+        selectedRef.current.add(node.id);
+        setShowAddMenu(false);
+        showToast(`Added ${type}`);
     };
 
     const colorSwatches = [
@@ -662,7 +932,84 @@ export const PipelineDesigner = () => {
                     </div>
 
                     {/* Controls */}
-                    <div className="flex items-center gap-3 mt-4">
+                    <div className="flex items-center gap-3 mt-4 flex-wrap">
+                        {/* Add Elements dropdown */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowAddMenu(!showAddMenu)}
+                                className={`px-4 py-2 rounded-lg text-xs font-semibold font-heading transition-all flex items-center gap-1.5 ${
+                                    showAddMenu ? 'bg-brand-blue text-white' : 'bg-brand-green text-white hover:opacity-90'
+                                }`}
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                Add Element
+                            </button>
+                            {showAddMenu && (
+                                <div className="absolute top-full left-0 mt-1.5 bg-card border border-border rounded-xl shadow-2xl py-2 z-[3000] min-w-[200px] animate-in fade-in slide-in-from-top-1 duration-150">
+                                    <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Shapes</div>
+                                    <button onClick={() => addShape('rect')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <Square className="w-3.5 h-3.5 text-muted-foreground" />
+                                        Rectangle
+                                    </button>
+                                    <button onClick={() => addShape('rounded-rect')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <RectangleHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+                                        Rounded Rectangle
+                                    </button>
+                                    <button onClick={() => addShape('circle')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <Circle className="w-3.5 h-3.5 text-muted-foreground" />
+                                        Ellipse / Circle
+                                    </button>
+                                    <button onClick={() => addShape('diamond')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <Diamond className="w-3.5 h-3.5 text-muted-foreground" />
+                                        Diamond
+                                    </button>
+                                    <button onClick={() => addShape('hexagon')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <Hexagon className="w-3.5 h-3.5 text-muted-foreground" />
+                                        Hexagon
+                                    </button>
+                                    <div className="h-px bg-border my-1.5" />
+                                    <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Text</div>
+                                    <button onClick={() => addTextBox()} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <Type className="w-3.5 h-3.5 text-muted-foreground" />
+                                        Text Box
+                                    </button>
+                                    <div className="h-px bg-border my-1.5" />
+                                    <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nodes</div>
+                                    <button onClick={() => addNodeOfType('headerNode')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground bg-muted flex-shrink-0" />
+                                        Header Node
+                                    </button>
+                                    <button onClick={() => addNodeOfType('minimal')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <span className="w-3.5 h-3.5 rounded-sm bg-muted-foreground flex-shrink-0" />
+                                        Minimal Node
+                                    </button>
+                                    <button onClick={() => addNodeOfType('plain')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground flex-shrink-0" />
+                                        Plain Node
+                                    </button>
+                                    <button onClick={() => addNodeOfType('container')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
+                                        <span className="w-3.5 h-3.5 rounded-sm border border-dashed border-muted-foreground flex-shrink-0" />
+                                        Container
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => { setShowSaveDialog(true); setSaveName(''); }}
+                            className="px-4 py-2 rounded-lg bg-brand-green text-white text-xs font-semibold font-heading hover:opacity-90 transition-all flex items-center gap-1.5"
+                        >
+                            <Save className="w-3.5 h-3.5" />
+                            Save Template
+                        </button>
+                        <button
+                            onClick={() => setShowTemplates(!showTemplates)}
+                            className={`px-4 py-2 rounded-lg text-xs font-semibold font-heading transition-all flex items-center gap-1.5 ${showTemplates ? 'bg-brand-blue text-white' : 'bg-foreground text-background hover:opacity-90'
+                                }`}
+                        >
+                            <FolderOpen className="w-3.5 h-3.5" />
+                            Templates ({templates.length})
+                        </button>
+                        <div className="w-px h-6 bg-border" />
                         <button
                             onClick={toggleConnect}
                             className={`px-4 py-2 rounded-lg text-xs font-semibold font-heading transition-all ${connectMode
@@ -691,6 +1038,124 @@ export const PipelineDesigner = () => {
                             Export PDF
                         </button>
                     </div>
+
+                    {/* Save Dialog */}
+                    {showSaveDialog && (
+                        <div className="fixed inset-0 bg-black/40 z-[4000] flex items-center justify-center backdrop-blur-sm" onClick={() => setShowSaveDialog(false)}>
+                            <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-sm font-bold font-heading text-foreground">Save as Template</h3>
+                                    <button onClick={() => setShowSaveDialog(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={saveName}
+                                    onChange={e => setSaveName(e.target.value)}
+                                    placeholder="Template name…"
+                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-heading outline-none focus:border-brand-orange transition-colors"
+                                    autoFocus
+                                    onKeyDown={e => { if (e.key === 'Enter') saveTemplate(saveName); }}
+                                />
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <button
+                                        onClick={() => setShowSaveDialog(false)}
+                                        className="px-4 py-2 rounded-lg text-xs font-semibold font-heading text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => saveTemplate(saveName)}
+                                        className="px-4 py-2 rounded-lg bg-brand-green text-white text-xs font-semibold font-heading hover:opacity-90 transition-all"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Templates Panel */}
+                    {showTemplates && (
+                        <div className="mt-4 bg-card border border-border rounded-2xl shadow-lg overflow-hidden">
+                            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                                <h3 className="text-sm font-bold font-heading text-foreground">Saved Templates</h3>
+                                <button onClick={() => setShowTemplates(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                            {templates.length === 0 ? (
+                                <div className="px-4 py-8 text-center text-xs text-muted-foreground font-heading">
+                                    No saved templates yet. Click &quot;Save Template&quot; to save the current diagram.
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-border max-h-[320px] overflow-y-auto">
+                                    {templates.map(tmpl => (
+                                        <div key={tmpl.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group">
+                                            <div className="flex-1 min-w-0">
+                                                {renamingId === tmpl.id ? (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <input
+                                                            type="text"
+                                                            value={renameValue}
+                                                            onChange={e => setRenameValue(e.target.value)}
+                                                            className="flex-1 px-2 py-1 rounded border border-border bg-background text-xs font-heading outline-none focus:border-brand-orange"
+                                                            autoFocus
+                                                            onKeyDown={e => {
+                                                                if (e.key === 'Enter') renameTemplate(tmpl.id, renameValue);
+                                                                if (e.key === 'Escape') setRenamingId(null);
+                                                            }}
+                                                        />
+                                                        <button onClick={() => renameTemplate(tmpl.id, renameValue)} className="text-brand-green hover:opacity-80"><Check className="w-3.5 h-3.5" /></button>
+                                                        <button onClick={() => setRenamingId(null)} className="text-muted-foreground hover:text-foreground"><X className="w-3.5 h-3.5" /></button>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <p className="text-xs font-semibold font-heading text-foreground truncate">{tmpl.name}</p>
+                                                        <p className="text-[10px] text-muted-foreground font-heading mt-0.5">
+                                                            {tmpl.nodes.length} nodes · {tmpl.connections.length} connections · {new Date(tmpl.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                        </p>
+                                                    </>
+                                                )}
+                                            </div>
+                                            {renamingId !== tmpl.id && (
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => loadTemplate(tmpl)}
+                                                        className="px-2.5 py-1.5 rounded-md bg-brand-blue text-white text-[10px] font-semibold font-heading hover:opacity-90 transition-all"
+                                                    >
+                                                        Load
+                                                    </button>
+                                                    <button
+                                                        onClick={() => overwriteTemplate(tmpl)}
+                                                        className="px-2.5 py-1.5 rounded-md bg-brand-orange text-white text-[10px] font-semibold font-heading hover:opacity-90 transition-all"
+                                                        title="Overwrite with current diagram"
+                                                    >
+                                                        Update
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setRenamingId(tmpl.id); setRenameValue(tmpl.name); }}
+                                                        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                                                        title="Rename"
+                                                    >
+                                                        <Pencil className="w-3 h-3" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => deleteTemplate(tmpl.id)}
+                                                        className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import { Header } from '@/components/custom/header';
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { ArrowLeft, Save, FolderOpen, Trash2, Pencil, X, Check, Square, Circle, Diamond, Type, RectangleHorizontal, Hexagon, Plus } from 'lucide-react';
+import { ArrowLeft, Save, FolderOpen, Trash2, Pencil, X, Check, Square, Circle, Diamond, Type, RectangleHorizontal, Hexagon, Plus, Grid3X3, Link, RotateCcw, Download, FileDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { jsPDF } from 'jspdf';
@@ -44,6 +44,7 @@ interface PNode {
     fontSize?: number;
     fontWeight?: string;
     textAlign?: CanvasTextAlign;
+    textVAlign?: 'top' | 'middle' | 'bottom';
     filled?: boolean;
 }
 
@@ -257,7 +258,7 @@ function drawEllipse(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
     if (ss && ss !== 'transparent') { ctx.strokeStyle = ss; ctx.lineWidth = 1.5; ctx.stroke(); }
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, t: string, x: number, y: number, mw: number, lh: number, fs: number, align: CanvasTextAlign = 'left', weight: string = '400', font: string = 'Lora') {
+function wrapText(ctx: CanvasRenderingContext2D, t: string, x: number, y: number, mw: number, lh: number, fs: number, align: CanvasTextAlign = 'left', weight: string = '400', font: string = 'Lora', vAlign: 'top' | 'middle' | 'bottom' = 'middle', boxH?: number) {
     if (!t) return;
     ctx.font = `${weight} ${fs}px '${font}'`;
     ctx.textAlign = align;
@@ -275,7 +276,10 @@ function wrapText(ctx: CanvasRenderingContext2D, t: string, x: number, y: number
     }
     lines.push(currentLine);
     const totalH = lines.length * lh;
-    let startY = y - totalH / 2 + lh / 2 + 2;
+    let startY: number;
+    if (vAlign === 'top') { startY = y - (boxH ? boxH / 2 : 0) + lh / 2 + 4; }
+    else if (vAlign === 'bottom') { startY = y + (boxH ? boxH / 2 : 0) - totalH + lh / 2 - 2; }
+    else { startY = y - totalH / 2 + lh / 2 + 2; }
     lines.forEach((line) => { ctx.fillText(line, x, startY); startY += lh; });
 }
 
@@ -326,6 +330,7 @@ export const PipelineDesigner = () => {
     const [showAddMenu, setShowAddMenu] = useState(false);
     const showGridRef = useRef(true);
     const [showGrid, setShowGrid] = useState(true);
+    const [panelTab, setPanelTab] = useState<'shapes' | 'nodes' | 'text'>('shapes');
     const [renameValue, setRenameValue] = useState('');
 
     const W = 1150;
@@ -516,7 +521,7 @@ export const PipelineDesigner = () => {
                 const align = node.textAlign || 'left';
                 ctx.fillStyle = brand.dark;
                 const tx = align === 'center' ? node.x + node.w / 2 : align === 'right' ? node.x + node.w - 6 : node.x + 6;
-                wrapText(ctx, node.content || node.title || '', tx, node.y + node.h / 2, node.w - 12, fs + 4, fs, align, weight, 'Poppins');
+                wrapText(ctx, node.content || node.title || '', tx, node.y + node.h / 2, node.w - 12, fs + 4, fs, align, weight, 'Poppins', (node as any).textVAlign || 'middle', node.h);
             }
 
             if (isSelected || draggedRef.current === node || isSource) {
@@ -881,7 +886,6 @@ export const PipelineDesigner = () => {
         nodesRef.current.push(node);
         selectedRef.current.clear();
         selectedRef.current.add(node.id);
-        setShowAddMenu(false);
         showToast(`Added ${kind}`);
     };
 
@@ -902,7 +906,6 @@ export const PipelineDesigner = () => {
         nodesRef.current.push(node);
         selectedRef.current.clear();
         selectedRef.current.add(node.id);
-        setShowAddMenu(false);
         showToast('Added text box');
     };
 
@@ -929,7 +932,6 @@ export const PipelineDesigner = () => {
         nodesRef.current.push(node);
         selectedRef.current.clear();
         selectedRef.current.add(node.id);
-        setShowAddMenu(false);
         showToast(`Added ${type}`);
     };
 
@@ -942,291 +944,66 @@ export const PipelineDesigner = () => {
         { label: 'Dark', variant: 'dark', color: brand.dark },
     ];
 
+
+    // Selected node for properties
+    const selectedNodes = nodesRef.current.filter(n => selectedRef.current.has(n.id));
+    const selNode = selectedNodes.length === 1 ? selectedNodes[0] : null;
+    const setNodeProp = (key: keyof PNode, val: unknown) => { if (!selNode) return; (selNode as unknown as Record<string, unknown>)[key] = val; };
+    const panelBtnClass = "w-full flex items-center gap-2 px-3 py-2 text-[11px] font-heading hover:bg-muted/70 rounded-md transition-colors text-foreground cursor-pointer";
+    const tabBtnClass = (active: boolean) => `flex-1 py-1.5 text-[10px] font-bold font-heading uppercase tracking-wider transition-all rounded-md ${active ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`;
+
     return (
         <div className="flex flex-col min-h-dvh bg-background">
             <Header />
             <div className="flex-1 overflow-y-auto pb-24">
-                <div className="max-w-[1200px] mx-auto px-4 py-6">
-                    {/* Back */}
-                    <button
-                        onClick={() => router.push('/tools')}
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors font-heading"
-                    >
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                        Back to Tools
-                    </button>
-
-                    {/* Title */}
-                    <div className="mb-4">
-                        <h1 className="text-xl font-bold font-heading text-foreground">AI Pipeline Designer</h1>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Drag nodes to reposition â€¢ Double-click to edit text â€¢ Right-click to change color â€¢ Ctrl+C/V to copy/paste
-                        </p>
-                    </div>
-
-                    {/* Canvas */}
-                    <div ref={containerRef} className="relative bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                        <canvas ref={canvasRef} style={{ display: 'block', touchAction: 'none' }} />
-                        <textarea
-                            ref={editorRef}
-                            className="absolute hidden bg-white border border-brand-orange px-1 py-0.5 text-[10px] z-[1000] outline-none shadow-md resize-none font-heading"
-                            onBlur={closeEditor}
-                            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); closeEditor(); } }}
-                        />
-                        <div
-                            ref={menuRef}
-                            className="absolute hidden bg-card border border-border rounded-lg shadow-xl py-1.5 z-[2000] min-w-[140px]"
-                        >
-                            {colorSwatches.map((s) => (
-                                <button
-                                    key={s.variant}
-                                    onClick={() => setVariant(s.variant)}
-                                    className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs font-heading hover:bg-muted transition-colors"
-                                >
-                                    <span className="w-3 h-3 rounded-sm border border-black/10" style={{ background: s.color }} />
-                                    {s.label}
-                                </button>
-                            ))}
+                <div className="max-w-[1400px] mx-auto px-4 py-6">
+                    <button onClick={() => router.push('/tools')} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors font-heading"><ArrowLeft className="w-3.5 h-3.5" />Back to Tools</button>
+                    <div className="flex items-center justify-between mb-3">
+                        <div>
+                            <h1 className="text-lg font-bold font-heading text-foreground">AI Pipeline Designer</h1>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">Drag · Double-click to edit · Right-click color · Ctrl+C/V</p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <button onClick={toggleGrid} className={`px-2.5 py-1.5 rounded-md text-[10px] font-semibold font-heading transition-all ${showGrid ? 'bg-brand-blue text-white' : 'bg-muted text-muted-foreground hover:text-foreground'}`} title="Toggle Grid"><Grid3X3 className="w-3.5 h-3.5" /></button>
+                            <button onClick={toggleConnect} className={`px-2.5 py-1.5 rounded-md text-[10px] font-semibold font-heading transition-all ${connectMode ? 'bg-brand-blue text-white' : 'bg-muted text-muted-foreground hover:text-foreground'}`} title="Connect"><Link className="w-3.5 h-3.5" /></button>
+                            <button onClick={resetLayout} className="px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground hover:text-foreground text-[10px] font-semibold font-heading transition-all" title="Reset"><RotateCcw className="w-3.5 h-3.5" /></button>
+                            <div className="w-px h-5 bg-border mx-1" />
+                            <button onClick={() => { setShowSaveDialog(true); setSaveName(''); }} className="px-2.5 py-1.5 rounded-md bg-brand-green text-white text-[10px] font-semibold font-heading hover:opacity-90 transition-all flex items-center gap-1"><Save className="w-3 h-3" /> Save</button>
+                            <button onClick={() => setShowTemplates(!showTemplates)} className={`px-2.5 py-1.5 rounded-md text-[10px] font-semibold font-heading transition-all flex items-center gap-1 ${showTemplates ? 'bg-brand-blue text-white' : 'bg-foreground text-background hover:opacity-90'}`}><FolderOpen className="w-3 h-3" /> Templates</button>
+                            <div className="w-px h-5 bg-border mx-1" />
+                            <button onClick={exportPNG} className="px-2.5 py-1.5 rounded-md bg-brand-orange text-white text-[10px] font-semibold font-heading hover:opacity-90 transition-all flex items-center gap-1"><Download className="w-3 h-3" /> PNG</button>
+                            <button onClick={exportPDF} className="px-2.5 py-1.5 rounded-md bg-brand-orange text-white text-[10px] font-semibold font-heading hover:opacity-90 transition-all flex items-center gap-1"><FileDown className="w-3 h-3" /> PDF</button>
                         </div>
                     </div>
-
-                    {/* Controls */}
-                    <div className="flex items-center gap-3 mt-4 flex-wrap">
-                        {/* Add Elements dropdown */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setShowAddMenu(!showAddMenu)}
-                                className={`px-4 py-2 rounded-lg text-xs font-semibold font-heading transition-all flex items-center gap-1.5 ${
-                                    showAddMenu ? 'bg-brand-blue text-white' : 'bg-brand-green text-white hover:opacity-90'
-                                }`}
-                            >
-                                <Plus className="w-3.5 h-3.5" />
-                                Add Element
-                            </button>
-                            {showAddMenu && (
-                                <div className="absolute top-full left-0 mt-1.5 bg-card border border-border rounded-xl shadow-2xl py-2 z-[3000] min-w-[200px] animate-in fade-in slide-in-from-top-1 duration-150">
-                                    <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Shapes</div>
-                                    <button onClick={() => addShape('rect')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <Square className="w-3.5 h-3.5 text-muted-foreground" />
-                                        Rectangle
-                                    </button>
-                                    <button onClick={() => addShape('rounded-rect')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <RectangleHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
-                                        Rounded Rectangle
-                                    </button>
-                                    <button onClick={() => addShape('circle')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <Circle className="w-3.5 h-3.5 text-muted-foreground" />
-                                        Ellipse / Circle
-                                    </button>
-                                    <button onClick={() => addShape('diamond')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <Diamond className="w-3.5 h-3.5 text-muted-foreground" />
-                                        Diamond
-                                    </button>
-                                    <button onClick={() => addShape('hexagon')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <Hexagon className="w-3.5 h-3.5 text-muted-foreground" />
-                                        Hexagon
-                                    </button>
-                                    <div className="h-px bg-border my-1.5" />
-                                    <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Text</div>
-                                    <button onClick={() => addTextBox()} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <Type className="w-3.5 h-3.5 text-muted-foreground" />
-                                        Text Box
-                                    </button>
-                                    <div className="h-px bg-border my-1.5" />
-                                    <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nodes</div>
-                                    <button onClick={() => addNodeOfType('headerNode')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground bg-muted flex-shrink-0" />
-                                        Header Node
-                                    </button>
-                                    <button onClick={() => addNodeOfType('minimal')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <span className="w-3.5 h-3.5 rounded-sm bg-muted-foreground flex-shrink-0" />
-                                        Minimal Node
-                                    </button>
-                                    <button onClick={() => addNodeOfType('plain')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground flex-shrink-0" />
-                                        Plain Node
-                                    </button>
-                                    <button onClick={() => addNodeOfType('container')} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-heading hover:bg-muted transition-colors">
-                                        <span className="w-3.5 h-3.5 rounded-sm border border-dashed border-muted-foreground flex-shrink-0" />
-                                        Container
-                                    </button>
-                                </div>
-                            )}
+                    <div className="flex gap-3">
+                        <div className="w-[200px] flex-shrink-0 bg-card border border-border rounded-xl overflow-hidden shadow-sm self-start">
+                            <div className="flex gap-0.5 p-1.5 border-b border-border bg-muted/30">
+                                <button onClick={() => setPanelTab('shapes')} className={tabBtnClass(panelTab === 'shapes')}>Shapes</button>
+                                <button onClick={() => setPanelTab('nodes')} className={tabBtnClass(panelTab === 'nodes')}>Nodes</button>
+                                <button onClick={() => setPanelTab('text')} className={tabBtnClass(panelTab === 'text')}>Text</button>
+                            </div>
+                            <div className="p-2 space-y-0.5">
+                                {panelTab === 'shapes' && (<><button onClick={() => addShape('rect')} className={panelBtnClass}><Square className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Rectangle</button><button onClick={() => addShape('rounded-rect')} className={panelBtnClass}><RectangleHorizontal className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Rounded Rect</button><button onClick={() => addShape('circle')} className={panelBtnClass}><Circle className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Ellipse</button><button onClick={() => addShape('diamond')} className={panelBtnClass}><Diamond className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Diamond</button><button onClick={() => addShape('hexagon')} className={panelBtnClass}><Hexagon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Hexagon</button></>)}
+                                {panelTab === 'nodes' && (<><button onClick={() => addNodeOfType('headerNode')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground bg-muted flex-shrink-0" /> Header Node</button><button onClick={() => addNodeOfType('minimal')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm bg-muted-foreground flex-shrink-0" /> Minimal</button><button onClick={() => addNodeOfType('plain')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground flex-shrink-0" /> Plain</button><button onClick={() => addNodeOfType('container')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm border border-dashed border-muted-foreground flex-shrink-0" /> Container</button><button onClick={() => addNodeOfType('colLabel')} className={panelBtnClass}><span className="w-3.5 h-1 bg-muted-foreground rounded flex-shrink-0" /> Label</button><button onClick={() => addNodeOfType('title')} className={panelBtnClass}><span className="w-3.5 h-1.5 bg-foreground rounded flex-shrink-0" /> Title</button></>)}
+                                {panelTab === 'text' && (<><button onClick={() => addTextBox()} className={panelBtnClass}><Type className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Text Box</button><div className="h-px bg-border my-2" /><p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1">Alignment (3×3)</p><div className="px-1"><div className="grid grid-cols-3 gap-0.5 w-fit">{(['top','middle','bottom'] as const).flatMap(v => (['left','center','right'] as const).map(h => { const isH = selNode?.textAlign === h || (!selNode?.textAlign && h === 'left'); const isV = (selNode as any)?.textVAlign === v || (!(selNode as any)?.textVAlign && v === 'middle'); const active = isH && isV; const sym: Record<string,string> = {'top-left':'↖','top-center':'↑','top-right':'↗','middle-left':'←','middle-center':'·','middle-right':'→','bottom-left':'↙','bottom-center':'↓','bottom-right':'↘'}; return <button key={`${v}-${h}`} onClick={() => { setNodeProp('textAlign', h); setNodeProp('textVAlign', v); }} className={`w-7 h-7 rounded text-[11px] font-bold transition-all ${active ? 'bg-brand-blue text-white shadow-sm' : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'}`} title={`${v}-${h}`}>{sym[`${v}-${h}`]}</button>; }))}</div></div><div className="px-1 mt-2"><p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Font Size</p><div className="flex gap-0.5">{[8,9,10,11,12,14].map(s => <button key={s} onClick={() => setNodeProp('fontSize', s)} className={`flex-1 py-1 rounded text-[10px] font-heading transition-all ${selNode?.fontSize === s ? 'bg-brand-blue text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}>{s}</button>)}</div></div><div className="px-1 mt-2"><p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Weight</p><div className="flex gap-0.5">{[{l:'Light',v:'300'},{l:'Normal',v:'400'},{l:'Semi',v:'600'},{l:'Bold',v:'700'}].map(w => <button key={w.v} onClick={() => setNodeProp('fontWeight', w.v)} className={`flex-1 py-1 rounded text-[10px] font-heading transition-all ${selNode?.fontWeight === w.v ? 'bg-brand-blue text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}>{w.l}</button>)}</div></div></>)}
+                            </div>
+                            <div className="border-t border-border p-2"><p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1">Color</p><div className="flex gap-1 px-1 flex-wrap">{colorSwatches.map(s => <button key={s.variant} onClick={() => setVariant(s.variant)} className="w-5 h-5 rounded-sm border border-black/10 hover:scale-110 transition-transform" style={{ background: s.color }} title={s.label} />)}</div></div>
                         </div>
-                        <button
-                            onClick={() => { setShowSaveDialog(true); setSaveName(''); }}
-                            className="px-4 py-2 rounded-lg bg-brand-green text-white text-xs font-semibold font-heading hover:opacity-90 transition-all flex items-center gap-1.5"
-                        >
-                            <Save className="w-3.5 h-3.5" />
-                            Save Template
-                        </button>
-                        <button
-                            onClick={() => setShowTemplates(!showTemplates)}
-                            className={`px-4 py-2 rounded-lg text-xs font-semibold font-heading transition-all flex items-center gap-1.5 ${showTemplates ? 'bg-brand-blue text-white' : 'bg-foreground text-background hover:opacity-90'
-                                }`}
-                        >
-                            <FolderOpen className="w-3.5 h-3.5" />
-                            Templates ({templates.length})
-                        </button>
-                        <div className="w-px h-6 bg-border" />
-                        <button
-                            onClick={toggleConnect}
-                            className={`px-4 py-2 rounded-lg text-xs font-semibold font-heading transition-all ${connectMode
-                                ? 'bg-brand-blue text-white'
-                                : 'bg-foreground text-background hover:opacity-90'
-                                }`}
-                        >
-                            {connectMode ? 'Connecting...' : 'Add Connection'}
-                        </button>
-                        <button
-                            onClick={resetLayout}
-                            className="px-4 py-2 rounded-lg bg-foreground text-background text-xs font-semibold font-heading hover:opacity-90 transition-all"
-                        >
-                            Reset Layout
-                        </button>
-                        <button
-                            onClick={exportPNG}
-                            className="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-semibold font-heading hover:opacity-90 transition-all"
-                        >
-                            Export PNG
-                        </button>
-                        <button
-                            onClick={exportPDF}
-                            className="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-semibold font-heading hover:opacity-90 transition-all"
-                        >
-                            Export PDF
-                        </button>
-                        <button onClick={toggleGrid} className={`px-4 py-2 rounded-lg text-xs font-semibold font-heading transition-all ${showGrid ? 'bg-brand-blue text-white' : 'bg-foreground text-background hover:opacity-90'}`}>
-                            {showGrid ? 'Grid: On' : 'Grid: Off'}
-                        </button>
-                    </div>
-
-                    {/* Save Dialog */}
-                    {showSaveDialog && (
-                        <div className="fixed inset-0 bg-black/40 z-[4000] flex items-center justify-center backdrop-blur-sm" onClick={() => setShowSaveDialog(false)}>
-                            <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}>
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-sm font-bold font-heading text-foreground">Save as Template</h3>
-                                    <button onClick={() => setShowSaveDialog(false)} className="text-muted-foreground hover:text-foreground transition-colors">
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                                <input
-                                    type="text"
-                                    value={saveName}
-                                    onChange={e => setSaveName(e.target.value)}
-                                    placeholder="Template nameâ€¦"
-                                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-heading outline-none focus:border-brand-orange transition-colors"
-                                    autoFocus
-                                    onKeyDown={e => { if (e.key === 'Enter') saveTemplate(saveName); }}
-                                />
-                                <div className="flex justify-end gap-2 mt-4">
-                                    <button
-                                        onClick={() => setShowSaveDialog(false)}
-                                        className="px-4 py-2 rounded-lg text-xs font-semibold font-heading text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={() => saveTemplate(saveName)}
-                                        className="px-4 py-2 rounded-lg bg-brand-green text-white text-xs font-semibold font-heading hover:opacity-90 transition-all"
-                                    >
-                                        Save
-                                    </button>
-                                </div>
+                        <div className="flex-1 min-w-0">
+                            <div ref={containerRef} className="relative bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                                <canvas ref={canvasRef} style={{ display: 'block', touchAction: 'none' }} />
+                                <textarea ref={editorRef} className="absolute hidden bg-white border border-brand-orange px-1 py-0.5 text-[10px] z-[1000] outline-none shadow-md resize-none font-heading" onBlur={closeEditor} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); closeEditor(); } }} />
+                                <div ref={menuRef} className="absolute hidden bg-card border border-border rounded-lg shadow-xl py-1.5 z-[2000] min-w-[140px]">{colorSwatches.map((s) => (<button key={s.variant} onClick={() => setVariant(s.variant)} className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs font-heading hover:bg-muted transition-colors"><span className="w-3 h-3 rounded-sm border border-black/10" style={{ background: s.color }} />{s.label}</button>))}</div>
+                                {connectMode && <div className="absolute top-2 left-2 bg-brand-blue text-white px-2.5 py-1 rounded-md text-[10px] font-heading font-semibold shadow-lg animate-pulse">Click source → Click target</div>}
                             </div>
                         </div>
-                    )}
-
-                    {/* Templates Panel */}
-                    {showTemplates && (
-                        <div className="mt-4 bg-card border border-border rounded-2xl shadow-lg overflow-hidden">
-                            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                                <h3 className="text-sm font-bold font-heading text-foreground">Saved Templates</h3>
-                                <button onClick={() => setShowTemplates(false)} className="text-muted-foreground hover:text-foreground transition-colors">
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                            {templates.length === 0 ? (
-                                <div className="px-4 py-8 text-center text-xs text-muted-foreground font-heading">
-                                    No saved templates yet. Click &quot;Save Template&quot; to save the current diagram.
-                                </div>
-                            ) : (
-                                <div className="divide-y divide-border max-h-[320px] overflow-y-auto">
-                                    {templates.map(tmpl => (
-                                        <div key={tmpl.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group">
-                                            <div className="flex-1 min-w-0">
-                                                {renamingId === tmpl.id ? (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <input
-                                                            type="text"
-                                                            value={renameValue}
-                                                            onChange={e => setRenameValue(e.target.value)}
-                                                            className="flex-1 px-2 py-1 rounded border border-border bg-background text-xs font-heading outline-none focus:border-brand-orange"
-                                                            autoFocus
-                                                            onKeyDown={e => {
-                                                                if (e.key === 'Enter') renameTemplate(tmpl.id, renameValue);
-                                                                if (e.key === 'Escape') setRenamingId(null);
-                                                            }}
-                                                        />
-                                                        <button onClick={() => renameTemplate(tmpl.id, renameValue)} className="text-brand-green hover:opacity-80"><Check className="w-3.5 h-3.5" /></button>
-                                                        <button onClick={() => setRenamingId(null)} className="text-muted-foreground hover:text-foreground"><X className="w-3.5 h-3.5" /></button>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <p className="text-xs font-semibold font-heading text-foreground truncate">{tmpl.name}</p>
-                                                        <p className="text-[10px] text-muted-foreground font-heading mt-0.5">
-                                                            {tmpl.nodes.length} nodes Â· {tmpl.connections.length} connections Â· {new Date(tmpl.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                        </p>
-                                                    </>
-                                                )}
-                                            </div>
-                                            {renamingId !== tmpl.id && (
-                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        onClick={() => loadTemplate(tmpl)}
-                                                        className="px-2.5 py-1.5 rounded-md bg-brand-blue text-white text-[10px] font-semibold font-heading hover:opacity-90 transition-all"
-                                                    >
-                                                        Load
-                                                    </button>
-                                                    <button
-                                                        onClick={() => overwriteTemplate(tmpl)}
-                                                        className="px-2.5 py-1.5 rounded-md bg-brand-orange text-white text-[10px] font-semibold font-heading hover:opacity-90 transition-all"
-                                                        title="Overwrite with current diagram"
-                                                    >
-                                                        Update
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setRenamingId(tmpl.id); setRenameValue(tmpl.name); }}
-                                                        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-                                                        title="Rename"
-                                                    >
-                                                        <Pencil className="w-3 h-3" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => deleteTemplate(tmpl.id)}
-                                                        className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    </div>
+                    {showSaveDialog && (<div className="fixed inset-0 bg-black/40 z-[4000] flex items-center justify-center backdrop-blur-sm" onClick={() => setShowSaveDialog(false)}><div className="bg-card border border-border rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4" onClick={e => e.stopPropagation()}><div className="flex items-center justify-between mb-4"><h3 className="text-sm font-bold font-heading text-foreground">Save as Template</h3><button onClick={() => setShowSaveDialog(false)} className="text-muted-foreground hover:text-foreground transition-colors"><X className="w-4 h-4" /></button></div><input type="text" value={saveName} onChange={e => setSaveName(e.target.value)} placeholder="Template name…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-heading outline-none focus:border-brand-orange transition-colors" autoFocus onKeyDown={e => { if (e.key === 'Enter') saveTemplate(saveName); }} /><div className="flex justify-end gap-2 mt-4"><button onClick={() => setShowSaveDialog(false)} className="px-4 py-2 rounded-lg text-xs font-semibold font-heading text-muted-foreground hover:text-foreground transition-colors">Cancel</button><button onClick={() => saveTemplate(saveName)} className="px-4 py-2 rounded-lg bg-brand-green text-white text-xs font-semibold font-heading hover:opacity-90 transition-all">Save</button></div></div></div>)}
+                    {showTemplates && (<div className="mt-3 bg-card border border-border rounded-2xl shadow-lg overflow-hidden"><div className="flex items-center justify-between px-4 py-3 border-b border-border"><h3 className="text-sm font-bold font-heading text-foreground">Saved Templates</h3><button onClick={() => setShowTemplates(false)} className="text-muted-foreground hover:text-foreground transition-colors"><X className="w-4 h-4" /></button></div>{templates.length === 0 ? (<div className="px-4 py-8 text-center text-xs text-muted-foreground font-heading">No saved templates yet.</div>) : (<div className="divide-y divide-border max-h-[280px] overflow-y-auto">{templates.map(tmpl => (<div key={tmpl.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors group"><div className="flex-1 min-w-0">{renamingId === tmpl.id ? (<div className="flex items-center gap-1.5"><input type="text" value={renameValue} onChange={e => setRenameValue(e.target.value)} className="flex-1 px-2 py-1 rounded border border-border bg-background text-xs font-heading outline-none focus:border-brand-orange" autoFocus onKeyDown={e => { if (e.key === 'Enter') renameTemplate(tmpl.id, renameValue); if (e.key === 'Escape') setRenamingId(null); }} /><button onClick={() => renameTemplate(tmpl.id, renameValue)} className="text-brand-green hover:opacity-80"><Check className="w-3.5 h-3.5" /></button><button onClick={() => setRenamingId(null)} className="text-muted-foreground hover:text-foreground"><X className="w-3.5 h-3.5" /></button></div>) : (<><p className="text-xs font-semibold font-heading text-foreground truncate">{tmpl.name}</p><p className="text-[10px] text-muted-foreground font-heading mt-0.5">{tmpl.nodes.length} nodes · {tmpl.connections.length} conns</p></>)}</div>{renamingId !== tmpl.id && (<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => loadTemplate(tmpl)} className="px-2 py-1 rounded-md bg-brand-blue text-white text-[10px] font-semibold font-heading hover:opacity-90">Load</button><button onClick={() => overwriteTemplate(tmpl)} className="px-2 py-1 rounded-md bg-brand-orange text-white text-[10px] font-semibold font-heading hover:opacity-90">Update</button><button onClick={() => { setRenamingId(tmpl.id); setRenameValue(tmpl.name); }} className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"><Pencil className="w-3 h-3" /></button><button onClick={() => deleteTemplate(tmpl.id)} className="p-1 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50"><Trash2 className="w-3 h-3" /></button></div>)}</div>))}</div>)}</div>)}
                 </div>
             </div>
-
-            {/* Toast */}
-            {toast && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background px-5 py-2.5 rounded-md text-xs font-heading z-[3000] pointer-events-none shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    {toast}
-                </div>
-            )}
+            {toast && (<div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background px-5 py-2.5 rounded-md text-xs font-heading z-[3000] pointer-events-none shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">{toast}</div>)}
         </div>
     );
+
 };

@@ -615,9 +615,7 @@ export const PipelineDesigner = () => {
                     const ty = node!.y + node!.h / 2;
                     drawOrthPath(ctx, [{ x: midX, y: ty }, { x: node!.x, y: ty }]);
                 });
-                // Draw midpoint handle
-                ctx.fillStyle = brand.blue;
-                ctx.fillRect(midX - 3, s.y + s.h / 2 - 3, 6, 6);
+
             } else if (l.type === 'merge') {
                 // Merge: each source right → vertical bus → target left
                 const maxX = Math.max(...sources.map(n => n!.x + n!.w));
@@ -630,19 +628,14 @@ export const PipelineDesigner = () => {
                 sources.forEach(node => drawLine(ctx, node!.x + node!.w, node!.y + node!.h / 2, midX, node!.y + node!.h / 2));
                 // Arrow from bus to target
                 drawOrthPath(ctx, [{ x: midX, y: t.y + t.h / 2 }, { x: t.x, y: t.y + t.h / 2 }]);
-                // Draw midpoint handle
-                ctx.fillStyle = brand.blue;
-                ctx.fillRect(midX - 3, t.y + t.h / 2 - 3, 6, 6);
+
             } else {
                 // Direct: orthogonal path through midpoints
                 const sx = s.x + s.w, sy = s.y + s.h / 2;
                 const tx = t.x, ty = t.y + t.h / 2;
                 const pts = buildOrthPoints(sx, sy, tx, ty, l.midpoints);
                 drawOrthPath(ctx, pts);
-                // Draw midpoint handles
-                const mps = l.midpoints || [{ x: sx + (tx - sx) / 2, y: sy }];
-                ctx.fillStyle = brand.blue;
-                mps.forEach(mp => ctx.fillRect(mp.x - 3, mp.y - 3, 6, 6));
+
             }
         });
 

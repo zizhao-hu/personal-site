@@ -101,7 +101,7 @@ function createDefaultNodes(): PNode[] {
 
     return [
         // --- Approach 1: Inference with PRISM ---
-        { id: 'lbl_a1', x: A1_X, y: 20, w: 300, h: 18, type: 'title', title: 'Approach 1: Inference with PRISM' },
+        { id: 'lbl_a1', x: A1_X, y: 20, w: 300, h: 18, type: 'title', title: 'Approach 1: Intent-based Prompting' },
         { id: 'a1_col_usr', x: A1_X, y: 42, w: 80, h: 14, type: 'colLabel', title: 'User' },
         { id: 'a1_col_ans', x: A1_X + 200, y: 42, w: 80, h: 14, type: 'colLabel', title: 'Answer' },
         { id: 'a1_u1', x: A1_X, y: 60, w: 110, h: 32, type: 'plain', variant: 'neutral', content: '"What is the integral of x^2"' },
@@ -113,7 +113,7 @@ function createDefaultNodes(): PNode[] {
         { id: 'a1_ans3', x: A1_X + 200, y: 140, w: 110, h: 32, type: 'plain', variant: 'neutral', content: '"Here is the step by step..."' },
 
         // --- Approach 2: Inference with Training-free Persona Routing ---
-        { id: 'lbl_a2', x: A2_X, y: 20, w: 390, h: 18, type: 'title', title: 'Approach 2: Inference with Training-free Persona Routing' },
+        { id: 'lbl_a2', x: A2_X, y: 20, w: 390, h: 18, type: 'title', title: 'Approach 2: Intent-based Routing' },
         { id: 'a2_col_pp', x: A2_X, y: 42, w: 110, h: 14, type: 'colLabel', title: 'Persona Prompt' },
         { id: 'a2_col_usr', x: A2_X + 230, y: 42, w: 60, h: 14, type: 'colLabel', title: 'User' },
         { id: 'a2_col_ans', x: A2_X + 380, y: 42, w: 80, h: 14, type: 'colLabel', title: 'Answer' },
@@ -987,19 +987,27 @@ export const PipelineDesigner = () => {
     const exportPNG = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
+        const wasGrid = showGridRef.current;
+        showGridRef.current = false;
+        render();
         const link = document.createElement('a');
         link.download = 'ai-pipeline.png';
         link.href = canvas.toDataURL();
         link.click();
+        showGridRef.current = wasGrid;
     };
 
     const exportPDF = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
+        const wasGrid = showGridRef.current;
+        showGridRef.current = false;
+        render();
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [W, H] });
         pdf.addImage(imgData, 'PNG', 0, 0, W, H);
         pdf.save('ai-pipeline.pdf');
+        showGridRef.current = wasGrid;
         showToast('Exported PDF');
     };
 

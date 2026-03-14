@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { jsPDF } from 'jspdf';
 
-/* â”€â”€â”€ Brand Palette â”€â”€â”€ */
+/* ─── Brand Palette ─── */
 const brand = {
     dark: '#141413',
     light: '#faf9f5',
@@ -28,7 +28,7 @@ const colorSchemes: Record<string, { head: string; body: string; border: string;
     clay: { head: brand.clay, body: brand.light, border: brand.clay, textTitle: brand.light, textBody: brand.dark },
 };
 
-/* â”€â”€â”€ Types â”€â”€â”€ */
+/* ─── Types ─── */
 type ShapeKind = 'rect' | 'rounded-rect' | 'circle' | 'diamond' | 'hexagon';
 
 interface PNode {
@@ -54,6 +54,7 @@ interface PConnection {
     type: 'direct' | 'split' | 'merge';
     dash?: number[];
     orientation?: string;
+    midpoints?: { x: number; y: number }[];
 }
 
 interface SavedTemplate {
@@ -83,7 +84,7 @@ function saveTemplatesToStorage(templates: SavedTemplate[]) {
 const GRID = 10;
 const snap = (v: number) => Math.round(v / GRID) * GRID;
 
-/* â”€â”€â”€ Default Layout â”€â”€â”€ */
+/* ─── Default Layout ─── */
 function createDefaultNodes(): PNode[] {
     // Position constants
     const A1_X = 20;   // Approach 1 left edge
@@ -209,7 +210,7 @@ function createDefaultConnections(): PConnection[] {
 }
 
 
-/* â”€â”€â”€ Drawing helpers â”€â”€â”€ */
+/* ─── Drawing helpers ─── */
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, fill: boolean, fs?: string | null, ss?: string | null) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -283,23 +284,61 @@ function wrapText(ctx: CanvasRenderingContext2D, t: string, x: number, y: number
     lines.forEach((line) => { ctx.fillText(line, x, startY); startY += lh; });
 }
 
-function drawArrow(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number) {
-    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-    const a = Math.atan2(y2 - y1, x2 - x1);
-    ctx.save(); ctx.translate(x2, y2); ctx.rotate(a);
+function drawArrowHead(ctx: CanvasRenderingContext2D, x: number, y: number, angle: number) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
     ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-5, -3); ctx.lineTo(-5, 3);
-    ctx.fillStyle = brand.midGray; ctx.fill(); ctx.restore();
+    ctx.fillStyle = ctx.strokeStyle; ctx.fill(); ctx.restore();
+}
+
+function drawOrthPath(ctx: CanvasRenderingContext2D, pts: { x: number; y: number }[], arrow: boolean = true) {
+    if (pts.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+    if (arrow && pts.length >= 2) {
+        const last = pts[pts.length - 1];
+        const prev = pts[pts.length - 2];
+        const a = Math.atan2(last.y - prev.y, last.x - prev.x);
+        drawArrowHead(ctx, last.x, last.y, a);
+    }
+}
+
+/** Build an orthogonal point sequence from source edge to target edge via midpoints */
+function buildOrthPoints(
+    sx: number, sy: number, tx: number, ty: number,
+    midpoints?: { x: number; y: number }[]
+): { x: number; y: number }[] {
+    if (midpoints && midpoints.length > 0) {
+        // Route through each midpoint with L-shaped turns
+        const pts: { x: number; y: number }[] = [{ x: sx, y: sy }];
+        let cx = sx, cy = sy;
+        for (const mp of midpoints) {
+            // go horizontal to mp.x, then vertical to mp.y
+            pts.push({ x: mp.x, y: cy });
+            pts.push({ x: mp.x, y: mp.y });
+            cx = mp.x; cy = mp.y;
+        }
+        // from last midpoint to target: horizontal then vertical
+        pts.push({ x: tx, y: cy });
+        if (Math.abs(cy - ty) > 1) pts.push({ x: tx, y: ty });
+        return pts;
+    }
+    // Default: single midpoint at halfway X
+    const mx = sx + (tx - sx) / 2;
+    if (Math.abs(sy - ty) < 2) return [{ x: sx, y: sy }, { x: tx, y: ty }];
+    return [{ x: sx, y: sy }, { x: mx, y: sy }, { x: mx, y: ty }, { x: tx, y: ty }];
 }
 
 function drawLine(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number) {
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
 }
 
-/* â”€â”€â”€ Add-element helpers â”€â”€â”€ */
+/* ─── Add-element helpers ─── */
 let _addCounter = 0;
 function genId(prefix: string) { return `${prefix}_${Date.now()}_${++_addCounter}`; }
 
-/* â”€â”€â”€ Component â”€â”€â”€ */
+/* ─── Component ─── */
 export const PipelineDesigner = () => {
     const router = useRouter();
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -316,6 +355,7 @@ export const PipelineDesigner = () => {
     const selBoxRef = useRef<{ x: number; y: number; startX: number; startY: number; w: number; h: number } | null>(null);
     const selectedRef = useRef<Set<string>>(new Set());
     const connectRef = useRef<{ active: boolean; sourceId: string | null }>({ active: false, sourceId: null });
+    const dragMidRef = useRef<{ conn: PConnection; idx: number } | null>(null);
     const mouseRef = useRef({ x: 0, y: 0 });
     const offsetRef = useRef({ x: 0, y: 0 });
     const clipboardRef = useRef<{ nodes: PNode[]; connections: PConnection[] }>({ nodes: [], connections: [] });
@@ -331,6 +371,8 @@ export const PipelineDesigner = () => {
     const showGridRef = useRef(true);
     const [showGrid, setShowGrid] = useState(true);
     const [panelTab, setPanelTab] = useState<'shapes' | 'nodes' | 'text'>('shapes');
+    const [selectionVersion, setSelectionVersion] = useState(0);
+    const bumpSelection = useCallback(() => setSelectionVersion(v => v + 1), []);
     const [renameValue, setRenameValue] = useState('');
 
     const W = 1150;
@@ -343,7 +385,7 @@ export const PipelineDesigner = () => {
 
     const getNode = useCallback((id: string) => nodesRef.current.find((n) => n.id === id), []);
 
-    /* â”€â”€ Template Storage â”€â”€ */
+    /* ── Template Storage ── */
     useEffect(() => {
         const loaded = loadTemplatesFromStorage();
         if (loaded.length === 0) {
@@ -415,7 +457,7 @@ export const PipelineDesigner = () => {
         showToast(`Updated "${tmpl.name}"`);
     }, [templates, showToast]);
 
-    /* â”€â”€ Rendering â”€â”€ */
+    /* ── Rendering ── */
     const render = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -453,16 +495,29 @@ export const PipelineDesigner = () => {
             ctx.shadowBlur = 0;
 
             if (node.type === 'container') {
-                ctx.setLineDash([10, 5]); ctx.strokeStyle = brand.midGray; ctx.lineWidth = 2;
-                roundRect(ctx, node.x, node.y, node.w, node.h, 12, false, null, brand.midGray);
-                ctx.setLineDash([]); ctx.fillStyle = brand.midGray; ctx.font = "600 12px 'Poppins'";
-                ctx.fillText(node.title || '', node.x + 20, node.y + 25);
+                const containerStroke = color.border;
+                // Draw dashed rounded-rect border directly (roundRect resets lineWidth)
+                ctx.setLineDash([10, 5]); ctx.strokeStyle = containerStroke; ctx.lineWidth = 2;
+                ctx.beginPath();
+                const r = 12;
+                ctx.moveTo(node.x + r, node.y);
+                ctx.arcTo(node.x + node.w, node.y, node.x + node.w, node.y + node.h, r);
+                ctx.arcTo(node.x + node.w, node.y + node.h, node.x, node.y + node.h, r);
+                ctx.arcTo(node.x, node.y + node.h, node.x, node.y, r);
+                ctx.arcTo(node.x, node.y, node.x + node.w, node.y, r);
+                ctx.closePath();
+                ctx.stroke();
             } else if (node.type === 'title') {
-                const sz = node.size || 11;
-                ctx.fillStyle = brand.dark; ctx.font = `600 ${sz}px 'Poppins'`; ctx.textAlign = 'center';
+                const sz = node.fontSize || node.size || 11;
+                const tw = node.fontWeight || '600';
+                const titleColor = color.head;
+                ctx.fillStyle = titleColor; ctx.font = `${tw} ${sz}px 'Poppins'`; ctx.textAlign = node.textAlign || 'center';
                 ctx.fillText(node.title || '', node.x + node.w / 2, node.y + node.h / 2 + 5);
             } else if (node.type === 'colLabel') {
-                ctx.fillStyle = brand.midGray; ctx.font = "600 10px 'Poppins'"; ctx.textAlign = 'center';
+                const clfs = node.fontSize || 10;
+                const clfw = node.fontWeight || '600';
+                const clColor = color.head || brand.midGray;
+                ctx.fillStyle = clColor; ctx.font = `${clfw} ${clfs}px 'Poppins'`; ctx.textAlign = node.textAlign || 'center';
                 ctx.fillText(node.title || '', node.x + node.w / 2, node.y + node.h / 2 + 5);
             } else if (node.type === 'headerNode') {
                 roundRect(ctx, node.x, node.y, node.w, node.h, 6, true, color.body, color.border);
@@ -514,12 +569,12 @@ export const PipelineDesigner = () => {
             } else if (node.type === 'textbox') {
                 // optional light background
                 if (node.filled) {
-                    roundRect(ctx, node.x, node.y, node.w, node.h, 4, true, brand.light, brand.lightGray);
+                    roundRect(ctx, node.x, node.y, node.w, node.h, 4, true, color.body, color.border);
                 }
                 const fs = node.fontSize || 11;
                 const weight = node.fontWeight || '400';
                 const align = node.textAlign || 'left';
-                ctx.fillStyle = brand.dark;
+                ctx.fillStyle = color.head;
                 const tx = align === 'center' ? node.x + node.w / 2 : align === 'right' ? node.x + node.w - 6 : node.x + 6;
                 wrapText(ctx, node.content || node.title || '', tx, node.y + node.h / 2, node.w - 12, fs + 4, fs, align, weight, 'Poppins', (node as any).textVAlign || 'middle', node.h);
             }
@@ -541,32 +596,67 @@ export const PipelineDesigner = () => {
             if (sources.some((s) => !s) || targets.some((t) => !t)) return;
             const s = sources[0]!;
             const t = targets[0]!;
+
             if (l.orientation === 'vertical') {
-                drawArrow(ctx, s.x + s.w / 2, s.y + s.h, s.x + s.w / 2, t.y);
+                // Vertical: top-down orthogonal
+                const pts = buildOrthPoints(s.x + s.w / 2, s.y + s.h, t.x + t.w / 2, t.y, l.midpoints);
+                drawOrthPath(ctx, pts);
             } else if (l.type === 'split') {
-                const midX = s.x + s.w + (targets[0]!.x - (s.x + s.w)) / 2;
+                // Split: source right → vertical bus → each target left
+                const defaultMidX = s.x + s.w + (targets[0]!.x - (s.x + s.w)) / 2;
+                const midX = (l.midpoints && l.midpoints.length > 0) ? l.midpoints[0].x : defaultMidX;
+                // Horizontal from source to midX
                 drawLine(ctx, s.x + s.w, s.y + s.h / 2, midX, s.y + s.h / 2);
-                drawLine(ctx, midX, Math.min(...targets.map((n) => n!.y + n!.h / 2)), midX, Math.max(...targets.map((n) => n!.y + n!.h / 2)));
-                targets.forEach((node) => drawArrow(ctx, midX, node!.y + node!.h / 2, node!.x, node!.y + node!.h / 2));
+                // Vertical bus
+                const ys = targets.map(n => n!.y + n!.h / 2);
+                drawLine(ctx, midX, Math.min(...ys), midX, Math.max(...ys));
+                // Arrow from bus to each target
+                targets.forEach(node => {
+                    const ty = node!.y + node!.h / 2;
+                    drawOrthPath(ctx, [{ x: midX, y: ty }, { x: node!.x, y: ty }]);
+                });
+                // Draw midpoint handle
+                ctx.fillStyle = brand.blue;
+                ctx.fillRect(midX - 3, s.y + s.h / 2 - 3, 6, 6);
             } else if (l.type === 'merge') {
-                const maxX = Math.max(...sources.map((n) => n!.x + n!.w));
-                const midX = t.x - (t.x - maxX) / 2;
-                drawLine(ctx, midX, Math.min(...sources.map((n) => n!.y + n!.h / 2)), midX, Math.max(...sources.map((n) => n!.y + n!.h / 2)));
-                sources.forEach((node) => drawLine(ctx, node!.x + node!.w, node!.y + node!.h / 2, midX, node!.y + node!.h / 2));
-                drawArrow(ctx, midX, t.y + t.h / 2, t.x, t.y + t.h / 2);
+                // Merge: each source right → vertical bus → target left
+                const maxX = Math.max(...sources.map(n => n!.x + n!.w));
+                const defaultMidX = t.x - (t.x - maxX) / 2;
+                const midX = (l.midpoints && l.midpoints.length > 0) ? l.midpoints[0].x : defaultMidX;
+                // Vertical bus
+                const ys = sources.map(n => n!.y + n!.h / 2);
+                drawLine(ctx, midX, Math.min(...ys), midX, Math.max(...ys));
+                // Horizontal from each source to bus
+                sources.forEach(node => drawLine(ctx, node!.x + node!.w, node!.y + node!.h / 2, midX, node!.y + node!.h / 2));
+                // Arrow from bus to target
+                drawOrthPath(ctx, [{ x: midX, y: t.y + t.h / 2 }, { x: t.x, y: t.y + t.h / 2 }]);
+                // Draw midpoint handle
+                ctx.fillStyle = brand.blue;
+                ctx.fillRect(midX - 3, t.y + t.h / 2 - 3, 6, 6);
             } else {
-                drawArrow(ctx, s.x + s.w, s.y + s.h / 2, t.x, t.y + t.h / 2);
+                // Direct: orthogonal path through midpoints
+                const sx = s.x + s.w, sy = s.y + s.h / 2;
+                const tx = t.x, ty = t.y + t.h / 2;
+                const pts = buildOrthPoints(sx, sy, tx, ty, l.midpoints);
+                drawOrthPath(ctx, pts);
+                // Draw midpoint handles
+                const mps = l.midpoints || [{ x: sx + (tx - sx) / 2, y: sy }];
+                ctx.fillStyle = brand.blue;
+                mps.forEach(mp => ctx.fillRect(mp.x - 3, mp.y - 3, 6, 6));
             }
         });
 
 
-        // Connection preview
+        // Connection preview (orthogonal)
         if (connectRef.current.active && connectRef.current.sourceId) {
             const src = getNode(connectRef.current.sourceId);
             if (src) {
                 ctx.save(); ctx.strokeStyle = brand.blue; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
-                ctx.beginPath(); ctx.moveTo(src.x + src.w, src.y + src.h / 2);
-                ctx.lineTo(mouseRef.current.x, mouseRef.current.y); ctx.stroke(); ctx.restore();
+                const sx = src.x + src.w, sy = src.y + src.h / 2;
+                const mx = mouseRef.current.x, my = mouseRef.current.y;
+                const midX = sx + (mx - sx) / 2;
+                ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(midX, sy); ctx.lineTo(midX, my); ctx.lineTo(mx, my); ctx.stroke();
+                ctx.restore();
             }
         }
 
@@ -581,7 +671,7 @@ export const PipelineDesigner = () => {
         }
     }, [getNode]);
 
-    /* â”€â”€ Animation loop â”€â”€ */
+    /* ── Animation loop ── */
     useEffect(() => {
         let raf: number;
         const loop = () => { render(); raf = requestAnimationFrame(loop); };
@@ -589,7 +679,7 @@ export const PipelineDesigner = () => {
         return () => cancelAnimationFrame(raf);
     }, [render]);
 
-    /* â”€â”€ Mouse position helper â”€â”€ */
+    /* ── Mouse position helper ── */
     const getMouse = useCallback((e: MouseEvent | React.MouseEvent) => {
         const canvas = canvasRef.current;
         if (!canvas) return { x: 0, y: 0 };
@@ -597,7 +687,7 @@ export const PipelineDesigner = () => {
         return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     }, []);
 
-    /* â”€â”€ Event handlers â”€â”€ */
+    /* ── Event handlers ── */
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -607,6 +697,46 @@ export const PipelineDesigner = () => {
             closeEditor();
             if (menuRef.current) menuRef.current.style.display = 'none';
             if (e.button === 2) return;
+
+            // Check midpoint handles first
+            const HIT = 8;
+            for (const conn of connsRef.current) {
+                if (conn.type === 'split' || conn.type === 'merge') {
+                    // For split/merge, the midpoint handle is positioned at the bus X
+                    const sources = Array.isArray(conn.from) ? conn.from.map(id => getNode(id)) : [getNode(conn.from)];
+                    const targets = Array.isArray(conn.to) ? conn.to.map(id => getNode(id)) : [getNode(conn.to)];
+                    if (sources.some(s => !s) || targets.some(t => !t)) continue;
+                    const s = sources[0]!, t = targets[0]!;
+                    let midX: number, midY: number;
+                    if (conn.type === 'split') {
+                        midX = (conn.midpoints && conn.midpoints.length > 0) ? conn.midpoints[0].x : s.x + s.w + (t.x - (s.x + s.w)) / 2;
+                        midY = s.y + s.h / 2;
+                    } else {
+                        const maxX = Math.max(...sources.map(n => n!.x + n!.w));
+                        midX = (conn.midpoints && conn.midpoints.length > 0) ? conn.midpoints[0].x : t.x - (t.x - maxX) / 2;
+                        midY = t.y + t.h / 2;
+                    }
+                    if (Math.abs(mouse.x - midX) < HIT && Math.abs(mouse.y - midY) < HIT) {
+                        if (!conn.midpoints) conn.midpoints = [{ x: midX, y: midY }];
+                        dragMidRef.current = { conn, idx: 0 };
+                        return;
+                    }
+                } else if (conn.type === 'direct' && !conn.orientation) {
+                    const sf = Array.isArray(conn.from) ? getNode(conn.from[0]) : getNode(conn.from);
+                    const tf = Array.isArray(conn.to) ? getNode(conn.to[0]) : getNode(conn.to);
+                    if (!sf || !tf) continue;
+                    const sx = sf.x + sf.w, sy = sf.y + sf.h / 2;
+                    const tx = tf.x, ty = tf.y + tf.h / 2;
+                    const mps = conn.midpoints || [{ x: sx + (tx - sx) / 2, y: sy }];
+                    for (let i = 0; i < mps.length; i++) {
+                        if (Math.abs(mouse.x - mps[i].x) < HIT && Math.abs(mouse.y - mps[i].y) < HIT) {
+                            if (!conn.midpoints) conn.midpoints = [{ x: mps[i].x, y: mps[i].y }];
+                            dragMidRef.current = { conn, idx: i };
+                            return;
+                        }
+                    }
+                }
+            }
 
             let clicked: PNode | null = null;
             for (let i = nodesRef.current.length - 1; i >= 0; i--) {
@@ -639,8 +769,10 @@ export const PipelineDesigner = () => {
                     if (!e.shiftKey) selectedRef.current.clear();
                     selectedRef.current.add(clicked.id);
                 }
+                bumpSelection();
             } else {
                 selectedRef.current.clear();
+                bumpSelection();
                 selBoxRef.current = { x: mouse.x, y: mouse.y, startX: mouse.x, startY: mouse.y, w: 0, h: 0 };
             }
         };
@@ -651,6 +783,15 @@ export const PipelineDesigner = () => {
             if (resizedRef.current) {
                 resizedRef.current.w = snap(Math.max(40, m.x - resizedRef.current.x));
                 resizedRef.current.h = snap(Math.max(20, m.y - resizedRef.current.y));
+            } else if (dragMidRef.current) {
+                const dm = dragMidRef.current;
+                if (dm.conn.type === 'split' || dm.conn.type === 'merge') {
+                    // For split/merge, only allow horizontal (X) movement of the bus
+                    dm.conn.midpoints![dm.idx].x = snap(m.x);
+                } else {
+                    dm.conn.midpoints![dm.idx].x = snap(m.x);
+                    dm.conn.midpoints![dm.idx].y = snap(m.y);
+                }
             } else if (draggedRef.current) {
                 const dx = snap(m.x - offsetRef.current.x);
                 const dy = snap(m.y - offsetRef.current.y);
@@ -682,7 +823,9 @@ export const PipelineDesigner = () => {
             if (resizedRef.current) { resizedRef.current.w = snap(resizedRef.current.w); resizedRef.current.h = snap(resizedRef.current.h); }
             draggedRef.current = null;
             resizedRef.current = null;
+            dragMidRef.current = null;
             selBoxRef.current = null;
+            bumpSelection();
         };
 
         const onDblClick = (e: MouseEvent) => {
@@ -788,7 +931,7 @@ export const PipelineDesigner = () => {
         };
     }, [getMouse, showToast, getNode]);
 
-    /* â”€â”€ Editor â”€â”€ */
+    /* ── Editor ── */
     const openEditor = (node: PNode, field: string) => {
         editingRef.current = { node, field };
         const ed = editorRef.current;
@@ -831,6 +974,7 @@ export const PipelineDesigner = () => {
     const setVariant = (v: string) => {
         nodesRef.current.forEach((n) => { if (selectedRef.current.has(n.id)) n.variant = v; });
         if (menuRef.current) menuRef.current.style.display = 'none';
+        bumpSelection();
     };
 
     const resetLayout = () => {
@@ -867,7 +1011,7 @@ export const PipelineDesigner = () => {
         setConnectMode(next);
     };
 
-    /* â”€â”€ Add elements â”€â”€ */
+    /* ── Add elements ── */
     const addShape = (kind: ShapeKind) => {
         const size = kind === 'circle' ? 60 : kind === 'diamond' ? 70 : 80;
         const h = kind === 'diamond' ? 60 : kind === 'circle' ? 60 : 50;
@@ -886,6 +1030,7 @@ export const PipelineDesigner = () => {
         nodesRef.current.push(node);
         selectedRef.current.clear();
         selectedRef.current.add(node.id);
+        bumpSelection();
         showToast(`Added ${kind}`);
     };
 
@@ -906,6 +1051,7 @@ export const PipelineDesigner = () => {
         nodesRef.current.push(node);
         selectedRef.current.clear();
         selectedRef.current.add(node.id);
+        bumpSelection();
         showToast('Added text box');
     };
 
@@ -932,6 +1078,7 @@ export const PipelineDesigner = () => {
         nodesRef.current.push(node);
         selectedRef.current.clear();
         selectedRef.current.add(node.id);
+        bumpSelection();
         showToast(`Added ${type}`);
     };
 
@@ -944,13 +1091,20 @@ export const PipelineDesigner = () => {
         { label: 'Dark', variant: 'dark', color: brand.dark },
     ];
 
-
     // Selected node for properties
+    void selectionVersion; // dependency to re-compute on selection change
     const selectedNodes = nodesRef.current.filter(n => selectedRef.current.has(n.id));
     const selNode = selectedNodes.length === 1 ? selectedNodes[0] : null;
-    const setNodeProp = (key: keyof PNode, val: unknown) => { if (!selNode) return; (selNode as unknown as Record<string, unknown>)[key] = val; };
+    const setNodeProp = (key: keyof PNode, val: unknown) => {
+        if (selectedNodes.length === 0) return;
+        selectedNodes.forEach(n => { (n as unknown as Record<string, unknown>)[key] = val; });
+        bumpSelection();
+    };
     const panelBtnClass = "w-full flex items-center gap-2 px-3 py-2 text-[11px] font-heading hover:bg-muted/70 rounded-md transition-colors text-foreground cursor-pointer";
     const tabBtnClass = (active: boolean) => `flex-1 py-1.5 text-[10px] font-bold font-heading uppercase tracking-wider transition-all rounded-md ${active ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`;
+    const sectionLabel = "text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1";
+    const hasSelection = selectedNodes.length > 0;
+    const selVariant = selNode?.variant;
 
     return (
         <div className="flex flex-col min-h-dvh bg-background">
@@ -976,18 +1130,118 @@ export const PipelineDesigner = () => {
                         </div>
                     </div>
                     <div className="flex gap-3">
-                        <div className="w-[200px] flex-shrink-0 bg-card border border-border rounded-xl overflow-hidden shadow-sm self-start">
+                        <div className="w-[210px] flex-shrink-0 bg-card border border-border rounded-xl overflow-hidden shadow-sm self-start max-h-[calc(100vh-160px)] overflow-y-auto">
+                            {/* === Add Element Tabs === */}
                             <div className="flex gap-0.5 p-1.5 border-b border-border bg-muted/30">
                                 <button onClick={() => setPanelTab('shapes')} className={tabBtnClass(panelTab === 'shapes')}>Shapes</button>
                                 <button onClick={() => setPanelTab('nodes')} className={tabBtnClass(panelTab === 'nodes')}>Nodes</button>
                                 <button onClick={() => setPanelTab('text')} className={tabBtnClass(panelTab === 'text')}>Text</button>
                             </div>
                             <div className="p-2 space-y-0.5">
-                                {panelTab === 'shapes' && (<><button onClick={() => addShape('rect')} className={panelBtnClass}><Square className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Rectangle</button><button onClick={() => addShape('rounded-rect')} className={panelBtnClass}><RectangleHorizontal className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Rounded Rect</button><button onClick={() => addShape('circle')} className={panelBtnClass}><Circle className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Ellipse</button><button onClick={() => addShape('diamond')} className={panelBtnClass}><Diamond className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Diamond</button><button onClick={() => addShape('hexagon')} className={panelBtnClass}><Hexagon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Hexagon</button></>)}
-                                {panelTab === 'nodes' && (<><button onClick={() => addNodeOfType('headerNode')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground bg-muted flex-shrink-0" /> Header Node</button><button onClick={() => addNodeOfType('minimal')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm bg-muted-foreground flex-shrink-0" /> Minimal</button><button onClick={() => addNodeOfType('plain')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground flex-shrink-0" /> Plain</button><button onClick={() => addNodeOfType('container')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm border border-dashed border-muted-foreground flex-shrink-0" /> Container</button><button onClick={() => addNodeOfType('colLabel')} className={panelBtnClass}><span className="w-3.5 h-1 bg-muted-foreground rounded flex-shrink-0" /> Label</button><button onClick={() => addNodeOfType('title')} className={panelBtnClass}><span className="w-3.5 h-1.5 bg-foreground rounded flex-shrink-0" /> Title</button></>)}
-                                {panelTab === 'text' && (<><button onClick={() => addTextBox()} className={panelBtnClass}><Type className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Text Box</button><div className="h-px bg-border my-2" /><p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1">Alignment (3×3)</p><div className="px-1"><div className="grid grid-cols-3 gap-0.5 w-fit">{(['top','middle','bottom'] as const).flatMap(v => (['left','center','right'] as const).map(h => { const isH = selNode?.textAlign === h || (!selNode?.textAlign && h === 'left'); const isV = (selNode as any)?.textVAlign === v || (!(selNode as any)?.textVAlign && v === 'middle'); const active = isH && isV; const sym: Record<string,string> = {'top-left':'↖','top-center':'↑','top-right':'↗','middle-left':'←','middle-center':'·','middle-right':'→','bottom-left':'↙','bottom-center':'↓','bottom-right':'↘'}; return <button key={`${v}-${h}`} onClick={() => { setNodeProp('textAlign', h); setNodeProp('textVAlign', v); }} className={`w-7 h-7 rounded text-[11px] font-bold transition-all ${active ? 'bg-brand-blue text-white shadow-sm' : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'}`} title={`${v}-${h}`}>{sym[`${v}-${h}`]}</button>; }))}</div></div><div className="px-1 mt-2"><p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Font Size</p><div className="flex gap-0.5">{[8,9,10,11,12,14].map(s => <button key={s} onClick={() => setNodeProp('fontSize', s)} className={`flex-1 py-1 rounded text-[10px] font-heading transition-all ${selNode?.fontSize === s ? 'bg-brand-blue text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}>{s}</button>)}</div></div><div className="px-1 mt-2"><p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Weight</p><div className="flex gap-0.5">{[{l:'Light',v:'300'},{l:'Normal',v:'400'},{l:'Semi',v:'600'},{l:'Bold',v:'700'}].map(w => <button key={w.v} onClick={() => setNodeProp('fontWeight', w.v)} className={`flex-1 py-1 rounded text-[10px] font-heading transition-all ${selNode?.fontWeight === w.v ? 'bg-brand-blue text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}>{w.l}</button>)}</div></div></>)}
+                                {panelTab === 'shapes' && (<>
+                                    <button onClick={() => addShape('rect')} className={panelBtnClass}><Square className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Rectangle</button>
+                                    <button onClick={() => addShape('rounded-rect')} className={panelBtnClass}><RectangleHorizontal className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Rounded Rect</button>
+                                    <button onClick={() => addShape('circle')} className={panelBtnClass}><Circle className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Ellipse</button>
+                                    <button onClick={() => addShape('diamond')} className={panelBtnClass}><Diamond className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Diamond</button>
+                                    <button onClick={() => addShape('hexagon')} className={panelBtnClass}><Hexagon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Hexagon</button>
+                                </>)}
+                                {panelTab === 'nodes' && (<>
+                                    <button onClick={() => addNodeOfType('headerNode')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground bg-muted flex-shrink-0" /> Header Node</button>
+                                    <button onClick={() => addNodeOfType('minimal')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm bg-muted-foreground flex-shrink-0" /> Minimal</button>
+                                    <button onClick={() => addNodeOfType('plain')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm border border-muted-foreground flex-shrink-0" /> Plain</button>
+                                    <button onClick={() => addNodeOfType('container')} className={panelBtnClass}><span className="w-3.5 h-3.5 rounded-sm border border-dashed border-muted-foreground flex-shrink-0" /> Container</button>
+                                    <button onClick={() => addNodeOfType('colLabel')} className={panelBtnClass}><span className="w-3.5 h-1 bg-muted-foreground rounded flex-shrink-0" /> Label</button>
+                                    <button onClick={() => addNodeOfType('title')} className={panelBtnClass}><span className="w-3.5 h-1.5 bg-foreground rounded flex-shrink-0" /> Title</button>
+                                </>)}
+                                {panelTab === 'text' && (<>
+                                    <button onClick={() => addTextBox()} className={panelBtnClass}><Type className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" /> Text Box</button>
+                                </>)}
                             </div>
-                            <div className="border-t border-border p-2"><p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1">Color</p><div className="flex gap-1 px-1 flex-wrap">{colorSwatches.map(s => <button key={s.variant} onClick={() => setVariant(s.variant)} className="w-5 h-5 rounded-sm border border-black/10 hover:scale-110 transition-transform" style={{ background: s.color }} title={s.label} />)}</div></div>
+
+                            {/* === Unified Properties Panel === */}
+                            {hasSelection && (
+                                <div className="border-t border-border">
+                                    <div className="px-2 py-2">
+                                        <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-2">
+                                            Properties {selectedNodes.length > 1 ? `(${selectedNodes.length} selected)` : selNode ? `— ${selNode.type}` : ''}
+                                        </p>
+
+                                        {/* Color */}
+                                        <div className="px-1 mb-3">
+                                            <p className={sectionLabel}>Color</p>
+                                            <div className="flex gap-1 flex-wrap">
+                                                {colorSwatches.map(s => (
+                                                    <button
+                                                        key={s.variant}
+                                                        onClick={() => setVariant(s.variant)}
+                                                        className={`w-5 h-5 rounded-sm border hover:scale-110 transition-transform ${selVariant === s.variant ? 'border-foreground ring-1 ring-foreground ring-offset-1' : 'border-black/10'}`}
+                                                        style={{ background: s.color }}
+                                                        title={s.label}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Fill toggle */}
+                                        {selNode && (selNode.type === 'shape' || selNode.type === 'textbox') && (
+                                            <div className="px-1 mb-3">
+                                                <p className={sectionLabel}>Fill</p>
+                                                <div className="flex gap-0.5">
+                                                    <button onClick={() => setNodeProp('filled', true)} className={`flex-1 py-1 rounded text-[10px] font-heading transition-all ${selNode.filled ? 'bg-brand-blue text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}>Filled</button>
+                                                    <button onClick={() => setNodeProp('filled', false)} className={`flex-1 py-1 rounded text-[10px] font-heading transition-all ${!selNode.filled ? 'bg-brand-blue text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}>Outline</button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Font Size */}
+                                        <div className="px-1 mb-3">
+                                            <p className={sectionLabel}>Font Size</p>
+                                            <div className="flex gap-0.5">
+                                                {[8, 9, 10, 11, 12, 14].map(s => (
+                                                    <button key={s} onClick={() => setNodeProp('fontSize', s)} className={`flex-1 py-1 rounded text-[10px] font-heading transition-all ${selNode?.fontSize === s ? 'bg-brand-blue text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}>{s}</button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Font Weight */}
+                                        <div className="px-1 mb-3">
+                                            <p className={sectionLabel}>Weight</p>
+                                            <div className="flex gap-0.5">
+                                                {[{ l: 'Light', v: '300' }, { l: 'Normal', v: '400' }, { l: 'Semi', v: '600' }, { l: 'Bold', v: '700' }].map(w => (
+                                                    <button key={w.v} onClick={() => setNodeProp('fontWeight', w.v)} className={`flex-1 py-1 rounded text-[10px] font-heading transition-all ${selNode?.fontWeight === w.v ? 'bg-brand-blue text-white' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}>{w.l}</button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Text Alignment 3x3 grid */}
+                                        <div className="px-1 mb-2">
+                                            <p className={sectionLabel}>Alignment</p>
+                                            <div className="grid grid-cols-3 gap-0.5 w-fit">
+                                                {(['top', 'middle', 'bottom'] as const).flatMap(v =>
+                                                    (['left', 'center', 'right'] as const).map(h => {
+                                                        const isH = selNode?.textAlign === h || (!selNode?.textAlign && h === 'left');
+                                                        const isV = selNode?.textVAlign === v || (!selNode?.textVAlign && v === 'middle');
+                                                        const active = isH && isV;
+                                                        const sym: Record<string, string> = {
+                                                            'top-left': '↖', 'top-center': '↑', 'top-right': '↗',
+                                                            'middle-left': '←', 'middle-center': '·', 'middle-right': '→',
+                                                            'bottom-left': '↙', 'bottom-center': '↓', 'bottom-right': '↘'
+                                                        };
+                                                        return (
+                                                            <button
+                                                                key={`${v}-${h}`}
+                                                                onClick={() => { setNodeProp('textAlign', h); setNodeProp('textVAlign', v); }}
+                                                                className={`w-7 h-7 rounded text-[11px] font-bold transition-all ${active ? 'bg-brand-blue text-white shadow-sm' : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                                                                title={`${v}-${h}`}
+                                                            >{sym[`${v}-${h}`]}</button>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className="flex-1 min-w-0">
                             <div ref={containerRef} className="relative bg-white rounded-xl border border-border overflow-hidden shadow-sm">

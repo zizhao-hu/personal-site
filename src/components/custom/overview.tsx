@@ -1,6 +1,6 @@
 'use client';
 
-import { Linkedin, Github, Mail, BookOpen, Sparkles, Brain, Rocket } from 'lucide-react';
+import { Linkedin, Github, Mail, BookOpen, Sparkles, Brain, Rocket, Database } from 'lucide-react';
 
 export const Overview = () => {
   return (
@@ -49,7 +49,7 @@ export const Overview = () => {
 
           <blockquote className="relative pl-4 border-l-2 border-brand-orange/40 mb-4 max-w-2xl">
             <p className="text-sm italic text-gray-600 dark:text-gray-400 leading-relaxed">
-              &ldquo;Building AI systems that improve themselves through multi-agent collaboration and synthetic curricula&mdash;while keeping humans in the loop.&rdquo;
+              &ldquo;Understanding how LLMs remember and forget&mdash;then using that knowledge to build faster, leaner inference and better training data.&rdquo;
             </p>
             <cite className="block mt-1 text-[11px] not-italic text-gray-500 dark:text-gray-500">
               &mdash; Zizhao Hu, PhD Student at USC &middot; GLAMOUR Lab &amp; MINDS Group
@@ -68,10 +68,10 @@ export const Overview = () => {
               <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                 <Brain className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-sm font-semibold text-foreground font-heading">Make AI Smarter</h3>
+              <h3 className="text-sm font-semibold text-foreground font-heading">LLM Memorization</h3>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Training paradigms — self-improving loops, synthetic data generation, continual learning without forgetting
+              How LLMs remember &amp; forget — unlearning, KV-cache management, continual learning, and reasoning under memory constraints
             </p>
           </div>
 
@@ -81,10 +81,10 @@ export const Overview = () => {
               <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                 <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               </div>
-              <h3 className="text-sm font-semibold text-foreground font-heading">Build AI Systems</h3>
+              <h3 className="text-sm font-semibold text-foreground font-heading">Inference Optimization</h3>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Full training pipelines for LLM, VLM — domain-specific, task-oriented AI training and system building
+              Efficient attention, KV-cache compression, sparse &amp; low-rank methods for faster, leaner LLM serving at scale
             </p>
           </div>
 
@@ -92,12 +92,12 @@ export const Overview = () => {
           <div className="group relative p-4 rounded-xl border border-border bg-card hover:border-brand-orange/30 transition-all duration-300">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-sm font-semibold text-foreground font-heading">Make AI Fast</h3>
+              <h3 className="text-sm font-semibold text-foreground font-heading">Synthetic Data Curation</h3>
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Efficient multimodal architectures — low-latency transformers, novel attention, scalable model design
+              Generate-validate pipelines, quality filtering, model-collapse prevention, and safety-oriented data curation for LLM training
             </p>
           </div>
         </div>
@@ -113,9 +113,9 @@ export const Overview = () => {
             <div>
               <h3 className="text-sm font-semibold text-foreground font-heading mb-1.5">My Vision</h3>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                <span className="text-foreground font-medium">Specialized AI</span> — models trained for coding, STEM, and scientific reasoning — will drive civilization forward.{' '}
-                <span className="text-foreground font-medium">Embodied, instruction-tuned AI</span> with emotional intelligence will balance society through human-centered interaction.{' '}
-                The bridge between the two: <span className="text-foreground font-medium">task-specific synthetic data and verified curricula</span> that make training specialized models fast, cheap, and accessible to everyone.
+                <span className="text-foreground font-medium">LLMs that remember what matters and forget what they should</span> — enabling safer, more efficient, and continually improving models.{' '}
+                <span className="text-foreground font-medium">Curated synthetic data</span> closes the loop: high-quality, validated training signal that keeps models sharp without the cost of human annotation.{' '}
+                The result: <span className="text-foreground font-medium">leaner inference, principled reasoning, and models you can trust to evolve</span>.
               </p>
             </div>
           </div>

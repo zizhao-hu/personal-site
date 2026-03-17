@@ -1,7 +1,7 @@
 'use client';
 
 import { Header } from "@/components/custom/header";
-import { BookOpen, ExternalLink, FileText, Users, Calendar, Award, Eye, Brain, Layers } from "lucide-react";
+import { BookOpen, ExternalLink, FileText, Users, Calendar, Award, Eye, Brain, Database } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
 
@@ -45,32 +45,32 @@ const publications: Publication[] = [
 
 const researchAreas = [
   {
-    title: "LLM / VLM / VLA",
-    description: "Multi-agent interaction, self-improving AI, continual learning, and efficient model memory. Primary focus on how LLM/VLM/VLA agents collaborate, self-improve through generate-validate loops, and maintain knowledge efficiently over time.",
-    icon: Users,
+    title: "AI Memorization",
+    description: "How LLMs store and recall knowledge — whether in-parameter (weights), in-context (KV cache), or via external retrieval. Research on forgetting, unlearning, KV management, inference optimization, reasoning, and continual learning.",
+    icon: Brain,
     color: "blue",
     highlight: true,
     path: "/research/llm-vlm",
   },
   {
     title: "Synthetic Data",
-    description: "Synthetic data generation, model collapse dynamics, data curation methods, and safety-oriented data pipelines for self-improving AI.",
-    icon: Award,
+    description: "Synthetic data generation, model collapse dynamics, data curation methods, quality filtering, and safety-oriented data pipelines that keep models sharp without the cost of human annotation.",
+    icon: Database,
     color: "orange",
     highlight: true,
     path: "/research/synthetic-data",
   },
   {
     title: "Architecture",
-    description: "Transformer memory mechanisms, efficient architectures, multimodal architectures, and scalable designs. Research on how models store, retrieve, and reason over information at scale.",
+    description: "Efficient transformer designs, attention optimization, multimodal architectures, and scalable systems. Research on how to maximize model capability per FLOP and unify vision-language processing.",
     icon: Eye,
     color: "purple",
     path: "/research/architecture",
   },
   {
-    title: "Continual Learning",
-    description: "Continual learning for LLM/VLM agents, efficient model memory, catastrophic forgetting mitigation, difficulty-aware replay, and curriculum strategies for deployed AI systems that need to adapt over time.",
-    icon: Layers,
+    title: "Multi-Agent Systems",
+    description: "How multiple LLM/VLM agents collaborate, debate, verify, and refine outputs. Research on agent orchestration, role specialization, self-play, and multi-agent workflows for complex task decomposition.",
+    icon: Users,
     color: "green",
     path: "/research/continual-learning",
   },
@@ -92,9 +92,7 @@ export const Research = () => {
               Research
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              Building <strong>AI systems that improve themselves while remaining under control</strong>.
-              Focused on multi-agent systems and self-improving AI through synthetic data,
-              brain-inspired neural architectures, and continual learning.
+              Understanding <strong>how LLMs memorize — whether in weights, context, or external stores</strong> — and using that knowledge to build faster inference, principled forgetting, and better training data through <strong>synthetic data curation</strong>.
             </p>
           </div>
 

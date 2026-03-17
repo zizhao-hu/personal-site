@@ -1,5 +1,5 @@
 import { Header } from "@/components/custom/header";
-import { ExternalLink, FileText, Calendar, BookOpen, Sparkles, RefreshCw, Users, Bot, Orbit, HardDrive } from "lucide-react";
+import { ExternalLink, FileText, Calendar, Brain, HardDrive, Search, BookOpen, Sparkles, Eraser, Zap } from "lucide-react";
 
 const publications = [
     {
@@ -15,39 +15,39 @@ const publications = [
 
 const keyTopics = [
     {
-        title: "Multi-Agent Interaction",
-        description: "How multiple LLM/VLM agents collaborate, debate, verify, and refine each other's outputs. Research on agent orchestration, role specialization, emergent communication protocols, and multi-agent self-play for improving reasoning and task decomposition.",
-        icon: Users,
+        title: "In-Parameter Memory",
+        description: "Knowledge stored directly in model weights during pretraining and fine-tuning. Research on how facts, skills, and biases are encoded across layers, how weight updates create or destroy memories, and the interplay between parameter count and memorization capacity.",
+        icon: Brain,
     },
     {
-        title: "Self-Improving AI",
-        description: "Systems that generate their own training signal through synthetic data, self-reflection, and iterative refinement. Investigating feedback loops where agents evaluate their own outputs, generate preference pairs, and continuously improve without human annotation.",
-        icon: RefreshCw,
+        title: "In-Context Memory (KV Cache)",
+        description: "How models leverage the key-value cache to hold and reason over information within a single context window. Research on KV-cache compression, eviction policies, attention sink heads, sparse retrieval from long contexts, and memory-efficient serving.",
+        icon: HardDrive,
     },
     {
-        title: "Vision-Language-Action (VLA)",
-        description: "Unified models that perceive (vision), reason (language), and act (control). Research on grounding language in embodied environments, action prediction from multimodal inputs, and bridging the sim-to-real gap for robotic and interactive agents.",
-        icon: Bot,
+        title: "External Retrieval Mechanisms",
+        description: "Augmenting LLMs with retrieval-augmented generation (RAG), tool use, and episodic memory stores. Research on when to retrieve vs. recall from parameters, retrieval quality's impact on generation, and hybrid architectures that blend parametric and non-parametric memory.",
+        icon: Search,
     },
     {
-        title: "Pretraining & Post-Training",
-        description: "Full model lifecycle from large-scale pretraining, through supervised fine-tuning (SFT), to post-training alignment with RLHF/DPO. Focus on how each stage contributes to multi-agent capability and self-improvement potential.",
+        title: "Forgetting & Unlearning",
+        description: "Controlled removal of memorized information — from mitigating catastrophic forgetting in continual learning, to targeted unlearning of private or copyrighted data. Research on self-distillation, gradient-based erasure, and benchmarking what models truly forget.",
+        icon: Eraser,
+    },
+    {
+        title: "Inference Optimization",
+        description: "Making LLM serving faster and cheaper through efficient attention, KV-cache compression, sparse and low-rank approximations, speculative decoding, and quantization — all grounded in understanding which memories the model actually needs at inference time.",
+        icon: Zap,
+    },
+    {
+        title: "Reasoning Under Memory Constraints",
+        description: "How memory limitations shape reasoning quality. Research on chain-of-thought as working memory, the relationship between context length and reasoning depth, and how models degrade gracefully (or don't) when memory is constrained.",
         icon: Sparkles,
     },
     {
-        title: "Agent Orchestration Frameworks",
-        description: "Building scalable frameworks for multi-agent pipelines — task routing, tool use, memory systems, and self-correction loops. How to design agent architectures that are reliable, composable, and can scale from single tasks to complex workflows.",
-        icon: Orbit,
-    },
-    {
         title: "Continual Learning",
-        description: "Enabling LLM/VLM/VLA agents to learn new knowledge, skills, and domains over time without catastrophic forgetting. Developing replay-free and parameter-efficient continual learning methods so deployed agents can adapt and grow rather than remain frozen.",
+        description: "Enabling deployed models to absorb new knowledge over time without catastrophic forgetting. Research on replay-based, regularization-based, and architecture-based strategies for lifelong learning in LLMs — connecting memorization theory to practical model updates.",
         icon: BookOpen,
-    },
-    {
-        title: "Efficient Model Memory",
-        description: "How models store, compress, retrieve, and forget information efficiently. Research on KV-cache optimization, memory-augmented architectures, retrieval-augmented generation, episodic memory for agents, and parameter-efficient representations that maximize knowledge per byte of VRAM.",
-        icon: HardDrive,
     },
 ];
 
@@ -62,19 +62,18 @@ export const LlmVlmResearch = () => {
                     <div className="mb-6">
                         <div className="flex items-center gap-2 mb-2">
                             <div className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-semibold uppercase tracking-tight">
-                                Research Direction
+                                Primary Focus
                             </div>
                         </div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                            LLM / VLM / VLA
+                            AI Memorization
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
-                            My primary research focus is on <strong>multi-agent interaction</strong>,{" "}
-                            <strong>self-improving AI</strong>, <strong>continual learning</strong>, and{" "}
-                            <strong>efficient model memory</strong> across language, vision-language, and vision-language-action
-                            models. I study how multiple agents collaborate, generate synthetic experience, maintain knowledge
-                            over time, and manage memory efficiently—creating systems that get smarter through interaction
-                            and can operate within real-world hardware constraints.
+                            LLMs memorize through three mechanisms: <strong>in-parameter</strong> (knowledge baked into weights),{" "}
+                            <strong>in-context</strong> (information held in the KV cache during inference), and{" "}
+                            <strong>external retrieval</strong> (augmenting generation with retrieved documents or tools).
+                            My research studies how these mechanisms interact — and how to make models that remember what matters,
+                            forget what they should, and reason efficiently within real-world memory budgets.
                         </p>
                     </div>
 

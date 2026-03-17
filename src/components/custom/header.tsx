@@ -20,10 +20,10 @@ const navItems = [
 
 const researchSubItems = [
   { path: "/research", label: "Overview" },
-  { path: "/research/llm-vlm", label: "LLM / VLM" },
-  { path: "/research/architecture", label: "Architecture" },
-  { path: "/research/continual-learning", label: "Continual Learning" },
+  { path: "/research/llm-vlm", label: "AI Memorization" },
   { path: "/research/synthetic-data", label: "Synthetic Data" },
+  { path: "/research/architecture", label: "Architecture" },
+  { path: "/research/continual-learning", label: "Multi-Agent Systems" },
 ];
 
 export const Header = ({ onHomeClick }: HeaderProps) => {

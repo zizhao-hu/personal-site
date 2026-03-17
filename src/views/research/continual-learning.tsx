@@ -1,36 +1,36 @@
 import { Header } from "@/components/custom/header";
-import { ExternalLink, FileText, Calendar, Layers, RefreshCw, HardDrive, Bot, BookOpen } from "lucide-react";
+import { ExternalLink, FileText, Calendar, Users, MessageSquare, Orbit, Bot, Sparkles, BookOpen } from "lucide-react";
 
 const keyTopics = [
     {
-        title: "Continual Learning for LLM/VLM Agents",
-        description: "Adapting continual learning to large-scale language and vision-language models. Research on how deployed agents can absorb new knowledge, learn from user interactions, and adapt to domain shifts without full retraining — enabling AI systems that grow smarter over their lifetime.",
+        title: "Multi-Agent Collaboration",
+        description: "How multiple LLM/VLM agents collaborate, debate, verify, and refine each other's outputs. Research on emergent communication protocols, consensus-building, and multi-agent self-play for improving reasoning and task completion quality.",
+        icon: Users,
+    },
+    {
+        title: "Agent Orchestration",
+        description: "Building scalable frameworks for multi-agent pipelines — task routing, tool use, memory systems, and self-correction loops. How to design agent architectures that are reliable, composable, and can scale from single tasks to complex workflows.",
+        icon: Orbit,
+    },
+    {
+        title: "Role Specialization",
+        description: "Training and prompting agents for distinct roles — critic, coder, researcher, planner — and studying how role assignment affects team performance. Research on when specialization outperforms generalist agents and how to dynamically allocate roles.",
         icon: Bot,
     },
     {
-        title: "Efficient Model Memory",
-        description: "How models store, compress, retrieve, and forget information efficiently. Research on KV-cache optimization, memory-augmented architectures, retrieval-augmented generation, episodic memory for agents, and parameter-efficient representations that maximize knowledge per byte of VRAM.",
-        icon: HardDrive,
+        title: "Debate & Verification",
+        description: "Using adversarial debate and cross-agent verification to improve output quality. Research on how agents can catch each other's mistakes, reduce hallucination through mutual critique, and produce more reliable final outputs.",
+        icon: MessageSquare,
     },
     {
-        title: "Catastrophic Forgetting Mitigation",
-        description: "Developing methods that enable neural networks to learn new tasks without destroying performance on previously learned ones. Combining replay-based, regularization-based, and architecture-based strategies for robust knowledge retention.",
-        icon: Layers,
-    },
-    {
-        title: "Difficulty-Aware Replay (DREAM)",
-        description: "Prioritizing difficult, boundary-adjacent samples in experience replay buffers. By focusing on the most informative examples, DREAM achieves better performance with smaller memory footprints compared to random replay strategies.",
-        icon: RefreshCw,
-    },
-    {
-        title: "Curriculum Continual Learning",
-        description: "Ordering training tasks and samples intelligently to maximize positive transfer and minimize interference. Research on how task sequencing and difficulty progression affect continual learning outcomes.",
-        icon: BookOpen,
+        title: "Self-Improving Agents",
+        description: "Systems that generate their own training signal through synthetic data, self-reflection, and iterative refinement. Investigating feedback loops where agents evaluate their own outputs, generate preference pairs, and continuously improve without human annotation.",
+        icon: Sparkles,
     },
     {
         title: "Evaluation & Benchmarking",
-        description: "Developing comprehensive evaluation frameworks for continual learning that go beyond simple accuracy metrics. Measuring forward transfer, backward transfer, forgetting rates, and computational efficiency across both classical and LLM settings.",
-        icon: RefreshCw,
+        description: "Developing evaluation frameworks for multi-agent systems — measuring coordination efficiency, task decomposition quality, communication overhead, and emergent capabilities that arise from agent interaction at scale.",
+        icon: BookOpen,
     },
 ];
 
@@ -49,15 +49,13 @@ export const ContinualLearningResearch = () => {
                             </div>
                         </div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                            Continual Learning
+                            Multi-Agent Systems
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
-                            Enabling deployed AI agents to learn continuously without catastrophic forgetting.
-                            My research develops methods for <strong>continual learning in LLM/VLM agents</strong>,
-                            <strong> efficient model memory</strong>, <strong>difficulty-aware replay</strong>,
-                            and <strong>curriculum strategies</strong> that allow agentic systems to evolve with new data
-                            and interactions while preserving prior knowledge—essential for any AI system
-                            that operates in the real world.
+                            How multiple LLM and VLM agents work together to solve problems no single model can handle alone.
+                            My research explores <strong>agent collaboration</strong>, <strong>role specialization</strong>,{" "}
+                            <strong>debate-based verification</strong>, and <strong>orchestration frameworks</strong> that
+                            enable reliable, scalable multi-agent workflows — from simple pipelines to complex reasoning chains.
                         </p>
                     </div>
 
@@ -99,25 +97,17 @@ export const ContinualLearningResearch = () => {
                                     Active Project
                                 </span>
                                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-0.5">
-                                    DREAM-C2L: Continual Learning Framework
+                                    PRISM: Multi-Agent Synthetic Data Pipeline
                                 </h3>
                                 <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
-                                    Open-source framework for continual learning research with difficulty-aware sample ordering,
-                                    replay-based retention methods, and reproducible HPC experiment pipelines.
+                                    A multi-agent pipeline for generating persona-diverse synthetic data, combining
+                                    intent-based routing with role-specialized agents for high-quality data curation.
                                 </p>
                                 <div className="flex items-center gap-3 text-xs">
                                     <span className="flex items-center gap-1 text-gray-500 dark:text-gray-500">
                                         <Calendar className="w-2.5 h-2.5" />
                                         Ongoing
                                     </span>
-                                    <a
-                                        href="https://github.com/zizhao-hu/dream-c2l"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                                    >
-                                        GitHub <ExternalLink className="w-2.5 h-2.5" />
-                                    </a>
                                 </div>
                             </div>
                         </div>

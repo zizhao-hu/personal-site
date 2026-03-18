@@ -115,7 +115,7 @@ export const Overview = () => {
         {/* Three-column comparison: Human | Stage | AI */}
         <div className="rounded-xl border border-border overflow-hidden mb-3">
           {/* Header row */}
-          <div className="grid grid-cols-[1fr_auto_1fr]">
+          <div className="grid grid-cols-[1fr_4.5rem_1fr]">
             <div className="px-2 py-1.5 bg-amber-50 dark:bg-amber-900/15 text-center border-b border-r border-border">
               <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-300">🧠 Human</span>
             </div>
@@ -128,7 +128,7 @@ export const Overview = () => {
           </div>
 
           {/* Row 1: Evolutionary Base */}
-          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+          <div className="grid grid-cols-[1fr_4.5rem_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Natural selection shapes the newborn brain&apos;s wiring and topology</p>
             </div>
@@ -141,7 +141,7 @@ export const Overview = () => {
           </div>
 
           {/* Row 2: Childhood */}
-          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+          <div className="grid grid-cols-[1fr_4.5rem_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Guided learning forms task-based memory and skills</p>
             </div>
@@ -154,7 +154,7 @@ export const Overview = () => {
           </div>
 
           {/* Row 3: Sleep */}
-          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+          <div className="grid grid-cols-[1fr_4.5rem_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Sleep consolidates memory — replaying, pruning, strengthening</p>
             </div>
@@ -167,7 +167,7 @@ export const Overview = () => {
           </div>
 
           {/* Row 4: Memory */}
-          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+          <div className="grid grid-cols-[1fr_4.5rem_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Short-term and long-term memory store and retrieve knowledge</p>
             </div>
@@ -180,7 +180,7 @@ export const Overview = () => {
           </div>
 
           {/* Row 5: Learning from Experience */}
-          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+          <div className="grid grid-cols-[1fr_4.5rem_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Real-world feedback refines intuition and adapts behavior</p>
             </div>
@@ -193,7 +193,7 @@ export const Overview = () => {
           </div>
 
           {/* Row 5: Tool Building */}
-          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+          <div className="grid grid-cols-[1fr_4.5rem_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Build tools — books, calculators — to extend cognition</p>
             </div>
@@ -206,7 +206,7 @@ export const Overview = () => {
           </div>
 
           {/* Row 6: Trial & Error */}
-          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+          <div className="grid grid-cols-[1fr_4.5rem_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Diverse attempts, verified by outcomes, drive evolution</p>
             </div>
@@ -219,7 +219,7 @@ export const Overview = () => {
           </div>
 
           {/* Row 7: Goals & Subgoals */}
-          <div className="grid grid-cols-[1fr_auto_1fr]">
+          <div className="grid grid-cols-[1fr_4.5rem_1fr]">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Decompose goals into subgoals and plan multi-step actions</p>
             </div>

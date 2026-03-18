@@ -127,51 +127,64 @@ export const Overview = () => {
             </div>
           </div>
 
-          {/* Row 1: Origin */}
+          {/* Row 1: Evolutionary Base */}
           <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
-              <p className="text-[10px] text-muted-foreground leading-snug">Natural selection shapes the newborn brain&apos;s topology</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">Natural selection shapes the newborn brain&apos;s wiring and topology</p>
             </div>
-            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
-              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Origin</span>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center justify-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Base</span>
             </div>
             <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
-              <p className="text-[10px] text-muted-foreground leading-snug">Architecture &amp; pretraining shape the base model&apos;s wiring</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">Architecture &amp; pretraining shape the model&apos;s initial weights</p>
             </div>
           </div>
 
-          {/* Row 2: Early Learning */}
+          {/* Row 2: Childhood */}
           <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
-              <p className="text-[10px] text-muted-foreground leading-snug">Guided experience forms task-based memory</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">Guided learning forms task-based memory and skills</p>
             </div>
-            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
-              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Learning</span>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center justify-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Childhood</span>
             </div>
             <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">SFT builds task-specific skills through curated instruction</p>
             </div>
           </div>
 
-          {/* Row 3: Recall */}
+          {/* Row 3: Sleep */}
           <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
-              <p className="text-[10px] text-muted-foreground leading-snug">Brain rewires recall pathways with practice</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">Sleep consolidates memory — replaying, pruning, strengthening</p>
             </div>
-            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
-              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Recall</span>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center justify-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Sleep</span>
             </div>
             <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
-              <p className="text-[10px] text-muted-foreground leading-snug">KV management controls which memories stay active</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">KV management consolidates context — evicting, compressing, retaining</p>
             </div>
           </div>
 
-          {/* Row 4: Tools */}
+          {/* Row 4: Learning from Experience */}
+          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+            <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Real-world feedback refines intuition and adapts behavior</p>
+            </div>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center justify-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Experience</span>
+            </div>
+            <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">RLHF &amp; continual learning adapt the model from interaction</p>
+            </div>
+          </div>
+
+          {/* Row 5: Tool Building */}
           <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Build tools — books, calculators — to extend cognition</p>
             </div>
-            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center justify-center">
               <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Tools</span>
             </div>
             <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
@@ -179,16 +192,29 @@ export const Overview = () => {
             </div>
           </div>
 
-          {/* Row 5: Evolution */}
-          <div className="grid grid-cols-[1fr_auto_1fr]">
+          {/* Row 6: Trial & Error */}
+          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
             <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
-              <p className="text-[10px] text-muted-foreground leading-snug">Trial-and-error drives individual &amp; societal evolution</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">Diverse attempts, verified by outcomes, drive evolution</p>
             </div>
-            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center justify-center">
               <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Evolve</span>
             </div>
             <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
               <p className="text-[10px] text-muted-foreground leading-snug">Diversity + verification: generate, verify, and improve</p>
+            </div>
+          </div>
+
+          {/* Row 7: Goals & Subgoals */}
+          <div className="grid grid-cols-[1fr_auto_1fr]">
+            <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Decompose goals into subgoals and plan multi-step actions</p>
+            </div>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center justify-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Goals</span>
+            </div>
+            <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Chain-of-thought &amp; agentic planning decompose complex tasks</p>
             </div>
           </div>
         </div>

@@ -112,71 +112,90 @@ export const Overview = () => {
           <h3 className="text-sm font-semibold text-foreground font-heading">My Vision</h3>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-3 mb-3">
-          {/* Human Intelligence Card */}
-          <div className="p-3.5 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-gradient-to-br from-amber-50/80 to-orange-50/40 dark:from-amber-900/15 dark:to-orange-900/10">
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <span className="text-base">🧠</span>
-              <h4 className="text-xs font-semibold text-amber-800 dark:text-amber-300 font-heading">Human Intelligence</h4>
+        {/* Three-column comparison: Human | Stage | AI */}
+        <div className="rounded-xl border border-border overflow-hidden mb-3">
+          {/* Header row */}
+          <div className="grid grid-cols-[1fr_auto_1fr]">
+            <div className="px-2 py-1.5 bg-amber-50 dark:bg-amber-900/15 text-center border-b border-r border-border">
+              <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-300">🧠 Human</span>
             </div>
-            <div className="space-y-2">
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">Evolution</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">Millions of years of natural selection shape the newborn brain&apos;s topology — the wiring is the architecture.</p>
-              </div>
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">Childhood Learning</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">Guided experience forms task-based memory — learning to walk, speak, solve, through structured exposure.</p>
-              </div>
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">Recall Adaptation</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">The brain rewires recall pathways with practice — experts retrieve relevant memories faster and more selectively.</p>
-              </div>
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">Tool Building</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">Humans extend cognition with external tools — books, calculators, databases — augmenting biological limits.</p>
-              </div>
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">Trial &amp; Error</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">Diverse attempts, verified by outcomes, drive individual learning and societal evolution — fail fast, adapt, repeat.</p>
-              </div>
+            <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-800/50 text-center border-b border-r border-border">
+              <span className="text-[10px] font-semibold text-muted-foreground">Stage</span>
+            </div>
+            <div className="px-2 py-1.5 bg-blue-50 dark:bg-blue-900/15 text-center border-b border-border">
+              <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300">🤖 AI</span>
             </div>
           </div>
 
-          {/* AI System Card */}
-          <div className="p-3.5 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-gradient-to-br from-blue-50/80 to-indigo-50/40 dark:from-blue-900/15 dark:to-indigo-900/10">
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <span className="text-base">🤖</span>
-              <h4 className="text-xs font-semibold text-blue-800 dark:text-blue-300 font-heading">AI System</h4>
+          {/* Row 1: Origin */}
+          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+            <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Natural selection shapes the newborn brain&apos;s topology</p>
             </div>
-            <div className="space-y-2">
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">Architecture &amp; Pretraining</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">Transformer design and large-scale pretraining shape the base model&apos;s topology — the &ldquo;newborn brain&rdquo; of AI.</p>
-              </div>
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">Supervised Fine-Tuning</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">SFT forms task-specific skills and memory — the model&apos;s &ldquo;childhood,&rdquo; learning through curated instruction.</p>
-              </div>
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">KV Management</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">Controlling what stays in the KV cache mirrors how brains adapt recall — specialized models keep different memories active.</p>
-              </div>
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">RAG &amp; Tool Use</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">Retrieval-augmented generation extends the model with external knowledge — AI&apos;s equivalent of building tools.</p>
-              </div>
-              <div>
-                <span className="text-[11px] font-semibold text-foreground">Diversity + Verification</span>
-                <p className="text-[10px] text-muted-foreground leading-snug">Generate diverse outputs, verify against ground truth, and evolve — the AI analogue of trial-and-error and societal progress.</p>
-              </div>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Origin</span>
+            </div>
+            <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Architecture &amp; pretraining shape the base model&apos;s wiring</p>
+            </div>
+          </div>
+
+          {/* Row 2: Early Learning */}
+          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+            <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Guided experience forms task-based memory</p>
+            </div>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Learning</span>
+            </div>
+            <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">SFT builds task-specific skills through curated instruction</p>
+            </div>
+          </div>
+
+          {/* Row 3: Recall */}
+          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+            <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Brain rewires recall pathways with practice</p>
+            </div>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Recall</span>
+            </div>
+            <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">KV management controls which memories stay active</p>
+            </div>
+          </div>
+
+          {/* Row 4: Tools */}
+          <div className="grid grid-cols-[1fr_auto_1fr] border-b border-border">
+            <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Build tools — books, calculators — to extend cognition</p>
+            </div>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Tools</span>
+            </div>
+            <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">RAG &amp; tool use augment models with external knowledge</p>
+            </div>
+          </div>
+
+          {/* Row 5: Evolution */}
+          <div className="grid grid-cols-[1fr_auto_1fr]">
+            <div className="px-2 py-2 bg-amber-50/50 dark:bg-amber-900/5 border-r border-border min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Trial-and-error drives individual &amp; societal evolution</p>
+            </div>
+            <div className="px-2 py-2 bg-gray-50/50 dark:bg-gray-800/30 border-r border-border flex items-center">
+              <span className="text-[10px] font-bold text-foreground whitespace-nowrap">Evolve</span>
+            </div>
+            <div className="px-2 py-2 bg-blue-50/50 dark:bg-blue-900/5 min-w-0">
+              <p className="text-[10px] text-muted-foreground leading-snug">Diversity + verification: generate, verify, and improve</p>
             </div>
           </div>
         </div>
 
         {/* Closing statement */}
         <p className="text-[11px] text-muted-foreground leading-relaxed text-center italic">
-          Specialized AI will develop distinct memory profiles — different retrieval tendencies, different active KV configurations — just as human experts develop domain intuition. <span className="text-foreground font-medium not-italic">Diversity with verification</span> is how both human societies and AI systems evolve.
+          Specialized AI will develop distinct memory profiles — just as human experts develop domain intuition. <span className="text-foreground font-medium not-italic">Diversity with verification</span> is how both human societies and AI systems evolve.
         </p>
       </div>
       <div className="flex items-center justify-center gap-2 flex-wrap">

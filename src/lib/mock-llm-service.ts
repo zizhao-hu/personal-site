@@ -75,7 +75,7 @@ export class MockLLMService {
               }
               
               if (userQuestion.includes("usc") || userQuestion.includes("university")) {
-                return "I'm a CS Ph.D. student at USC's Viterbi School of Engineering, where I'm fortunate to be part of the GLAMOUR Lab under the guidance of Professor Jesse Thomason and Professor Mohammad Rostami. USC provides an excellent research environment with cutting-edge facilities and a collaborative academic community. The GLAMOUR Lab focuses on language understanding and multi-modal AI, which aligns perfectly with my research interests. I'm also involved in various research initiatives and have access to world-class computing resources for my work.";
+                return "I'm a CS Ph.D. student at USC's Viterbi School of Engineering, in the GLAMOR Lab, advised by Professor Jesse Thomason. I also collaborate with Professor Mohammad Rostami. USC gives me access to the CARC cluster (Endeavour and Discovery) for distributed training. The GLAMOR Lab focuses on language understanding and multi-modal AI, which aligns with my work on model unlearning, safety alignment, and post-training for LLMs and VLMs. Expected graduation: Spring 2027.";
               }
               
               if (userQuestion.includes("background") || userQuestion.includes("experience")) {

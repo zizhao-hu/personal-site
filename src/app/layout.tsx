@@ -5,28 +5,28 @@ import '@/index.css';
 
 export const metadata: Metadata = {
     title: {
-        default: 'Zizhao Hu — AI Researcher | PhD Student at USC',
-        template: '%s | Zizhao Hu',
+        default: 'Zizhao.md',
+        template: '%s — Zizhao.md',
     },
     description:
-        'Zizhao Hu is a CS PhD student at USC building AI systems that improve themselves. Research in multi-agent systems, synthetic data, brain-inspired architectures, and continual learning.',
+        'Zizhao Hu — CS PhD at USC GLAMOR Lab. Research on model unlearning, safety alignment, and post-training for LLMs and VLMs.',
     keywords: [
-        'Zizhao Hu', 'AI researcher', 'USC PhD', 'multi-agent systems',
-        'synthetic data', 'continual learning', 'LLM', 'VLM',
-        'brain-inspired architecture', 'GLAMOUR Lab', 'MINDS Group',
+        'Zizhao Hu', 'AI researcher', 'USC PhD', 'model unlearning',
+        'safety alignment', 'post-training', 'LLM', 'VLM',
+        'KV cache', 'synthetic data', 'GLAMOR Lab', 'Jesse Thomason',
     ],
     authors: [{ name: 'Zizhao Hu' }],
     openGraph: {
-        title: 'Zizhao Hu — AI Researcher',
-        description: 'CS PhD at USC. Multi-agent systems, synthetic data, continual learning.',
+        title: 'Zizhao.md',
+        description: 'CS PhD at USC GLAMOR Lab. Model unlearning, safety alignment, post-training for LLMs and VLMs.',
         type: 'website',
         locale: 'en_US',
-        siteName: 'Zizhao Hu',
+        siteName: 'Zizhao.md',
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Zizhao Hu — AI Researcher',
-        description: 'CS PhD at USC. Multi-agent systems, synthetic data, continual learning.',
+        title: 'Zizhao.md',
+        description: 'CS PhD at USC GLAMOR Lab. Model unlearning, safety alignment, post-training for LLMs and VLMs.',
     },
     robots: {
         index: true,
@@ -44,7 +44,7 @@ export default function RootLayout({
             <head>
                 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
                 <link
-                    href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@400;500;600;700&display=swap"
+                    href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap"
                     rel="stylesheet"
                 />
             </head>

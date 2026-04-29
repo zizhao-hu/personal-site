@@ -401,7 +401,7 @@ export const Projects = () => {
                   Open to research partnerships, consulting, and investment opportunities.
                 </p>
                 <a
-                  href="mailto:zizhaoh@usc.edu"
+                  href="mailto:zizhaohu3@gmail.com"
                   className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white text-brand-orange rounded-lg text-sm font-medium font-heading hover:bg-white/90 transition-colors"
                 >
                   Get in Touch

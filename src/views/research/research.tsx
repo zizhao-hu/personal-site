@@ -222,11 +222,11 @@ export const Research = () => {
             </h2>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-700 dark:text-gray-300">
               <p><strong>PhD Student</strong> • USC</p>
-              <p><strong>Lab:</strong> GLAMOUR Lab</p>
-              <p><strong>Fellowship:</strong> MOVE @ Handshake AI (Alumni)</p>
-              <p><strong>Advisors:</strong> J. Thomason, M. Rostami</p>
-              <p><strong>Affiliation:</strong> GLAMOUR Lab, USC ISI</p>
-              <p><strong>Graduation:</strong> 2027</p>
+              <p><strong>Lab:</strong> GLAMOR Lab</p>
+              <p><strong>Advisor:</strong> Prof. Jesse Thomason</p>
+              <p><strong>Collaborator:</strong> Mohammad Rostami</p>
+              <p><strong>Teaching:</strong> TA, DSCI 552</p>
+              <p><strong>Graduation:</strong> Spring 2027</p>
             </div>
           </section>
         </div>

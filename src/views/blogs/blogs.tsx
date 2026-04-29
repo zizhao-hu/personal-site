@@ -6,20 +6,67 @@ import { useRouter } from 'next/navigation';
 
 import { Clock, Calendar, Tag, LayoutGrid, List, ChevronRight } from "lucide-react";
 import { blogPosts } from "../../data/blog-posts";
+import { tutorials } from "../../data/tutorials";
 import { tagPillClass, tagBadgeClass } from "../../lib/tag-colors";
 
+type Listing = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  readingTime: string;
+  category: "ai" | "science" | "economy" | "tutorial";
+  tags: string[];
+  coverImage?: string;
+  routePrefix: "blogs" | "tutorials";
+};
+
+const TUTORIAL_DATE_FALLBACK = "2025-01-01";
+
+// Tutorials become first-class listings with a "tutorials" tag.
+// They keep their own detail route (/tutorials/[slug]).
+const tutorialListings: Listing[] = tutorials.map((t) => ({
+  id: `tut-${t.id}`,
+  slug: t.slug,
+  title: t.title,
+  excerpt: t.description,
+  date: TUTORIAL_DATE_FALLBACK,
+  readingTime: t.estimatedTime,
+  category: "tutorial",
+  tags: ["tutorials"],
+  routePrefix: "tutorials",
+}));
+
+const blogListings: Listing[] = blogPosts.map((p) => ({
+  id: p.id,
+  slug: p.slug,
+  title: p.title,
+  excerpt: p.excerpt,
+  date: p.date,
+  readingTime: p.readingTime,
+  category: p.category,
+  tags: p.tags,
+  coverImage: p.coverImage,
+  routePrefix: "blogs",
+}));
+
+const allListings: Listing[] = [...blogListings, ...tutorialListings].sort(
+  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+);
+
 const categories = [
-  { id: "all", label: "All Posts", count: blogPosts.length },
-  { id: "ai", label: "AI & Machine Learning", count: blogPosts.filter(p => p.category === "ai").length },
-  { id: "science", label: "Science", count: blogPosts.filter(p => p.category === "science").length },
-  { id: "economy", label: "Economy", count: blogPosts.filter(p => p.category === "economy").length },
+  { id: "all", label: "All Posts", count: allListings.length },
+  { id: "ai", label: "AI & ML", count: allListings.filter(p => p.category === "ai").length },
+  { id: "tutorial", label: "Tutorials", count: allListings.filter(p => p.category === "tutorial").length },
+  { id: "science", label: "Science", count: allListings.filter(p => p.category === "science").length },
+  { id: "economy", label: "Economy", count: allListings.filter(p => p.category === "economy").length },
 ];
 
-const allTags = [...new Set(blogPosts.flatMap((post) => post.tags))];
+const allTags = [...new Set(allListings.flatMap((p) => p.tags))];
 
-// Count posts per tag
 const tagCounts = allTags.reduce((acc, tag) => {
-  acc[tag] = blogPosts.filter(p => p.tags.includes(tag)).length;
+  acc[tag] = allListings.filter(p => p.tags.includes(tag)).length;
   return acc;
 }, {} as Record<string, number>);
 
@@ -29,7 +76,7 @@ export const Blogs = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
-  const filteredPosts = blogPosts.filter((post) => {
+  const filteredPosts = allListings.filter((post) => {
     const categoryMatch = activeCategory === "all" || post.category === activeCategory;
     const tagMatch = selectedTags.length === 0 || selectedTags.some((tag) => post.tags.includes(tag));
     return categoryMatch && tagMatch;
@@ -139,7 +186,7 @@ export const Blogs = () => {
                   <div className="space-y-1.5 text-xs text-muted-foreground">
                     <div className="flex justify-between">
                       <span>Total posts</span>
-                      <span className="font-medium text-foreground">{blogPosts.length}</span>
+                      <span className="font-medium text-foreground">{allListings.length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Categories</span>
@@ -223,7 +270,7 @@ export const Blogs = () => {
               {/* Active filters display */}
               {(activeCategory !== "all" || selectedTags.length > 0) && (
                 <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Showing {filteredPosts.length} of {blogPosts.length} posts</span>
+                  <span>Showing {filteredPosts.length} of {allListings.length} posts</span>
                   {selectedTags.length > 0 && (
                     <div className="flex items-center gap-1">
                       <span>tagged</span>
@@ -246,7 +293,7 @@ export const Blogs = () => {
                   /* ── List View ── */
                   <article
                     key={post.id}
-                    onClick={() => router.push(`/blogs/${post.slug}`)}
+                    onClick={() => router.push(`/${post.routePrefix}/${post.slug}`)}
                     className="group bg-card border border-border rounded-xl p-4 hover:shadow-elevation-2 dark:hover:shadow-elevation-2-dark hover:border-brand-orange/20 transition-all cursor-pointer flex flex-col sm:flex-row gap-4"
                   >
                     {post.coverImage && (
@@ -297,7 +344,7 @@ export const Blogs = () => {
                   /* ── Grid View ── */
                   <article
                     key={post.id}
-                    onClick={() => router.push(`/blogs/${post.slug}`)}
+                    onClick={() => router.push(`/${post.routePrefix}/${post.slug}`)}
                     className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-elevation-2 dark:hover:shadow-elevation-2-dark hover:border-brand-orange/20 transition-all cursor-pointer flex flex-col"
                   >
                     {post.coverImage && (

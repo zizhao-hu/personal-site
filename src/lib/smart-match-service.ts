@@ -61,8 +61,8 @@ const TOPIC_KNOWLEDGE: Omit<KnowledgeEntry, 'tfidf'>[] = [
     },
     {
         id: 'topic-usc',
-        keywords: ['usc', 'university', 'school', 'southern california', 'viterbi', 'glamour', 'lab', 'advisor', 'professor', 'thomason', 'rostami'],
-        answer: "I'm a CS Ph.D. student at USC's Viterbi School of Engineering, part of the **GLAMOUR Lab** (Prof. Jesse Thomason) and **MINDS Group** (Prof. Mohammad Rostami). USC provides an excellent research environment with access to world-class computing resources, including the CARC cluster for distributed training. My research focuses on multi-agent systems, continual learning, and efficient model architectures.",
+        keywords: ['usc', 'university', 'school', 'southern california', 'viterbi', 'glamor', 'glamour', 'lab', 'advisor', 'professor', 'thomason', 'rostami'],
+        answer: "I'm a CS Ph.D. student at USC's Viterbi School of Engineering, part of the **[GLAMOR Lab](https://glamor-usc.github.io/)** and advised by **Prof. Jesse Thomason**. I also collaborate with **Prof. Mohammad Rostami**. USC gives me access to the CARC cluster (Endeavour and Discovery) for distributed training. My research focuses on model unlearning, safety alignment, and post-training for LLMs and VLMs. Expected graduation: Spring 2027.",
         category: 'background'
     },
     {
@@ -86,7 +86,7 @@ const TOPIC_KNOWLEDGE: Omit<KnowledgeEntry, 'tfidf'>[] = [
     {
         id: 'topic-collaboration',
         keywords: ['collaboration', 'consulting', 'work together', 'hire', 'partner', 'advisory', 'invest', 'opportunity', 'contact', 'email', 'reach'],
-        answer: "I'm open to: (1) **Research partnerships** on multi-agent systems, synthetic data, or LLM safety. (2) **Technical consulting** on AI architecture, training pipelines, or multi-agent deployment. (3) **Advisory roles** for AI startups. (4) **Investment discussions** — my tech has commercial potential. Best way to reach me: **zizhaoh@usc.edu** | [GitHub](https://github.com/zizhao-hu)",
+        answer: "I'm open to: (1) **Research partnerships** on model unlearning, safety alignment, post-training, or KV-cache efficiency. (2) **Technical consulting** on LLM/VLM training pipelines or attention/architecture work. (3) **Advisory roles** for AI startups. (4) **Investment discussions** — my work has commercial potential. Best way to reach me: **zizhaohu3@gmail.com** | [GitHub](https://github.com/zizhao-hu)",
         category: 'collaboration'
     },
     {
@@ -97,8 +97,8 @@ const TOPIC_KNOWLEDGE: Omit<KnowledgeEntry, 'tfidf'>[] = [
     },
     {
         id: 'topic-personal',
-        keywords: ['personal', 'hobby', 'fun', 'outside', 'dance', 'kpop', 'soccer', 'basketball', 'food', 'pet', 'dog', 'gym', 'fitness', 'messi', 'curry', 'spade', 'kcon', 'hot pot', 'kbbq'],
-        answer: "I'm a K-pop cover dancer with **Spade A** at USC (performed at KCON!). Huge soccer fan — Messi is the GOAT, no debate. Love watching Steph Curry too. I once had a border collie, one of the smartest dogs ever. 6 AM gym routine, and I'm a hot pot and KBBQ enthusiast. Learning choreography is like debugging code: break it down, iterate, drill until it's perfect. 😄",
+        keywords: ['personal', 'hobby', 'fun', 'outside', 'dance', 'kpop', 'f1', 'formula 1', 'verstappen', 'spacex', 'starship', 'rocket', 'physics', 'gym', 'fitness', 'fasting', 'strategy', 'gaming'],
+        answer: "Outside research: **Formula 1** (Max Verstappen supporter), **K-pop cover dance**, and strategy gaming. I follow **SpaceX Starship** development closely — Version 3 architecture, Booster testing, the engineering depth is fascinating. Propulsion physics, Lagrangians, and transient vibrations in engine clusters are weekend reading. I also do muscle building with intermittent fasting, and I'm a heavy *Too Good To Go* user.",
         category: 'personal'
     },
     {
@@ -110,13 +110,13 @@ const TOPIC_KNOWLEDGE: Omit<KnowledgeEntry, 'tfidf'>[] = [
     {
         id: 'topic-hello',
         keywords: ['hello', 'hi', 'hey', 'greetings', 'whats up', 'how are you', 'good morning', 'good afternoon', 'good evening', 'sup'],
-        answer: "Hey! I'm Zizhao Hu — CS PhD student at USC, working on multi-agent AI systems and synthetic data. I'm here to chat about research, career opportunities, collaborations, or just connect. What's on your mind?",
+        answer: "Hey! I'm Zizhao Hu — CS PhD student at USC GLAMOR Lab, working on model unlearning, safety alignment, and post-training for LLMs and VLMs. Happy to chat about research, career opportunities, collaborations, or just connect. What's on your mind?",
         category: 'general'
     },
     {
         id: 'topic-who',
         keywords: ['who are you', 'about you', 'tell me about yourself', 'introduce yourself', 'what do you do'],
-        answer: "I'm **Zizhao Hu** (胡子昭), a CS Ph.D. student at USC building AI systems that improve themselves while remaining under control. My research spans multi-agent interaction, continual learning, and synthetic data generation. I was a MOVE Fellow at Handshake AI and I review for NeurIPS, ICLR, and ICML. Outside the lab, I do K-pop cover dance with Spade A and I'm obsessed with soccer and hot pot. How can I help?",
+        answer: "I'm **Zizhao Hu** (胡子昭), a CS Ph.D. student at USC's **GLAMOR Lab**, advised by Prof. Jesse Thomason. My research is on **model unlearning, safety alignment, and post-training** for LLMs and VLMs — current projects include PRISM (persona routing), SHRED (document unlearning), and AttendTwice (long-context KV-cache selection). I was a MOVE Fellow at Handshake AI and I review for NeurIPS, ICLR, and ICML. Outside the lab: Formula 1 (Verstappen fan), K-pop dance, and SpaceX Starship nerdery. How can I help?",
         category: 'background'
     }
 ];

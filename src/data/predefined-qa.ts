@@ -59,14 +59,14 @@ export const predefinedQuestions: PredefinedQA[] = [
   {
     id: 'collaboration',
     question: "Are you available for consulting or collaboration?",
-    answer: "Yes! I'm open to: (1) **Research partnerships** — If you're working on multi-agent systems, synthetic data, or LLM safety and want academic collaboration. (2) **Technical consulting** — Advising companies on AI architecture, training pipelines, or multi-agent deployment. (3) **Advisory roles** — For AI startups where my research expertise can help shape technical direction. (4) **Investment discussions** — I'm building technology with commercial potential and am open to conversations with VCs and angels focused on AI infrastructure. Best way to reach me: zizhaoh@usc.edu",
+    answer: "Yes! I'm open to: (1) **Research partnerships** — If you're working on model unlearning, safety alignment, post-training, or KV-cache efficiency and want academic collaboration. (2) **Technical consulting** — Advising companies on LLM/VLM architecture, training pipelines, or attention mechanisms. (3) **Advisory roles** — For AI startups where my research expertise can help shape technical direction. (4) **Investment discussions** — I'm building technology with commercial potential and am open to conversations with VCs and angels focused on AI infrastructure. Best way to reach me: zizhaohu3@gmail.com",
     category: 'collaboration',
     icon: 'Handshake'
   },
   {
     id: 'personal-side',
     question: "Tell me something interesting about you outside of AI",
-    answer: "Here's something most researchers don't mention: I'm a K-pop cover dancer! I perform with Spade A, USC's K-pop dance group, and I've danced at KCON. I'm a massive soccer fan — Messi is the GOAT, no debate — and I play recreationally too. On the basketball side, I love watching Steph Curry. I once had a border collie, one of the smartest dogs you'll ever meet, and I miss that guy every day. I grew up in Yichang, Hubei and went to high school in Wuhan at No.1 High School Affiliated to CCNU. I maintain a 6 AM gym routine focused on muscle building, and I'm a huge hot pot and KBBQ enthusiast. I think the best researchers have lives outside the lab — it keeps you creative and grounded.",
+    answer: "A few things most researchers don't put on their CV: I'm a K-pop cover dancer, a Formula 1 fan (Max Verstappen all the way), and a SpaceX Starship obsessive — I follow the Version 3 architecture and Booster testing the way some people follow sports. The engineering side bleeds into my reading list too: propulsion physics, Lagrangians, and transient vibrations in engine clusters. I grew up in Yichang, Hubei and went to high school in Wuhan at No.1 High School Affiliated to CCNU. Day-to-day I do muscle building with intermittent fasting and use *Too Good To Go* to dodge food waste. The best researchers have lives outside the lab — it keeps you creative and grounded.",
     category: 'background',
     icon: 'Music'
   }

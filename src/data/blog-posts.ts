@@ -30,7 +30,7 @@ export const blogPosts: BlogPost[] = [
         date: "2026-02-22",
         readingTime: "12 min",
         category: "ai",
-        tags: ["Reasoning LLMs", "System 2 Thinking", "Chain-of-Thought", "MCTS", "Reinforcement Learning", "AI Survey"],
+        tags: ["reasoning LLMs", "system 2", "MCTS"],
         coverImage: "/images/blogs/reasoning-llm-timeline.png",
         tldr: {
             problem: "Foundational LLMs like GPT-4 and LLaMA excel at fast, pattern-matching responses (System 1) but struggle with complex multi-step reasoning, logical deduction, and mathematical proof — the kind of deliberate thought humans call System 2 thinking.",
@@ -196,7 +196,7 @@ The transition from System 1 to System 2 reasoning has direct implications for s
         date: "2026-02-19",
         readingTime: "10 min",
         category: "ai",
-        tags: ["AI Safety", "Copyright", "LLM Memorization", "Data Extraction"],
+        tags: ["LLM memorization", "copyright"],
         coverImage: "/images/blogs/extraction.jpg",
         tldr: {
             problem: "Despite industry efforts like dataset deduplication, synthetic data augmentation, and refusal training, large language models still memorize and can regurgitate copyrighted training data verbatim. Researchers extracted up to 96% of Harry Potter and the Sorcerer's Stone word-for-word from Claude 3 Opus using simple, direct prompts.",
@@ -281,7 +281,7 @@ The preprint is available on arXiv for community replication and benchmarking of
         date: "2026-02-18",
         readingTime: "14 min",
         category: "ai",
-        tags: ["AI Evaluation", "Human-AI Collaboration", "Hiring", "Future of Work"],
+        tags: ["hiring", "human-AI collaboration"],
         coverImage: "/images/blogs/interview-dead.jpg",
         tldr: {
             problem: "We've built a sophisticated evaluation culture for AI (benchmarks like MMLU, HumanEval, SWE-bench) that actively drives model development — but we still evaluate humans with whiteboard puzzles and LeetCode trivia from the 1990s. These tests measure memorization, not real-world capability.",
@@ -572,7 +572,7 @@ Let's build it.
         date: "2024-01-10",
         readingTime: "12 min",
         category: "ai",
-        tags: ["Continual Learning", "Neural Networks", "Deep Learning"],
+        tags: ["continual learning", "DREAM"],
         coverImage: "/images/blogs/continual.png",
         tldr: {
             problem: "Neural networks suffer from catastrophic forgetting — when trained on new tasks, they lose performance on previously learned ones. This is a fundamental limitation preventing AI systems from learning continuously like humans do.",
@@ -749,7 +749,7 @@ The most promising approaches combine multiple strategies: replay for memory con
         date: "2023-12-20",
         readingTime: "15 min",
         category: "ai",
-        tags: ["Vision", "NLP", "Multi-Modal", "Transformers"],
+        tags: ["multimodal", "vision-language"],
         coverImage: "/images/blogs/multimodal.png",
         tldr: {
             problem: "AI systems have traditionally processed vision and language in isolation. A vision-only model can identify 'a person running' but can't explain why; a language-only model can discuss 'red cars' but has no grounding in what 'red' looks like. This disconnect limits real-world understanding.",
@@ -1031,7 +1031,7 @@ The goal is AI systems with human-like multimodal understanding—systems that d
         date: "2024-01-15",
         readingTime: "10 min",
         category: "ai",
-        tags: ["LLM", "Research", "Machine Learning", "Science"],
+        tags: ["LLM", "scientific research"],
         coverImage: "/images/blogs/science.png",
         tldr: {
             problem: "Scientific literature is growing exponentially — over 5 million new papers per year. Researchers can't keep up with reading, let alone synthesizing findings across fields. Meanwhile, LLMs are powerful but prone to hallucination, making uncritical adoption dangerous in scientific contexts.",
@@ -1277,7 +1277,7 @@ The most effective researchers will be those who learn to collaborate with AI wh
         date: "2026-02-20",
         readingTime: "12 min",
         category: "economy",
-        tags: ["History", "Economics", "Education", "Trade Wars", "Great Depression"],
+        tags: ["trade wars", "Great Depression"],
         coverImage: "/images/blogs/history-repeats.jpg",
         tldr: {
             problem: "History follows a disturbing cycle: economic crisis → protectionism → nationalism → conflict. The Great Depression led to WWII through a chain of six missed opportunities. Today's trade wars, rising nationalism, and economic anxiety mirror the 1930s almost exactly.",

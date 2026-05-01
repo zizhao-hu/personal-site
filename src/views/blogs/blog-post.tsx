@@ -3,68 +3,26 @@
 import { Header } from "@/components/custom/header";
 import { markdownCodeComponents } from "@/components/custom/code-block";
 import { useParams, useRouter } from 'next/navigation';
-import { getBlogBySlug } from "@/data/blog-posts";
-import { ArrowLeft, Calendar, Clock, Tag, ChevronDown, List, ExternalLink } from "lucide-react";
+import { getBlogBySlug, blogPosts, type BlogPost as BlogPostType } from "@/data/blog-posts";
+import { ArrowLeft, Clock, ExternalLink } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useState, useEffect, useRef, useCallback } from "react";
 
-// Extract headings from markdown content
-function extractHeadings(content: string): { id: string; text: string; level: number }[] {
-  const headingRegex = /^(#{1,3})\s+(.+)$/gm;
-  const headings: { id: string; text: string; level: number }[] = [];
-  let match;
-  while ((match = headingRegex.exec(content)) !== null) {
-    const level = match[1].length;
-    const text = match[2].replace(/\*\*/g, '').replace(/\*/g, '').trim();
-    const id = text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
-    headings.push({ id, text, level });
-  }
-  return headings;
-}
+const formatLongDate = (dateString: string) =>
+  new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+const categoryLabel = (c: BlogPostType["category"]) =>
+  c === "ai" ? "AI & ML" : c === "science" ? "Science" : "Economy";
 
 export const BlogPost = ({ slugOverride }: { slugOverride?: string }) => {
   const params = useParams();
   const slug = slugOverride || (params?.slug as string);
   const router = useRouter();
   const post = slug ? getBlogBySlug(slug) : undefined;
-  const [contentOpen, setContentOpen] = useState(false);
-  const [activeHeading, setActiveHeading] = useState<string>("");
-  const [tocOpen, setTocOpen] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  const headings = post ? extractHeadings(post.content) : [];
-
-  // Observe heading intersections for active TOC highlight
-  const observeHeadings = useCallback(() => {
-    if (!contentOpen || !contentRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveHeading(entry.target.id);
-            break;
-          }
-        }
-      },
-      { rootMargin: "-80px 0px -60% 0px", threshold: 0.1 }
-    );
-
-    const headingElements = contentRef.current.querySelectorAll("h1, h2, h3");
-    headingElements.forEach((el) => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, [contentOpen]);
-
-  useEffect(() => {
-    const cleanup = observeHeadings();
-    return () => cleanup?.();
-  }, [observeHeadings]);
 
   if (!post) {
     return (
@@ -72,12 +30,12 @@ export const BlogPost = ({ slugOverride }: { slugOverride?: string }) => {
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold font-heading text-foreground mb-4">
+            <h1 className="text-2xl font-semibold font-sans text-foreground mb-4">
               Post Not Found
             </h1>
             <button
               onClick={() => router.push("/blogs")}
-              className="text-brand-orange hover:underline font-heading text-sm"
+              className="text-brand-orange hover:underline text-sm"
             >
               Back to Blogs
             </button>
@@ -87,293 +45,203 @@ export const BlogPost = ({ slugOverride }: { slugOverride?: string }) => {
     );
   }
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-  const scrollToHeading = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-      setActiveHeading(id);
-      setTocOpen(false);
-    }
-  };
+  const related = blogPosts
+    .filter((p) => p.slug !== post.slug)
+    .filter((p) => p.category === post.category || p.tags.some((t) => post.tags.includes(t)))
+    .slice(0, 3);
 
   return (
     <div className="flex flex-col min-h-dvh bg-background">
       <Header />
       <main className="flex-1 overflow-y-auto pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="flex gap-8">
-
-            {/* ── Main Article Content ── */}
-            <article className="flex-1 min-w-0 max-w-4xl">
-              {/* Back Button */}
-              <button
-                onClick={() => router.push("/blogs")}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors font-heading"
-              >
-                <ArrowLeft className="w-3 h-3" />
-                Back to Blogs
-              </button>
-
-              {/* Post Header */}
-              <header className="mb-6">
-                <h1 className="text-2xl sm:text-3xl font-bold font-heading text-foreground mb-2 leading-tight">
-                  {post.title}
-                </h1>
-
-                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-3">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>{formatDate(post.date)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{post.readingTime} read</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="flex items-center gap-1 px-2 py-0.5 text-xs bg-brand-orange/10 text-brand-orange rounded font-heading"
-                    >
-                      <Tag className="w-2.5 h-2.5" />
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </header>
-
-              {/* Cover Image */}
-              {post.coverImage && (
-                <div className="mb-8 rounded-xl overflow-hidden border border-border">
-                  <img
-                    src={post.coverImage}
-                    alt={post.title}
-                    className="w-full h-auto max-h-[400px] object-cover"
-                  />
-                </div>
-              )}
-
-              {/* ─── TL;DR — rendered as clean blog prose ─── */}
-              <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-heading prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground mb-10">
-                <p className="text-muted-foreground leading-relaxed">
-                  <strong>The Problem:</strong> {post.tldr.problem}
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  <strong>The Idea:</strong> {post.tldr.idea}
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  <strong>My Solution:</strong> {post.tldr.solution}
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  <strong>The Vision:</strong> {post.tldr.vision}
-                </p>
-              </div>
-
-              {/* ─── Full Content Toggle ─── */}
-              <div className="border border-border rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setContentOpen(!contentOpen)}
-                  className="w-full flex items-center justify-between px-5 py-3.5 bg-muted/40 hover:bg-muted/70 transition-colors text-left group"
-                >
-                  <div>
-                    <span className="text-sm font-medium text-foreground">
-                      {contentOpen ? "Hide full article" : "Read the full article"}
-                    </span>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Honestly this part is more for AI agents and search crawlers than for humans — but if you want the deep dive with code examples and all, knock yourself out.
-                    </p>
-                  </div>
-                  <ChevronDown
-                    className={`w-4 h-4 text-muted-foreground shrink-0 ml-3 transition-transform duration-200 ${contentOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                {contentOpen && (
-                  <div className="px-5 py-6 border-t border-border" ref={contentRef}>
-                    <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-heading prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-brand-orange prose-strong:text-foreground prose-blockquote:border-brand-orange prose-blockquote:text-muted-foreground prose-li:text-muted-foreground prose-table:border-border prose-th:bg-muted prose-th:border-border prose-td:border-border">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          ...markdownCodeComponents,
-                          // Generate IDs for headings so TOC links work
-                          h1({ children }) {
-                            const text = String(children).replace(/\*\*/g, '').replace(/\*/g, '');
-                            const id = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
-                            return <h1 id={id}>{children}</h1>;
-                          },
-                          h2({ children }) {
-                            const text = String(children).replace(/\*\*/g, '').replace(/\*/g, '');
-                            const id = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
-                            return <h2 id={id}>{children}</h2>;
-                          },
-                          h3({ children }) {
-                            const text = String(children).replace(/\*\*/g, '').replace(/\*/g, '');
-                            const id = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
-                            return <h3 id={id}>{children}</h3>;
-                          },
-                          table({ children }) {
-                            return (
-                              <div className="overflow-x-auto my-6 rounded-lg border border-border shadow-sm">
-                                <table className="min-w-full divide-y divide-border">
-                                  {children}
-                                </table>
-                              </div>
-                            );
-                          },
-                          thead({ children }) {
-                            return (
-                              <thead className="bg-muted/70">
-                                {children}
-                              </thead>
-                            );
-                          },
-                          tbody({ children }) {
-                            return (
-                              <tbody className="divide-y divide-border [&>tr:nth-child(even)]:bg-muted/30 [&>tr:hover]:bg-muted/50 transition-colors">
-                                {children}
-                              </tbody>
-                            );
-                          },
-                          th({ children }) {
-                            return (
-                              <th className="px-4 py-2.5 text-left text-xs font-semibold font-heading text-foreground uppercase tracking-wider border-b border-border">
-                                {children}
-                              </th>
-                            );
-                          },
-                          td({ children }) {
-                            return (
-                              <td className="px-4 py-2.5 text-sm text-muted-foreground whitespace-normal">
-                                {children}
-                              </td>
-                            );
-                          },
-                          a({ href, children }) {
-                            const isExternal = href?.startsWith('http');
-                            return (
-                              <a
-                                href={href}
-                                target={isExternal ? "_blank" : undefined}
-                                rel={isExternal ? "noopener noreferrer" : undefined}
-                                className="text-brand-orange hover:text-brand-orange/80 underline decoration-brand-orange/30 hover:decoration-brand-orange transition-colors inline-flex items-center gap-0.5"
-                              >
-                                {children}
-                                {isExternal && <ExternalLink className="w-3 h-3 inline-block" />}
-                              </a>
-                            );
-                          },
-                        }}
-                      >
-                        {post.content}
-                      </ReactMarkdown>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Author Section */}
-              <div className="mt-8 pt-4 border-t border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-orange to-brand-clay flex items-center justify-center">
-                    <span className="text-white font-bold text-xs">ZH</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold font-heading text-foreground">
-                      {post.author.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      PhD Student at USC · AI Researcher
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            {/* ── Right Sidebar: Table of Contents ── */}
-            {headings.length > 0 && (
-              <aside className="hidden xl:block w-52 flex-shrink-0">
-                <div className="sticky top-6">
-                  <div className="flex items-center gap-1.5 mb-3">
-                    <List className="w-3.5 h-3.5 text-muted-foreground" />
-                    <h3 className="text-[10px] uppercase tracking-wider font-heading text-muted-foreground">
-                      On this page
-                    </h3>
-                  </div>
-
-                  {!contentOpen ? (
-                    <p className="text-[11px] text-muted-foreground/60 italic">
-                      Expand the full article to navigate sections
-                    </p>
-                  ) : (
-                    <nav className="space-y-0.5 border-l-2 border-border">
-                      {headings.map((heading) => (
-                        <button
-                          key={heading.id}
-                          onClick={() => scrollToHeading(heading.id)}
-                          className={`block w-full text-left text-[11px] leading-snug transition-all duration-150 border-l-2 -ml-[2px] ${heading.level === 1 ? "pl-3 py-1 font-medium" : ""
-                            }${heading.level === 2 ? "pl-3 py-0.5" : ""}${heading.level === 3 ? "pl-5 py-0.5" : ""
-                            } ${activeHeading === heading.id
-                              ? "border-brand-orange text-brand-orange"
-                              : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
-                            }`}
-                        >
-                          {heading.text}
-                        </button>
-                      ))}
-                    </nav>
-                  )}
-                </div>
-              </aside>
-            )}
-          </div>
-        </div>
-
-        {/* ── Mobile TOC FAB ── */}
-        {contentOpen && headings.length > 0 && (
-          <>
+        {/* ── Hero (centered, LangChain-style) ── */}
+        <section className="border-b border-border">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-12 text-center">
             <button
-              onClick={() => setTocOpen(!tocOpen)}
-              className="xl:hidden fixed bottom-20 right-4 z-40 w-10 h-10 rounded-full bg-brand-orange text-white shadow-lg flex items-center justify-center hover:bg-brand-orange/90 transition-colors"
-              title="Table of Contents"
+              onClick={() => router.push("/blogs")}
+              className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground mb-8 transition-colors"
             >
-              <List className="w-4 h-4" />
+              <ArrowLeft className="w-3 h-3" />
+              Back to Blogs
             </button>
 
-            {tocOpen && (
-              <>
-                <div className="xl:hidden fixed inset-0 z-40 bg-brand-dark/20 backdrop-blur-[2px]" onClick={() => setTocOpen(false)} />
-                <div className="xl:hidden fixed bottom-32 right-4 z-50 w-64 max-h-[50vh] overflow-y-auto bg-card border border-border rounded-xl shadow-elevation-4 dark:shadow-elevation-4-dark p-4">
-                  <h3 className="text-[10px] uppercase tracking-wider font-heading text-muted-foreground mb-2">
-                    On this page
-                  </h3>
-                  <nav className="space-y-0.5">
-                    {headings.map((heading) => (
-                      <button
-                        key={heading.id}
-                        onClick={() => scrollToHeading(heading.id)}
-                        className={`block w-full text-left text-xs py-1 transition-colors ${heading.level === 1 ? "font-medium" : ""
-                          }${heading.level === 3 ? "pl-3" : ""} ${activeHeading === heading.id
-                            ? "text-brand-orange"
-                            : "text-muted-foreground hover:text-foreground"
-                          }`}
-                      >
-                        {heading.text}
-                      </button>
-                    ))}
-                  </nav>
+            <div className="mb-6">
+              <span className="inline-block text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground border border-border bg-background px-2.5 py-1">
+                {categoryLabel(post.category)}
+              </span>
+            </div>
+
+            <h1 className="font-sans text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-foreground leading-[1.1] mb-8 text-balance max-w-3xl mx-auto">
+              {post.title}
+            </h1>
+
+            <div className="flex items-center justify-center gap-5 flex-wrap">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src={post.author.avatar}
+                  alt={post.author.name}
+                  className="w-9 h-9 rounded-full object-cover border border-border"
+                  onError={(e) => {
+                    const t = e.currentTarget;
+                    t.style.display = "none";
+                  }}
+                />
+                <div className="text-left">
+                  <div className="text-[13px] font-medium text-foreground leading-tight">
+                    {post.author.name}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {formatLongDate(post.date)}
+                  </div>
                 </div>
-              </>
-            )}
-          </>
+              </div>
+              <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <Clock className="w-3 h-3" />
+                {post.readingTime}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Article body ── */}
+        <article className="max-w-3xl mx-auto px-4 sm:px-6 pt-10 pb-12">
+          {post.coverImage && (
+            <img
+              src={post.coverImage}
+              alt={post.title}
+              className="w-full h-auto rounded-lg border border-border mb-12"
+            />
+          )}
+
+          <div
+            className="prose prose-lg dark:prose-invert max-w-none font-sans
+              prose-headings:font-sans prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-foreground
+              prose-h1:text-3xl prose-h1:mt-12 prose-h1:mb-4
+              prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4
+              prose-h3:text-xl prose-h3:mt-10 prose-h3:mb-3
+              prose-p:text-foreground/85 prose-p:leading-[1.8]
+              prose-strong:text-foreground prose-strong:font-semibold
+              prose-em:text-foreground/85
+              prose-a:text-brand-orange prose-a:no-underline hover:prose-a:underline
+              prose-li:text-foreground/85 prose-li:leading-[1.8]
+              prose-blockquote:border-l-2 prose-blockquote:border-brand-orange prose-blockquote:text-muted-foreground prose-blockquote:not-italic prose-blockquote:font-normal
+              prose-img:rounded-lg prose-img:border prose-img:border-border prose-img:my-8
+              prose-hr:border-border
+              prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-[0.9em] prose-code:font-mono prose-code:before:content-[''] prose-code:after:content-['']
+            "
+          >
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                ...markdownCodeComponents,
+                h1({ children }) {
+                  const text = String(children).replace(/\*\*/g, '').replace(/\*/g, '');
+                  const id = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+                  return <h1 id={id}>{children}</h1>;
+                },
+                h2({ children }) {
+                  const text = String(children).replace(/\*\*/g, '').replace(/\*/g, '');
+                  const id = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+                  return <h2 id={id}>{children}</h2>;
+                },
+                h3({ children }) {
+                  const text = String(children).replace(/\*\*/g, '').replace(/\*/g, '');
+                  const id = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+                  return <h3 id={id}>{children}</h3>;
+                },
+                table({ children }) {
+                  return (
+                    <div className="overflow-x-auto my-8 rounded-lg border border-border">
+                      <table className="min-w-full divide-y divide-border">{children}</table>
+                    </div>
+                  );
+                },
+                thead({ children }) {
+                  return <thead className="bg-muted/60">{children}</thead>;
+                },
+                tbody({ children }) {
+                  return (
+                    <tbody className="divide-y divide-border">
+                      {children}
+                    </tbody>
+                  );
+                },
+                th({ children }) {
+                  return (
+                    <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-foreground uppercase tracking-wider">
+                      {children}
+                    </th>
+                  );
+                },
+                td({ children }) {
+                  return (
+                    <td className="px-4 py-2.5 text-[14px] text-foreground/85">
+                      {children}
+                    </td>
+                  );
+                },
+                a({ href, children }) {
+                  const isExternal = href?.startsWith('http');
+                  return (
+                    <a
+                      href={href}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
+                      className="text-brand-orange hover:text-brand-orange/80 underline decoration-brand-orange/30 hover:decoration-brand-orange transition-colors inline-flex items-center gap-0.5"
+                    >
+                      {children}
+                      {isExternal && <ExternalLink className="w-3 h-3 inline-block" />}
+                    </a>
+                  );
+                },
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
+          </div>
+        </article>
+
+        {/* ── Related content ── */}
+        {related.length > 0 && (
+          <section className="border-t border-border bg-muted/20">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+              <h3 className="font-sans text-2xl font-semibold tracking-tight text-foreground mb-6">
+                Related content
+              </h3>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {related.map((r) => (
+                  <button
+                    key={r.slug}
+                    onClick={() => router.push(`/blogs/${r.slug}`)}
+                    className="group text-left bg-background border border-border hover:border-foreground/30 transition-colors overflow-hidden flex flex-col"
+                  >
+                    {r.coverImage && (
+                      <img
+                        src={r.coverImage}
+                        alt={r.title}
+                        className="w-full aspect-[16/9] object-cover border-b border-border"
+                      />
+                    )}
+                    <div className="p-4 flex-1 flex flex-col gap-3">
+                      <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                        {categoryLabel(r.category)}
+                      </span>
+                      <h4 className="font-sans text-[16px] font-semibold leading-snug text-foreground group-hover:text-brand-orange transition-colors">
+                        {r.title}
+                      </h4>
+                      <div className="mt-auto flex items-center justify-between text-[11px] text-muted-foreground">
+                        <span>{r.author.name}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {r.readingTime}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
         )}
       </main>
     </div>

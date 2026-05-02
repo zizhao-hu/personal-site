@@ -14,9 +14,9 @@ import {
 const PILLARS = [
   {
     icon: Brain,
-    tag: 'memory',
-    title: 'Memorization · Continual Learning',
-    desc: 'How LLMs remember & forget — unlearning, KV-cache management, and continual adaptation under memory constraints.',
+    tag: 'memory · context · harness',
+    title: 'Agentic Memory · Context · Harness',
+    desc: 'Continual learning across all three agentic layers — model memory (KV cache, weights, unlearning), context (skills, instructions), and harness (driver code, tools).',
     accent: 'text-blue-500 dark:text-blue-400',
   },
   {

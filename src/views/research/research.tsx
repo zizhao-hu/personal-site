@@ -1,236 +1,257 @@
 'use client';
 
 import { Header } from "@/components/custom/header";
-import { BookOpen, ExternalLink, FileText, Users, Calendar, Award, Eye, Brain, Database } from "lucide-react";
-import { useRouter } from 'next/navigation';
+import {
+  ArrowUpRight, Brain, Database, Zap,
+} from "lucide-react";
 
+const DIRECTIONS = [
+  {
+    icon: Brain,
+    tag: 'memory · context · harness',
+    title: 'Agentic Memory · Context · Harness',
+    desc: 'Continual learning across all three agentic layers — model memory (KV cache, weights, unlearning), context (skills, instructions), and harness (driver code, tools).',
+    accent: 'text-blue-500 dark:text-blue-400',
+  },
+  {
+    icon: Zap,
+    tag: 'latency',
+    title: 'Low-Latency AI',
+    desc: 'Efficient attention architectures, KV-cache compression, and recurrent transformers.',
+    accent: 'text-amber-500 dark:text-amber-400',
+  },
+  {
+    icon: Database,
+    tag: 'data',
+    title: 'Synthetic Data · Behavior Steering',
+    desc: 'Generate-validate pipelines, model-collapse prevention, and steering model behavior toward safety and personalization.',
+    accent: 'text-emerald-500 dark:text-emerald-400',
+  },
+];
 
-interface Publication {
-  title: string;
-  authors: string;
-  venue: string;
+type Paper = {
   year: number;
-  type: "conference" | "journal" | "preprint" | "workshop";
+  title: string;
+  venue: string;
+  type: 'conference' | 'preprint' | 'in-progress';
+  summary: string;
   link?: string;
   highlight?: boolean;
-}
+};
 
-const publications: Publication[] = [
+// Newest first.
+const PAPERS: Paper[] = [
   {
-    title: "Multimodal Synthetic Data Finetuning and Model Collapse",
-    authors: "Zizhao Hu, et al.",
-    venue: "ACM International Conference on Multimodal Interaction (ICMI)",
+    year: 2026,
+    title: 'SHRED: Document Unlearning via Self-Distillation and Entropy Demotion',
+    venue: 'in submission · NeurIPS 2026',
+    type: 'in-progress',
+    summary:
+      'A document-level unlearning method that combines self-distillation on retain data with entropy demotion on the forget set. Removes targeted knowledge from LLMs without catastrophic damage to unrelated capabilities.',
+  },
+  {
+    year: 2026,
+    title: 'PRISM: Probe-guided Iterative Smoothness Minimization for Persona Routing',
+    venue: 'in progress',
+    type: 'in-progress',
+    summary:
+      'A framework for efficient persona routing in LLMs that enforces dual-space smoothness — across instruction inputs and behavior outputs — via lightweight probes. Targets controllable behavior without full retraining.',
+  },
+  {
+    year: 2026,
+    title: 'AttendTwice: Long-Context Inference via Dynamic Token-Level KV-Cache Selection',
+    venue: 'in progress',
+    type: 'in-progress',
+    summary:
+      'A two-pass attention scheme that dynamically selects which KV-cache tokens to attend to per query, enabling long-context inference at a fraction of the standard memory footprint.',
+  },
+  {
     year: 2025,
-    type: "conference",
-    link: "https://scholar.google.com/citations?user=A8J42tQAAAAJ",
+    title: 'Multimodal Synthetic Data Finetuning and Model Collapse',
+    venue: 'ACM ICMI 2025',
+    type: 'conference',
+    summary:
+      'Studies how vision-language models degrade when fine-tuned on AI-generated multimodal data. Characterizes the collapse dynamics specific to the multimodal regime and proposes mitigation strategies that preserve diversity across modalities.',
+    link: 'https://scholar.google.com/citations?user=A8J42tQAAAAJ',
     highlight: true,
   },
   {
-    title: "Static Key Attention in Vision",
-    authors: "Zizhao Hu, et al.",
-    venue: "Preprint",
     year: 2024,
-    type: "preprint",
-    link: "https://scholar.google.com/citations?user=A8J42tQAAAAJ",
+    title: 'Lateralization MLP: A Simple Brain-inspired Architecture for Diffusion',
+    venue: 'preprint',
+    type: 'preprint',
+    summary:
+      'A brain-inspired MLP architecture with hemispheric lateralization applied to diffusion models. Shows competitive sample quality at reduced parameter count, suggesting structured asymmetry as an inductive bias for generative modeling.',
+    link: 'https://scholar.google.com/citations?user=A8J42tQAAAAJ',
   },
   {
-    title: "Lateralization MLP: A Simple Brain-inspired Architecture for Diffusion",
-    authors: "Zizhao Hu, et al.",
-    venue: "Preprint",
     year: 2024,
-    type: "preprint",
-    link: "https://scholar.google.com/citations?user=A8J42tQAAAAJ",
+    title: 'Static Key Attention in Vision',
+    venue: 'preprint',
+    type: 'preprint',
+    summary:
+      'A more efficient attention variant for vision transformers that pre-computes a static key projection, reducing per-token compute while maintaining downstream task performance.',
+    link: 'https://scholar.google.com/citations?user=A8J42tQAAAAJ',
   },
 ];
 
-const researchAreas = [
-  {
-    title: "AI Memorization",
-    description: "How LLMs store and recall knowledge — whether in-parameter (weights), in-context (KV cache), or via external retrieval. Research on forgetting, unlearning, KV management, inference optimization, reasoning, and continual learning.",
-    icon: Brain,
-    color: "blue",
-    highlight: true,
-    path: "/research/llm-vlm",
-  },
-  {
-    title: "Synthetic Data",
-    description: "Synthetic data generation, model collapse dynamics, data curation methods, quality filtering, and safety-oriented data pipelines that keep models sharp without the cost of human annotation.",
-    icon: Database,
-    color: "orange",
-    highlight: true,
-    path: "/research/synthetic-data",
-  },
-  {
-    title: "Architecture",
-    description: "Efficient transformer designs, attention optimization, multimodal architectures, and scalable systems. Research on how to maximize model capability per FLOP and unify vision-language processing.",
-    icon: Eye,
-    color: "purple",
-    path: "/research/architecture",
-  },
-  {
-    title: "Multi-Agent Systems",
-    description: "How multiple LLM/VLM agents collaborate, debate, verify, and refine outputs. Research on agent orchestration, role specialization, self-play, and multi-agent workflows for complex task decomposition.",
-    icon: Users,
-    color: "green",
-    path: "/research/continual-learning",
-  },
+const SERVICE = [
+  'Reviewer · NeurIPS 2024–2025',
+  'Reviewer · ICLR 2024–2025',
+  'Reviewer · ICML 2024–2025',
+  'TA · DSCI 552 (USC)',
 ];
-
 
 export const Research = () => {
-  const router = useRouter();
-
   return (
     <div className="flex flex-col min-h-dvh bg-background">
       <Header />
 
       <main className="flex-1 overflow-y-auto pb-24">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-          {/* Hero Section */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Research
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              Understanding <strong>how LLMs memorize — whether in weights, context, or external stores</strong> — and using that knowledge to build faster inference, principled forgetting, and better training data through <strong>synthetic data curation</strong>.
-            </p>
-          </div>
+        <div className="relative font-mono text-[13px] leading-relaxed text-foreground">
+          {/* Subtle dot grid backdrop, same as overview */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.18] dark:opacity-[0.12]"
+            style={{
+              backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
+              backgroundSize: '22px 22px',
+              color: 'hsl(var(--muted-foreground))',
+              maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
+            }}
+          />
 
-          {/* Research Areas */}
-          <section className="mb-6">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-1.5">
-              <Brain className="w-4 h-4 text-blue-600" />
-              Research Directions
-            </h2>
-            <div className="grid md:grid-cols-2 gap-3">
-              {researchAreas.map((area) => {
-                const Icon = area.icon;
-                return (
-                  <div
-                    key={area.title}
-                    onClick={() => router.push(area.path)}
-                    className={`p-3 rounded-lg border cursor-pointer ${area.highlight
-                      ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20"
-                      : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
-                      } hover:shadow-md transition-all hover:scale-[1.01] group`}
+          <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-10">
+            {/* Directions — same pillars as the front page */}
+            <Section label="directions">
+              <div className="grid sm:grid-cols-3 gap-3">
+                {DIRECTIONS.map((d) => (
+                  <article
+                    key={d.tag}
+                    className="border border-border bg-background hover:border-foreground/30 transition-colors p-3"
                   >
-                    {area.highlight && (
-                      <span className="inline-block px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded mb-1.5">
-                        Primary Focus
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+                        {d.tag}
                       </span>
-                    )}
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className={`w-7 h-7 rounded-md bg-${area.color}-100 dark:bg-${area.color}-900/30 flex items-center justify-center`}>
-                        <Icon className={`w-3.5 h-3.5 text-${area.color}-600 dark:text-${area.color}-400`} />
-                      </div>
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{area.title}</h3>
-                      <ExternalLink className="w-3 h-3 text-gray-400 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <d.icon className={`w-3.5 h-3.5 ${d.accent}`} />
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">{area.description}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+                    <h3 className="text-[13px] font-semibold text-foreground mb-1.5">
+                      {d.title}
+                    </h3>
+                    <p className="text-[11.5px] leading-relaxed text-muted-foreground">
+                      {d.desc}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </Section>
 
-          {/* Publications */}
-          <section className="mb-6">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-1.5">
-              <FileText className="w-4 h-4 text-purple-600" />
-              Recent Publications
-            </h2>
-            <div className="space-y-3">
-              {publications.map((pub, index) => (
-                <div
-                  key={index}
-                  className={`p-3 rounded-lg border ${pub.highlight
-                    ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20"
-                    : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50"
+            {/* Recent Papers */}
+            <Section label="recent papers">
+              <ol className="space-y-3">
+                {PAPERS.map((p, i) => (
+                  <li
+                    key={p.title}
+                    className={`relative border border-border bg-background hover:border-foreground/30 transition-colors p-3 ${
+                      p.highlight ? 'border-brand-orange/40' : ''
                     }`}
-                >
-                  {pub.highlight && (
-                    <span className="inline-block px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded mb-1.5">
-                      Featured
-                    </span>
-                  )}
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-0.5">
-                    {pub.title}
-                  </h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1.5">
-                    {pub.authors}
-                  </p>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span className="flex items-center gap-1 text-gray-500 dark:text-gray-500">
-                      <Calendar className="w-2.5 h-2.5" />
-                      {pub.year}
-                    </span>
-                    <span className="text-purple-600 dark:text-purple-400 font-medium">
-                      {pub.venue}
-                    </span>
-                    <span className={`px-1.5 py-0.5 text-xs rounded ${pub.type === 'conference' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                      pub.type === 'workshop' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
-                        'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                      }`}>
-                      {pub.type}
-                    </span>
-                  </div>
-                  {pub.link && (
-                    <a
-                      href={pub.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      View Paper <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
+                  >
+                    <div className="flex items-baseline gap-2 mb-1.5 flex-wrap">
+                      <span className="text-[10.5px] tabular-nums text-muted-foreground/70">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+                        {p.year}
+                      </span>
+                      <span
+                        className={`text-[9.5px] uppercase tracking-wider px-1.5 py-px ${
+                          p.type === 'conference'
+                            ? 'text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 bg-emerald-500/[0.08]'
+                            : p.type === 'in-progress'
+                              ? 'text-amber-700 dark:text-amber-400 border border-amber-500/30 bg-amber-500/[0.08]'
+                              : 'text-muted-foreground border border-border'
+                        }`}
+                      >
+                        {p.type}
+                      </span>
+                      {p.highlight && (
+                        <span className="text-[9.5px] uppercase tracking-wider px-1.5 py-px text-brand-orange border border-brand-orange/40 bg-brand-orange/[0.06]">
+                          featured
+                        </span>
+                      )}
+                      <span className="ml-auto text-[10.5px] text-muted-foreground/80 italic">
+                        {p.venue}
+                      </span>
+                    </div>
+                    <h3 className="text-[13.5px] font-semibold text-foreground leading-snug mb-1">
+                      {p.title}
+                    </h3>
+                    <p className="text-[11.5px] leading-relaxed text-muted-foreground">
+                      {p.summary}
+                    </p>
+                    {p.link && (
+                      <a
+                        href={p.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-2 text-[11px] text-muted-foreground hover:text-foreground underline decoration-dotted underline-offset-2 transition-colors"
+                      >
+                        view <ArrowUpRight className="w-3 h-3" />
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ol>
 
-            <a
-              href="https://scholar.google.com/citations?user=A8J42tQAAAAJ"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 mt-4 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              View all on Google Scholar
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </section>
+              <a
+                href="https://scholar.google.com/citations?user=A8J42tQAAAAJ"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-1.5 mt-4 px-2.5 py-1 text-[11px] text-muted-foreground border border-border bg-background hover:border-foreground/30 hover:text-foreground transition-colors"
+              >
+                full list on Google Scholar
+                <ArrowUpRight className="w-3 h-3 opacity-70 group-hover:opacity-100" />
+              </a>
+            </Section>
 
-          {/* Academic Service */}
-          <section className="mb-6">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-1.5">
-              <BookOpen className="w-4 h-4 text-green-600" />
-              Academic Service
-            </h2>
-            <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50">
-              <p className="text-xs text-gray-700 dark:text-gray-300 mb-1">
-                <strong>Reviewer:</strong> NeurIPS 2024, ICLR 2024-2025, ICML 2024-2025
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Active contributor through peer review at top-tier venues.
-              </p>
-            </div>
-          </section>
-
-          {/* Current Position */}
-          <section className="p-4 rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800">
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              Current Position
-            </h2>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-700 dark:text-gray-300">
-              <p><strong>PhD Student</strong> • USC</p>
-              <p><strong>Lab:</strong> GLAMOR Lab</p>
-              <p><strong>Advisor:</strong> Prof. Jesse Thomason</p>
-              <p><strong>Collaborator:</strong> Mohammad Rostami</p>
-              <p><strong>Teaching:</strong> TA, DSCI 552</p>
-              <p><strong>Graduation:</strong> Spring 2027</p>
-            </div>
-          </section>
+            {/* Service */}
+            <Section label="academic service" lastSection>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {SERVICE.map((s) => (
+                  <li
+                    key={s}
+                    className="text-[11.5px] text-muted-foreground border border-border bg-background px-2.5 py-1.5"
+                  >
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          </div>
         </div>
       </main>
     </div>
   );
 };
+
+const Section = ({
+  label,
+  children,
+  lastSection = false,
+}: {
+  label: string;
+  children: React.ReactNode;
+  lastSection?: boolean;
+}) => (
+  <section className={lastSection ? '' : 'mb-12'}>
+    <div className="flex items-center gap-3 mb-4">
+      <span className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </span>
+      <span className="flex-1 h-px bg-border" />
+    </div>
+    {children}
+  </section>
+);

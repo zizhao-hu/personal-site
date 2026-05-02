@@ -229,17 +229,18 @@ export const Overview = () => {
             </p>
 
             {/* Inline personal links */}
-            <div className="flex flex-wrap gap-1.5 mt-2.5">
+            <div className="flex flex-nowrap sm:flex-wrap gap-1.5 mt-2.5">
               {LINKS.map((l) => (
                 <a
                   key={l.label}
                   href={l.href}
                   target={l.href.startsWith('mailto:') ? undefined : '_blank'}
                   rel={l.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+                  aria-label={l.label}
                   className="group inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] text-muted-foreground border border-border bg-background hover:border-foreground/30 hover:text-foreground transition-colors"
                 >
                   <l.icon className="w-3 h-3 opacity-70 group-hover:opacity-100" />
-                  <span>{l.label}</span>
+                  <span className="hidden sm:inline">{l.label}</span>
                 </a>
               ))}
             </div>
@@ -253,29 +254,21 @@ export const Overview = () => {
           <span className="text-brand-orange font-semibold">1.</span> remember,{' '}
           <span className="text-brand-orange font-semibold">2.</span> forget, and{' '}
           <span className="text-brand-orange font-semibold">3.</span> explore from the real world
-          decides the next generation of artificial intelligence.
+          decides the next generation continual learning AI.
         </p>
 
-        {/* Keyword tags */}
-        <div className="flex flex-wrap gap-1.5 mb-12">
-          {[
-            'continual learning',
-            'multiagent',
-            'multimodal agent',
-            'model unlearning',
-            'safety alignment',
-            'post-training',
-            'KV cache',
-            'synthetic data',
-          ].map((kw) => (
-            <span
-              key={kw}
-              className="inline-flex items-center px-2 py-0.5 text-[10.5px] text-muted-foreground border border-border bg-background hover:border-foreground/30 hover:text-foreground transition-colors"
-            >
-              {kw}
-            </span>
-          ))}
-        </div>
+        {/* Areas I work on — replaces keyword tag pills */}
+        <p className="mb-12 text-[13px] text-muted-foreground leading-relaxed max-w-2xl">
+          I work on{' '}
+          <span className="text-foreground font-semibold">continual learning</span>,{' '}
+          <span className="text-foreground font-semibold">unlearning</span>, and{' '}
+          <span className="text-foreground font-semibold">task adaptation</span>{' '}
+          — at the{' '}
+          <span className="text-foreground font-semibold">agent level</span>{' '}
+          (context, harness) and the{' '}
+          <span className="text-foreground font-semibold">model level</span>{' '}
+          (distillation, fine-tuning).
+        </p>
 
         {/* What I work on */}
         <Section label="what i work on">

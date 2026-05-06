@@ -2,85 +2,116 @@
 
 import { Header } from '@/components/custom/header';
 import { useRouter } from 'next/navigation';
+import { ArrowUpRight, PenTool, Presentation, Rocket, Gamepad2 } from 'lucide-react';
 
-import { Wrench } from 'lucide-react';
-
-const tools = [
-    {
-        id: 'pipeline-designer',
-        title: 'AI Pipeline Designer',
-        description: 'Interactive canvas tool for designing and visualizing AI/ML pipeline architectures. Drag, connect, and export publication-ready diagrams.',
-        path: '/tools/pipeline-designer',
-        icon: '🔧',
-        tags: ['Canvas', 'Diagrams', 'Research'],
-    },
-    {
-        id: 'slide-maker',
-        title: 'Research Slide Maker',
-        description: 'Build academic presentation slides with a pre-defined research template sequence. Drag, resize, and edit elements, then export for Google Slides.',
-        path: '/tools/slide-maker',
-        icon: '📊',
-        tags: ['Slides', 'Presentations', 'Research'],
-    },
-    {
-        id: 'starship-sim',
-        title: 'Starship Lunar Mission',
-        description: 'Ultra-realistic 3D simulation of a SpaceX Starship launch and Moon landing. Babylon.js powered with SpaceX broadcast-style telemetry HUD.',
-        path: '/tools/starship-sim',
-        icon: '🚀',
-        tags: ['3D', 'Simulation', 'Babylon.js'],
-    },
+const TOOLS = [
+  {
+    id: 'pipeline-designer',
+    tag: 'canvas',
+    title: 'AI Pipeline Designer',
+    desc: 'Interactive canvas for designing AI/ML pipeline diagrams. Drag, connect, export publication-ready figures.',
+    path: '/tools/pipeline-designer',
+    icon: PenTool,
+    accent: 'text-blue-500 dark:text-blue-400',
+  },
+  {
+    id: 'slide-maker',
+    tag: 'slides',
+    title: 'Research Slide Maker',
+    desc: 'Build research presentation slides from a template sequence. Drag, resize, edit, export to Google Slides.',
+    path: '/tools/slide-maker',
+    icon: Presentation,
+    accent: 'text-emerald-500 dark:text-emerald-400',
+  },
+  {
+    id: 'starship-sim',
+    tag: 'sim',
+    title: 'Starship Lunar Mission',
+    desc: 'Ultra-realistic 3D Starship launch and Moon landing. Babylon.js with SpaceX broadcast-style telemetry.',
+    path: '/tools/starship-sim',
+    icon: Rocket,
+    accent: 'text-amber-500 dark:text-amber-400',
+  },
+  {
+    id: 'maplestory',
+    tag: 'game',
+    title: 'Ludibrium · MapleStory',
+    desc: 'Playable HTML5 MapleStory clone — spawns directly in Ludibrium\'s Eos Tower with Stoneperson mobs, jumping, and skill combos. Vendored & modified from liwenone/maplestory.',
+    path: '/tools/maplestory',
+    icon: Gamepad2,
+    accent: 'text-rose-500 dark:text-rose-400',
+  },
 ];
 
 export const Tools = () => {
-    const router = useRouter();
+  const router = useRouter();
 
-    return (
-        <div className="flex flex-col min-h-dvh bg-background">
-            <Header />
-            <div className="flex-1 overflow-y-auto pb-24">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-                    {/* Hero */}
-                    <div className="mb-8">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Wrench className="w-5 h-5 text-brand-orange" />
-                            <h1 className="text-2xl font-bold font-heading text-foreground">Tools</h1>
-                        </div>
-                        <p className="text-sm text-muted-foreground max-w-xl">
-                            Interactive utilities and design tools built for research and productivity.
-                        </p>
-                    </div>
+  return (
+    <div className="flex flex-col min-h-dvh bg-background">
+      <Header />
+      <main className="flex-1 overflow-y-auto pb-24">
+        <div className="relative font-mono text-[13px] leading-relaxed text-foreground">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.18] dark:opacity-[0.12]"
+            style={{
+              backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
+              backgroundSize: '22px 22px',
+              color: 'hsl(var(--muted-foreground))',
+              maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
+            }}
+          />
 
-                    {/* Tool Cards */}
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {tools.map((tool) => (
-                            <button
-                                key={tool.id}
-                                onClick={() => router.push(tool.path)}
-                                className="group text-left p-5 rounded-xl bg-card border border-border hover:border-brand-orange/50 hover:shadow-lg transition-all duration-300"
-                            >
-                                <div className="text-3xl mb-3">{tool.icon}</div>
-                                <h2 className="text-sm font-semibold font-heading text-foreground group-hover:text-brand-orange transition-colors mb-1">
-                                    {tool.title}
-                                </h2>
-                                <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                                    {tool.description}
-                                </p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {tool.tags.map((tag) => (
-                                        <span
-                                            key={tag}
-                                            className="px-2 py-0.5 rounded-full bg-muted text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
-                                        >
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            </button>
-                        ))}
+          <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-10">
+            <Section label="tools" lastSection>
+              <div className="grid sm:grid-cols-3 gap-3">
+                {TOOLS.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => router.push(t.path)}
+                    className="group text-left border border-border bg-background hover:border-foreground/30 transition-colors p-3"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+                        {t.tag}
+                      </span>
+                      <t.icon className={`w-3.5 h-3.5 ${t.accent}`} />
                     </div>
-                </div>
-            </div>
+                    <h3 className="text-[13px] font-semibold text-foreground mb-1.5 flex items-center gap-1">
+                      {t.title}
+                      <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-60 transition-opacity" />
+                    </h3>
+                    <p className="text-[11.5px] leading-relaxed text-muted-foreground">
+                      {t.desc}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </Section>
+          </div>
         </div>
-    );
+      </main>
+    </div>
+  );
 };
+
+const Section = ({
+  label,
+  children,
+  lastSection = false,
+}: {
+  label: string;
+  children: React.ReactNode;
+  lastSection?: boolean;
+}) => (
+  <section className={lastSection ? '' : 'mb-12'}>
+    <div className="flex items-center gap-3 mb-4">
+      <span className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </span>
+      <span className="flex-1 h-px bg-border" />
+    </div>
+    {children}
+  </section>
+);

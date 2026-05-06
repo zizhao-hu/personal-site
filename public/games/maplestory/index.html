@@ -1,0 +1,274 @@
+<html>
+	<meta charset="utf-8">
+	<title>Ludibrium · MapleStory</title>
+	<style>
+		@font-face {
+			font-family: liwen;
+			src: url("font/FZMWFont.ttf");
+		}
+
+		*{margin: 0;}
+		html, body {height: 100%; overflow: hidden; background: #000;}
+		body{-moz-user-select:none; display: flex; align-items: center; justify-content: center;}
+		/* Stage holds the canvas and any HTML overlays (e.g. the TV YouTube iframe).
+		   Both scale together via CSS transform so they stay aligned. We use a
+		   "cover" scale (max), so the game zooms in to fill the entire window —
+		   no black margins, but content past the aspect ratio gets clipped. */
+		.stage{
+			position: relative;
+			width: 1280px;
+			height: 720px;
+			flex: 0 0 auto;
+			transform-origin: center center;
+		}
+		#canvas{
+			position: absolute; left: 0; top: 0;
+			width: 1280px; height: 720px;
+			cursor: url("bg/cursor.png"), auto;
+			z-index: 1;
+			image-rendering: pixelated;
+			image-rendering: crisp-edges;
+		}
+		#tv-screen{
+			position: absolute;
+			border: 0;
+			z-index: 2;
+			background: #000;
+			pointer-events: auto;
+			display: none;
+		}
+		#tv-controls{
+			position: absolute;
+			display: none;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 4px;
+			z-index: 3;
+			background: transparent;
+			padding: 0;
+		}
+		#tv-controls.visible{display: flex;}
+		#tv-title{
+			font-family: "Trebuchet MS", "Helvetica Neue", Arial, sans-serif;
+			font-weight: 900;
+			font-size: 17px;
+			color: #fff19a;
+			letter-spacing: 0.08em;
+			text-shadow:
+				1px 1px 0 #2a1100,
+				-1px 1px 0 #2a1100,
+				1px -1px 0 #2a1100,
+				-1px -1px 0 #2a1100,
+				0 0 10px rgba(255, 200, 60, 0.7);
+			line-height: 1;
+			pointer-events: none;
+			user-select: none;
+			text-transform: none;
+		}
+		#tv-buttons{
+			display: flex;
+			gap: 6px;
+			align-items: center;
+			justify-content: center;
+		}
+		.tv-btn{
+			display: inline-block !important;
+			position: static !important;
+			background: #ffe650 !important;
+			color: #18182a !important;
+			border: 0 !important;
+			border-radius: 3px;
+			padding: 2px 8px !important;
+			font: 600 16px/1 sans-serif !important;
+			cursor: pointer;
+			text-shadow: none !important;
+			min-width: 32px;
+		}
+		.tv-btn:hover{background: #fff080 !important;}
+
+		.home {display: none !important;}
+
+		/* NPC dialog overlay */
+		#npc-dialog{
+			position: fixed; left: 50%; bottom: 18%; transform: translateX(-50%);
+			max-width: 560px; width: calc(100% - 32px);
+			background: rgba(15,18,30,0.92); color: #fff;
+			border: 1px solid rgba(255,235,80,0.6);
+			border-radius: 10px; padding: 14px 18px;
+			font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+			font-size: 14px; line-height: 1.55;
+			z-index: 50; display: none;
+			box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+		}
+		#npc-dialog.visible{display: block;}
+		#npc-dialog h4{margin: 0 0 4px; font-size: 16px; color: #ffe650;}
+		#npc-dialog .role{font-size: 11px; color: #b9c3d8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;}
+		#npc-dialog .body{margin-bottom: 12px;}
+		#npc-dialog button{
+			display: inline-block !important;
+			position: static !important;
+			float: right;
+			cursor: pointer; padding: 4px 14px;
+			background: #ffe650; color: #18182a; border: 0; border-radius: 4px;
+			font: inherit; font-weight: 600;
+			text-shadow: none;
+		}
+		#npc-dialog button:hover{background: #fff080;}
+		.version{position: absolute;right: 100px;top: 5px;font-weight: bold;font-size: 12px;display: none;}
+
+		button {position: absolute; font-size: 18px;font-weight: bold;font-family: liwen,微软雅黑;text-shadow: 0px 0px 5px #444;outline: none;background: transparent;border: none;cursor: url("bg/cursor.png"), auto;display: none;}
+		button:hover{text-shadow: 0px 0px 5px red;}
+		.select-btn{bottom: 150px;right: 100px;}
+		.help-btn{bottom: 120px;right: 100px;}
+
+		.frame{width: 588px;position: absolute; margin-left:100px;font-family: liwen,微软雅黑;background: rgba(0, 0, 0, 0.6);border-radius: 8px;border: 1px solid orange;color:white;padding: 8px;font-size:14px;display: none;}
+		.select-frame{top:50px;}
+		.text{font-weight: bold;font-size: 14px;text-shadow: 0px 0px 5px red;color:yellow;text-align: center;}
+		.character{width: 320px;margin: 10px auto;}
+		img{width: 60px; height: 96;border-radius: 10px;padding: 30px;background:rgba(0, 0, 0, 0.6);box-shadow: 0 0 10px #000;transition: all 0.3s;margin-bottom:20px;}
+		img:hover{box-shadow: 0 0 20px red;background:rgba(0, 0, 0, 0.8);}
+		.left-img{float:left;}
+		.right-img{float: right;}
+
+		.help-frame{bottom: 190px;}
+		.help-frame span {font-weight: bold;font-size: 14px;text-shadow: 0px 0px 5px red;color:yellow;}
+	</style>	
+	<script src="script/resources.js"></script>
+	<script src="script/monster_factory.js"></script>
+	<script src="script/constant.js"></script>
+	<script src="script/util.js"></script>
+	<script src="script/effect.js"></script>
+	<script src="script/attr.js"></script>
+	<script src="script/skill_manager.js"></script>
+	<script src="script/music.js"></script>
+
+	<script src="script/ludi265.js"></script>
+	<script src="script/mapdata.js"></script>
+	<script src="script/monster.js"></script>
+	<script src="script/player.js"></script>
+	<script src="script/yingzi.js"></script>
+	<script src="script/map.js"></script>
+	<script src="script/bg.js"></script>
+	<script src="script/scene.js"></script>
+	<script src="script/main.js"></script>
+
+	<body onselectstart="return false;">
+		<audio id="home_audio" src="music/home.mp3" preload="true" loop="true"></audio>
+		<div class="stage" id="stage">
+			<canvas id="canvas" width="1280" height="720"></canvas>
+			<iframe id="tv-screen" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+			<div id="tv-controls">
+				<div id="tv-title">K-POP Dance Covers</div>
+				<div id="tv-buttons">
+					<button class="tv-btn" id="tv-prev" title="Previous">⏮</button>
+					<button class="tv-btn" id="tv-play" title="Play / Pause">⏯</button>
+					<button class="tv-btn" id="tv-next" title="Next">⏭</button>
+				</div>
+			</div>
+		</div>
+		<script src="https://www.youtube.com/iframe_api"></script>
+		<script>
+			window.tvPlayer = null;
+			window.tvPlayerReady = false;
+			window.tvApiReady = false;
+			window.onYouTubeIframeAPIReady = function() { window.tvApiReady = true; };
+			// Called by scene.js once the TV iframe is in the DOM and ready to host the player.
+			window.tvInitPlayer = function() {
+				if (window.tvPlayer || !window.tvApiReady || !window.YT || !window.YT.Player) return;
+				var iframe = document.getElementById('tv-screen');
+				if (!iframe) return;
+				// Pre-set the iframe src to a real embed URL with enablejsapi=1 so
+				// the IFrame API can attach via postMessage. Then wrap it.
+				iframe.src = "https://www.youtube.com/embed/AZYbbXGoCcc"
+					+ "?list=PLsVxVnygLbjeKQlhzgyTPoZcBqo58_y4u"
+					+ "&listType=playlist&enablejsapi=1&modestbranding=1&rel=0"
+					+ "&origin=" + encodeURIComponent(window.location.origin);
+				window.tvPlayer = new window.YT.Player(iframe, {
+					events: {
+						onReady: function() { window.tvPlayerReady = true; }
+					}
+				});
+			};
+			(function () {
+				function call(method) {
+					if (!window.tvPlayer) window.tvInitPlayer();
+					if (!window.tvPlayer || !window.tvPlayerReady) return;
+					var p = window.tvPlayer;
+					if (method === 'toggle') {
+						var s = p.getPlayerState && p.getPlayerState();
+						if (s === 1) p.pauseVideo(); else p.playVideo();
+					} else if (method === 'next') {
+						p.nextVideo && p.nextVideo();
+					} else if (method === 'prev') {
+						p.previousVideo && p.previousVideo();
+					}
+				}
+				document.getElementById('tv-prev').onclick = function(e){ e.stopPropagation(); call('prev'); };
+				document.getElementById('tv-next').onclick = function(e){ e.stopPropagation(); call('next'); };
+				document.getElementById('tv-play').onclick = function(e){ e.stopPropagation(); call('toggle'); };
+				var ctrls = document.getElementById('tv-controls');
+				['mousedown','mouseup','click'].forEach(function(t){
+					ctrls.addEventListener(t, function(e){ e.stopPropagation(); }, false);
+				});
+			})();
+		</script>
+		<div class="home" id="home">
+			<div class="version" id="version">Ver.20160215</div>
+			<!--select character-->
+			<div class="frame select-frame" id="select">
+				<div class="text">Choose your character</div>
+				<div class="character">
+					<img class="left-img" id="left_img" src="bg/male.png"/>
+					<img class="right-img" id="right_img" src="bg/female.png" onclick="start('female')"/>
+				</div>
+			</div>
+			<!--help-->
+			<div class = "frame help-frame" id="help">
+				<div><span>Controls:</span> Arrow keys to move, S to pick up drops, D to jump, F double-strike, G finisher, R spin slash, T leaf slash; 2 inventory, 3 ability, 4 equipment; Ctrl to use HP potion, Shift for MP potion.</div>
+				<div><span>Other:</span> Air + Up climbs ropes and ladders; press Up at light pillars to switch maps; consumables must be assigned in the inventory before use.</div>
+				<div><span>About:</span> Fan-made educational MapleStory clone — engine + assets from liwenone/maplestory, town map from maplestory.io.</div>
+				<div><span>Original author:</span> liwenone@qq.com</div>
+			</div>
+
+			<!--menu-->
+			<button class="select-btn" id="start_btn">Start Game</button>
+			<button class="help-btn" id="help_btn">Help</button>
+		</div>
+
+		<!-- NPC dialog overlay (HTML, lives outside the canvas) -->
+		<div id="npc-dialog" role="dialog" aria-modal="true">
+			<h4 id="npc-dialog-name"></h4>
+			<div class="role" id="npc-dialog-role"></div>
+			<div class="body" id="npc-dialog-body"></div>
+			<button id="npc-dialog-close">End Chat</button>
+			<div style="clear:both"></div>
+		</div>
+		<script>
+			(function () {
+				var box = document.getElementById('npc-dialog');
+				function close(e) {
+					if (e) { e.stopPropagation(); e.preventDefault(); }
+					box.classList.remove('visible');
+					window.npcDialogOpen = false;
+				}
+				// Stop clicks/mousedowns inside the dialog from bubbling to the canvas
+				// (which would re-trigger NPC hit-testing). BUBBLE phase only — capture
+				// phase would block the close button from receiving its own click.
+				['mousedown', 'mouseup', 'click'].forEach(function(t){
+					box.addEventListener(t, function(e){ e.stopPropagation(); }, false);
+				});
+				document.getElementById('npc-dialog-close').onclick = close;
+				// Also dismiss on Escape
+				document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
+				window.showNpcDialog = function (name, role, body) {
+					document.getElementById('npc-dialog-name').textContent = name;
+					document.getElementById('npc-dialog-role').textContent = role || '';
+					document.getElementById('npc-dialog-body').textContent = body || '';
+					box.classList.add('visible');
+					window.npcDialogOpen = true;
+				};
+			})();
+		</script>
+	</body>
+</html>
